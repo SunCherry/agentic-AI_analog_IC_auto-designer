@@ -163,7 +163,6 @@ pip install numpy matplotlib pyyaml gdstk gdsfactory glayout
 - [x] Automatic layout design (`layout-agent`, `layout-fixer`, `verify-agent`)
 - [ ] Co-optimization loop (`analysis-agent`)
 - [ ] Dynamic knowledge graph (`knowledge-graph-agent`)
-- [ ] gf180mcuD layer-map verification
 
 ---
 
