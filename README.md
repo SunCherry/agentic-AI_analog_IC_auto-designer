@@ -16,7 +16,7 @@ subagents and skills, and the open-source EDA toolchain
 > `knowledge-graph-agent`) is in development and coming soon.
 
 ![Workflow](docs/analog_co_designer_workflow.png)
-![Workflow](docs/two_stage_rz_pre_post_ac.png)
+![Workflow](docs/miller_ota/two_stage_rz_pre_post_ac.png)
 ---
 
 ## What it does
