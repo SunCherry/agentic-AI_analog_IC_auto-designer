@@ -17,7 +17,7 @@ subagents and skills, and the open-source EDA toolchain
 
 ![Workflow](docs/analog_co_designer_workflow.png)
 ![Workflow](docs/miller_ota/two_stage_rz_pre_post_ac.png)
-![Workflow](docs/miller_ota/layout_example.png)
+![Workflow](docs/miller_ota/layout_example)
 
 ---
 
