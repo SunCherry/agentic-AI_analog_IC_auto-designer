@@ -1,0 +1,7 @@
+{
+    "schematic": "Spice",
+    "simulator": "Ngspice",
+    "drc_tool": "Magic",
+    "lvs_tool": "Netgen",
+    "pex_tool": "Magic"
+}

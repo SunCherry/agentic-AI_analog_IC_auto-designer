@@ -1,0 +1,13 @@
+# Scientific computing / plotting
+numpy
+matplotlib
+PyYAML
+
+# GDS / layout
+gdstk
+gdsfactory
+klayout
+
+# Analog layout engine (imported as `glayout`); install editable from source
+# if it is not available on PyPI for your platform.
+glayout

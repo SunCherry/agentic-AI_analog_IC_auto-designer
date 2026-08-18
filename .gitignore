@@ -1,0 +1,76 @@
+# Generated/run artifacts -- see skills/*/SKILL.md "Working folder"
+# sections for what each of these directories/extensions holds. Source
+# code (skills/, agents/, .claude/) and each example's design inputs
+# (golden netlist, testbench, target_spec.json) are tracked; everything
+# reproducible by re-running a skill against those inputs is not.
+
+# Magic/klayout DRC/LVS/PEX tool output
+*.ext
+*.gds
+*.rpt
+*.lyrdb
+*_tool_check_report.json
+*_drc_out/
+*_lvs_out/
+*_klayout_drc_out/
+drc_work/
+lvs_work/
+pex_run/
+layout_work/
+
+# ngspice / simulation run output
+*.out
+*.log
+*.csv
+*.npy
+__pycache__/
+*.pyc
+
+# Generated visualizations (draw_circuit_graph.py)
+*.png
+*.dot
+
+# Generated placement/routing intermediate data
+physical_map.json
+pairs.json
+primitives/
+
+# schematic-sizing's per-iteration/per-Nf audit trail (skills/schematic-sizing/SKILL.md
+# "Working folder") -- NOT the curated final_report.md/progress.md/params_values.json/
+# *.j2/*_final.sp, which stay tracked as this skill's real deliverables
+schematic_sizing/iter_*/
+schematic_sizing/*/round2/
+
+# generic run-tool scratch dirs and per-run tcl scripts
+*.tcl
+
+# Secrets -- .env holds ANTHROPIC_AUTH_TOKEN, never commit it
+.env
+.env.*
+!.env.example
+# holds a live API key -- see activate_deepseek.example.md for the template
+activate_deepseek.md
+
+# Claude Code settings -- keep personal permissions out of the public repo
+.claude/settings.json
+.claude/settings.local.json
+
+# macOS
+.DS_Store
+
+# IDE config
+.vscode/
+
+# Working state kept local: designs/ and runs/ are per-design inputs/outputs;
+# example/ scratch dirs stay local too, except the worked example the README
+# points at.
+example/*
+!example/test_miller_ota/
+designs/
+runs/
+
+# Documentation PNGs the README references -- keep them despite the *.png rule.
+!docs/miller_ota/*.png
+
+# PDK is installed externally (not vendored) -- see README "Installation".
+PDK/

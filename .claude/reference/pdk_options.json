@@ -1,0 +1,102 @@
+{
+  "_comment": [
+    "GLOBAL PDK GUIDELINE for this project. Exactly one PDK is active at a",
+    "time: whatever 'selected' names. Every script and skill that needs a",
+    "process-specific fact -- a model name, a GDS layer number, a tool path --",
+    "reads it from here instead of hardcoding it, so retargeting the whole",
+    "flow to another process is a one-word edit to 'selected'.",
+    "",
+    "To add a PDK: add an entry under 'pdks' with the same keys, then point",
+    "'selected' at it. To change PDK: edit 'selected' only. Do not hardcode a",
+    "process name anywhere else -- see .claude/reference/pdk_config.py for the",
+    "loader every script uses."
+  ],
+
+  "selected": "sky130A",
+
+  "pdks": {
+    "sky130A": {
+      "display_name": "SkyWater 130nm (sky130A)",
+      "pdk_env": "sky130A",
+      "pdk_root": "$HOME/pdk/manual",
+
+      "model_prefix": "sky130_fd_pr__",
+      "model_marker": "_fd_pr__",
+
+      "glayout_module": "sky130",
+
+      "devices": {
+        "nfet": "sky130_fd_pr__nfet_01v8",
+        "pfet": "sky130_fd_pr__pfet_01v8",
+        "cap": "sky130_fd_pr__cap_mim_m3_1",
+        "res": "sky130_fd_pr__res_generic_l1"
+      },
+
+      "layers": {
+        "_comment": "GDS layer numbers. Process assignments -- nothing in a netlist implies them, which is why they live here rather than in code.",
+        "routing_layers": [67, 68, 69, 70, 71],
+        "routing_layer_names": ["li1", "met1", "met2", "met3", "met4"],
+        "drawing_datatype": 20,
+        "label_datatype": 5,
+        "via_links": {
+          "67/44": [67, 68],
+          "68/44": [68, 69],
+          "69/44": [69, 70],
+          "70/44": [70, 71]
+        },
+        "resistor_marker_datatype": 13,
+        "annotation_layer": [236, 0],
+        "label_glayer": "met5_label"
+      },
+
+      "tools": {
+        "magicrc": "$PDK_ROOT/sky130A/libs.tech/magic/sky130A.magicrc",
+        "ngspice_lib": "$PDK_ROOT/sky130A/libs.tech/ngspice/sky130.lib.spice",
+        "netgen_setup": "$PDK_ROOT/sky130A/libs.tech/netgen/sky130A_setup.tcl",
+        "klayout_lyp": "PDK/sky130_pdk/libs.tech/klayout/tech/sky130A.lyp"
+      },
+
+      "analysis_doc": "pdk-specific/skywater130_analysis.md"
+    },
+
+    "gf180mcuD": {
+      "display_name": "GlobalFoundries 180nm MCU (gf180mcuD)",
+      "pdk_env": "gf180mcuD",
+      "pdk_root": "$HOME/.volare/gf180mcuD",
+
+      "model_prefix": "gf180mcu_fd_pr__",
+      "model_marker": "_fd_pr__",
+
+      "glayout_module": "gf180",
+
+      "devices": {
+        "nfet": "gf180mcu_fd_pr__nfet_03v3",
+        "pfet": "gf180mcu_fd_pr__pfet_03v3",
+        "cap": "gf180mcu_fd_pr__cap_mim_2f0fF",
+        "res": "gf180mcu_fd_pr__res_generic_po"
+      },
+
+      "layers": {
+        "_comment": "UNVERIFIED -- placeholders copied in shape from sky130, not confirmed against the gf180 layer map. Confirm against the PDK before trusting any extraction on this process.",
+        "_verified": false,
+        "routing_layers": [],
+        "routing_layer_names": [],
+        "drawing_datatype": 20,
+        "label_datatype": 5,
+        "via_links": {},
+        "resistor_marker_datatype": null,
+        "annotation_layer": [236, 0],
+        "label_glayer": null
+      },
+
+      "tools": {
+        "magicrc": "$PDK_ROOT/gf180mcuD/libs.tech/magic/gf180mcuD.magicrc",
+        "ngspice_lib": "$PDK_ROOT/gf180mcuD/libs.tech/ngspice/sm141064.ngspice",
+        "netgen_setup": "$PDK_ROOT/gf180mcuD/libs.tech/netgen/gf180mcuD_setup.tcl",
+        "klayout_lyp": null
+      },
+
+      "analysis_doc": "pdk-specific/gf180_analysis.md"
+    }
+  }
+}

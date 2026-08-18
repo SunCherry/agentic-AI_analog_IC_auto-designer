@@ -1,0 +1,32 @@
+* two_stage_rz_pre testbench
+.lib "/Users/cherrysun/pdk/manual/sky130A/libs.tech/ngspice/sky130.lib.spice" tt
+
+.subckt two_stage_amp Vip Vin VDD VSS vout
+.include "two_stage_rz.sp"
+X0 Vip Vin VDD VSS vout two_stage_rz
+.ends
+
+.param vcm=0.9
+.param cload=10.0p
+
+xtwo_stage_amp (Vip Vin VDD VSS vout) two_stage_amp ;
+
+vsrc in 0 dc=0 ac=1.0
+ein1 Vip cm in 0 0.5
+ein2 Vin cm in 0 -0.5
+vcm cm 0 dc=vcm
+
+vdd VDD 0 dc=1.8
+vss 0 VSS dc=0
+CL vout 0 {cload}
+
+.ac dec 10 1 10G
+
+.control
+    run
+    set filetype=ascii
+    write ./simout_rz_pre.out v(vout)
+    quit
+.endc
+
+.end
