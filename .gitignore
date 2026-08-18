@@ -71,6 +71,11 @@ runs/
 
 # Documentation PNGs the README references -- keep them despite the *.png rule.
 !docs/miller_ota/*.png
+!docs/analog_co_designer_workflow.png
+
+# Diagram source + generated vector (non-portable: references local icon paths)
+docs/workflow_diagram.py
+docs/analog_co_designer_workflow.svg
 
 # PDK is installed externally (not vendored) -- see README "Installation".
 PDK/

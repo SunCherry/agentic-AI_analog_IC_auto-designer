@@ -15,6 +15,8 @@ subagents and skills, and the open-source EDA toolchain
 > available now. The co-optimization loop (`analysis-agent`,
 > `knowledge-graph-agent`) is in development and coming soon.
 
+![Workflow](docs/analog_co_designer_workflow.png)
+
 ---
 
 ## What it does
