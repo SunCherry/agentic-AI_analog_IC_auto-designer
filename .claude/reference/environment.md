@@ -33,12 +33,13 @@ follow it exactly to avoid re-discovering the same failures.
   into what looks like a solid block at a glance, easy to mistake for "no
   real geometry, just a bounding box."** Always open with the real sky130
   layer-properties file so devices actually look like devices:
-  `klayout -l "PDK/sky130_pdk/libs.tech/klayout/tech/sky130A.lyp" <file.gds>`
-  (path relative to the project root; `-l` loads layer properties on open.
-  This `.lyp` comes from the full open_pdks-style
-  checkout vendored in this repo under `PDK/`, a *different* path than the
-  `PDK_ROOT=~/pdk/manual` used for
-  Magic/netgen/ngspice above -- don't conflate the two). Confirmed via
+  `klayout -l "$PDK_ROOT/sky130A/libs.tech/klayout/tech/sky130A.lyp" <file.gds>`
+  (`-l` loads layer properties on open; resolve the path with
+  `python .claude/reference/pdk_config.py`, which prints it as
+  `klayout_lyp`). This `.lyp` ships with open_pdks inside the same
+  `$PDK_ROOT` install as the magic/netgen/ngspice paths above -- **the PDK
+  is not vendored in this repo**, so there is no in-repo copy to point at.
+  Confirmed via
   `klayout.lay.LayoutView` (the same `klayout` Python package used for
   headless PNG snapshots) that this makes a real, visible difference:
   without it, a glayout-generated device's fingers/guard-ring/tie-ring

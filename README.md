@@ -136,9 +136,19 @@ A simplified illustration (exact paths, versions and tool quirks are in
 `.claude/reference/environment.md`):
 
 ```bash
-# 0) PDK — install sky130A via open_pdks, then point pdk_options.json at it
-#    (default pdk_root: ~/pdk/manual). The PDK is NOT vendored in this repo.
-# one sky130 installation path: refer to repo https://github.com/efabless/sky130_klayout_pdk.git
+# 0) PDK — NOT vendored in this repo; install sky130A yourself.
+#    Fastest route is volare (prebuilt, minutes; open_pdks from source works
+#    too but takes hours):
+pip install volare
+export PDK_ROOT=$HOME/.volare
+volare enable --pdk sky130 <version>   # list versions: volare ls-remote --pdk sky130
+#    That lands the PDK at $PDK_ROOT/sky130A. Then set "pdk_root" for sky130A
+#    in .claude/reference/pdk_options.json to "$HOME/.volare" (it ships
+#    pointing at "$HOME/pdk/manual" — use whichever matches your install), and
+#    check every path resolves to a file that exists:
+python .claude/reference/pdk_config.py
+#    Another sky130 installation path:
+#    https://github.com/efabless/sky130_klayout_pdk.git
 
 # 1) EDA tools
 brew install magic netgen ngspice            # macOS (Homebrew)

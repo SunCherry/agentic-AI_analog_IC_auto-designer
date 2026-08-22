@@ -75,10 +75,11 @@ LABEL_MAGNIFICATION = 4.0
 # not a generation one, and loading the real sky130 layer-properties file
 # fixes it. Not hardcoded as a silent assumption: only recommended if it
 # actually exists on this machine.
-# Anchored on this file, not on an absolute home-relative path, so it keeps
-# working wherever the repo is checked out: this file is
+# The guideline normally gives an absolute `$PDK_ROOT`-based path, but a
+# relative one stays legal, so resolve those against the repo root rather
+# than the cwd (which varies per run): this file is
 # <repo>/.claude/skills/placer/script/render_placement.py, so parents[4] is
-# the repo root that holds the vendored `PDK/` checkout.
+# the repo root.
 _REPO = Path(__file__).resolve().parents[4]
 
 

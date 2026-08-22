@@ -53,7 +53,7 @@
         "magicrc": "$PDK_ROOT/sky130A/libs.tech/magic/sky130A.magicrc",
         "ngspice_lib": "$PDK_ROOT/sky130A/libs.tech/ngspice/sky130.lib.spice",
         "netgen_setup": "$PDK_ROOT/sky130A/libs.tech/netgen/sky130A_setup.tcl",
-        "klayout_lyp": "PDK/sky130_pdk/libs.tech/klayout/tech/sky130A.lyp"
+        "klayout_lyp": "$PDK_ROOT/sky130A/libs.tech/klayout/tech/sky130A.lyp"
       },
 
       "analysis_doc": "pdk-specific/skywater130_analysis.md"
@@ -62,7 +62,7 @@
     "gf180mcuD": {
       "display_name": "GlobalFoundries 180nm MCU (gf180mcuD)",
       "pdk_env": "gf180mcuD",
-      "pdk_root": "$HOME/.volare/gf180mcuD",
+      "pdk_root": "$HOME/.volare",
 
       "model_prefix": "gf180mcu_fd_pr__",
       "model_marker": "_fd_pr__",
