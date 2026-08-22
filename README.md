@@ -15,9 +15,9 @@ subagents and skills, and the open-source EDA toolchain
 > available now. The co-optimization loop (`analysis-agent`,
 > `knowledge-graph-agent`) is in development and coming soon.
 
-![Workflow](docs/analog_co_designer_workflow.png)
-![Workflow](docs/miller_ota/two_stage_rz_pre_post_ac.png)
-![Workflow](docs/miller_ota/layout_example)
+![Agent workflow](docs/analog_co_designer_workflow.png)
+![Miller OTA pre- vs post-layout AC response](docs/miller_ota/two_stage_rz_pre_post_ac.png)
+![Miller OTA generated layout](docs/miller_ota/layout_example.png)
 
 ---
 
