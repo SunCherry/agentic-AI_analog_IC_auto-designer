@@ -138,6 +138,7 @@ A simplified illustration (exact paths, versions and tool quirks are in
 ```bash
 # 0) PDK — install sky130A via open_pdks, then point pdk_options.json at it
 #    (default pdk_root: ~/pdk/manual). The PDK is NOT vendored in this repo.
+# one sky130 installation path: refer to repo https://github.com/efabless/sky130_klayout_pdk.git
 
 # 1) EDA tools
 brew install magic netgen ngspice            # macOS (Homebrew)
