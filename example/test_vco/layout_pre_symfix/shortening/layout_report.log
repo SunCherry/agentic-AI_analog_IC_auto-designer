@@ -1,0 +1,99 @@
+================================================================================
+LAYOUT REPORT -- test_vco (vco_lc), route-shortner output, RE-GATED
+report_dir : .../example/test_vco/layout/shortening/
+generated  : 2026-09-04  by layout-fixer (Step 3 finalize)
+================================================================================
+
+DELIVERABLE
+  GDS      : layout/shortening/test_vco_fixed_shortened.gds
+  TOP CELL : routed        <-- NOT "test_vco_fixed_shortened". The rename did not rename
+             the cell. Every downstream Magic call MUST pass --top routed; without it Magic
+             silently CREATES the missing cell and checks an empty one (a false PASS).
+  md5      : 2394ebf03abb02cd5b586cea7cd02d17  (identical to hand-off -- I changed nothing)
+  map      : layout/shortening/physical_map.json  (the shortener's own map)
+
+  NOT renamed/copied to layout/test_vco_fixed.gds ON PURPOSE: that path holds the
+  designated fallback, which the orchestrator wants preserved. Overwriting it would
+  destroy the fallback. Same reason the three re-gate reports live here, not in layout/.
+
+GEOMETRY CHANGED BY THIS GATE: NONE.
+  Both gates passed on the geometry as delivered, so no re-route, no macro move, no polygon
+  edit. Consequently the shipped physical_map.json is still consistent with the final
+  geometry and was NOT regenerated -- regeneration is required only when I change geometry,
+  and a map regenerated from unchanged geometry would be identical. Validated non-degenerate
+  rather than assumed (below).
+
+--------------------------------------------------------------------------------
+DEVICE COUNT BY KIND (from physical_map.json)
+--------------------------------------------------------------------------------
+  | Kind  | Count |
+  |-------|-------|
+  | nfet  | 6     |
+  | cap   | 2     |
+  | ind   | 2     |
+  | pfet  | 0     |
+  | res   | 0     |
+  | bjt   | 0     |
+  | other | 0     |
+  | TOTAL | 10    |
+  The 2 inductors are the differential spiral halves (XL0/XL1), deliberately absent from
+  lvs_compare.sp -- see lvs_report.log.
+
+PLACEMENT AREA
+  overall_bbox (via .claude/reference/generate_grid.py overall_bbox(), not re-derived):
+    (39.109, 178.255) .. (451.259, 452.907) um
+  W x H  = 412.15 x 274.65 um
+  AREA   = 113197.83 um2
+  ASPECT = 1.501:1   -- within the hard 4:1 user constraint. OK.
+           Unchanged by shortening (routing moved; no macro moved).
+
+DISTINCT GDS LAYERS ACTUALLY DRAWN (counted from the GDS, not the PDK layer list)
+  22 distinct (layer/datatype) pairs, with polygon counts:
+    64/44:10   65/20:2505  66/20:63    66/44:5760  67/20:7330  67/44:1554
+    68/16:12   68/20:1769  68/44:13    69/16:4     69/20:43    69/44:3
+    70/20:46   70/44:134   71/20:163   71/44:340   72/16:2     72/20:2
+    89/44:2    93/44:18    94/20:9     95/20:22
+
+--------------------------------------------------------------------------------
+GATE STATUS
+--------------------------------------------------------------------------------
+  DRC : CLEAN.  DRC_TOTAL=0, 0 rules, 0 instances.  Fix iterations: 0 (clean first pass).
+        Detail -> layout/shortening/drc_report.log
+  LVS : MATCH.  6/6 pins, 9/9 devices, 7/7 nets, 0 property errors in both logs.
+        Fix iterations: 1 (attempt 1 = coil diagnosis, no geometry touched).
+        Detail -> layout/shortening/lvs_report.log
+  Budget MAX_SUBRETRY = 5 (layout_fix_iterations, example/test_vco/design_constraints.json),
+  applied independently per step. Neither step came close to exhausting it.
+
+MAP VALIDATION (asserted, not assumed)
+  10/10 devices carry real x0/y0/x1/y1 and rotation_deg; 0 null positions, 0 null rotations.
+  7/7 nets source="router"; 134 traced route segments total. Non-degenerate.
+  Per-net segments, shortened vs pre-shortening:
+    Iref 0/0 | VDD 18/18 | Vcont 19/19 | voutn 42/42 | voutp 27/27 | vtail 11/11
+    VSS  17  <- 40
+  Exactly ONE net differs (VSS), confirming the hand-off's "exactly one net rebuilt".
+  Iref = 0 segments in BOTH -- pre-existing (pin-abutted net), NOT a shortening regression.
+
+--------------------------------------------------------------------------------
+PER-ITERATION HISTORY (append-only; both phases)
+--------------------------------------------------------------------------------
+  [DRC 1] baseline, geometry as delivered by route-shortner, no knob turned.
+          DRC_TOTAL=0, rects=0, rules=0 -> CLEAN. 19 via_stack subcell counts flagged and
+          FLATTEN-DISPROVED on this geometry (flatten -> total 0, listall count EMPTY,
+          0 rules). 5x expected 64/44 GDS-read warnings. No fix applied.
+  [LVS 1] naive extraction, no coil view -> MISMATCH: 4 ports, voutp/voutn fused into VDD,
+          2x "Ports B and A electrically shorted". Root cause = Magic cannot extract an
+          inductor (tooling). No geometry touched.
+  [LVS 2] + extraction-only coil view, rebuilt for this GDS after verifying the coil cell is
+          byte-equivalent to the pre-shortening one. ONLY change. Stock netgen setup,
+          unmodified lvs_compare.sp.
+          -> MATCH, 0 property errors. Falsification control (XN2 w 60->42) reproduced the
+          "match uniquely WITH property errors" trap, proving w/l are really compared.
+  [VSS ]  pre- vs post-shortening extracted netlists differ by ONE line: top-cell port order
+          "VSS Iref" -> "Iref VSS". Zero connectivity change from the tie-ring release.
+  No geometry was modified at any iteration, so no DRC re-run was owed under rule 2.6
+  (DRC was clean on the delivered file regardless).
+
+OUT OF SCOPE, NOT RUN: PEX, post-layout simulation, fidelity metrics -- verify-agent's job,
+downstream of this gate.
+================================================================================

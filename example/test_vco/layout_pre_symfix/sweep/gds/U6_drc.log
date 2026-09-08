@@ -1,0 +1,36 @@
+=== Magic DRC: U6_routed.gds (top cell 'routed') ===
+  DRC errors (per-cell, from `drc listall count`): 13
+  Errors by cell: routed=13, via_stack_2e2571cb=3, via_stack_2e2571cb$1=3, via_stack_2e2571cb$2=3, via_stack_2e2571cb$3=3, via_stack_2e2571cb$4=3, via_stack_686e5d96$33=1, via_stack_918d05dd$2=3
+  Cross-check: 4 distinct violated rule(s), 44 instance(s) from `drc listall why`
+  Violations by rule:
+       6  Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b)
+          at (257.63, 352.22) .. (257.64, 352.525) um
+          at (257.64, 352.22) .. (257.645, 352.525) um
+          at (257.63, 352.21) .. (257.645, 352.22) um
+          at (257.955, 352.22) .. (257.96, 352.525) um
+          at (257.96, 352.22) .. (257.97, 352.525) um
+          (+1 more -- full list in drc_violations.json)
+      12  MiM cap bottom plate spacing < 1.2um (capm.2b)
+          at (222.87, 288.695) .. (223.99, 289.05) um
+          at (224.07, 287.54) .. (225.19, 287.55) um
+          at (222.87, 287.55) .. (223.99, 288.145) um
+          at (222.84, 277.655) .. (223.99, 278.25) um
+          at (221.645, 275.55) .. (221.955, 277.345) um
+          (+7 more -- full list in drc_violations.json)
+      12  Metal3 spacing < 0.3um (met3.2)
+          at (224.07, 289.05) .. (224.29, 289.35) um
+          at (224.07, 288.695) .. (224.29, 289.35) um
+          at (223.77, 288.695) .. (223.99, 289.05) um
+          at (224.07, 287.54) .. (224.29, 287.55) um
+          at (224.07, 287.54) .. (224.29, 288.145) um
+          (+7 more -- full list in drc_violations.json)
+      14  Metal4 spacing < 0.3um (met4.2)
+          at (257.33, 351.915) .. (257.63, 352.125) um
+          at (257.33, 351.91) .. (257.63, 351.915) um
+          at (257.33, 351.915) .. (257.645, 352.125) um
+          at (257.33, 351.91) .. (257.645, 351.915) um
+          at (257.955, 351.915) .. (258.27, 352.125) um
+          (+9 more -- full list in drc_violations.json)
+  violation coordinates: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U6/drc_violations.json
+  full Magic log: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U6/drc.log
+  DRC check: FAIL -- see violations above

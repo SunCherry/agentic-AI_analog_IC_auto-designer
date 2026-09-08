@@ -1,0 +1,65 @@
+{
+  "netlist": "example/test_vco/device_shaping/vco_lc_final_shaped.sp",
+  "rows": [
+    {
+      "device": "XN0",
+      "action": "unchanged",
+      "reason": "m already 1",
+      "w": 20.0,
+      "nf": 1.0,
+      "m": 1.0,
+      "total_w": 20.0
+    },
+    {
+      "device": "XN1",
+      "action": "unchanged",
+      "reason": "m already 1",
+      "w": 20.0,
+      "nf": 1.0,
+      "m": 1.0,
+      "total_w": 20.0
+    },
+    {
+      "device": "XN2",
+      "action": "unchanged",
+      "reason": "m already 1",
+      "w": 60.0,
+      "nf": 1.0,
+      "m": 1.0,
+      "total_w": 60.0
+    },
+    {
+      "device": "XN3",
+      "action": "unchanged",
+      "reason": "m already 1",
+      "w": 60.0,
+      "nf": 1.0,
+      "m": 1.0,
+      "total_w": 60.0
+    },
+    {
+      "device": "XN4",
+      "action": "folded",
+      "reason": "standalone primitive",
+      "w": 15.0,
+      "nf": 1.0,
+      "m": 4.0,
+      "total_w": 60.0,
+      "new_w": 60.0,
+      "new_nf": 4.0,
+      "new_m": 1.0
+    },
+    {
+      "device": "XN5",
+      "action": "unchanged",
+      "reason": "m already 1",
+      "w": 15.0,
+      "nf": 1.0,
+      "m": 1.0,
+      "total_w": 15.0
+    }
+  ],
+  "folded": 1,
+  "skipped": 0,
+  "unchanged": 5
+}

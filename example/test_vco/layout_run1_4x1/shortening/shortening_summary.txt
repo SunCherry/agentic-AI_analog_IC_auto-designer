@@ -1,0 +1,71 @@
+==============================================================================
+ROUTE SHORTENING SUMMARY
+==============================================================================
+design      : vco_lc_final_shaped_flat
+input GDS   : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/routed.gds
+input map   : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/physical_map.json
+top cell    : routed
+PDK         : sky130A
+runtime     : 9.4 s
+
+-- gates ---------------------------------------------------------------------
+  exact legality re-check on every new rectangle : PASS (no route was committed without it)
+  every net still spans all of its own landings  : PASS
+  Magic DRC on the output                        : PASS (clean)
+  LVS                                            : NOT RUN HERE -- hand the output to layout-fixer
+
+-- totals --------------------------------------------------------------------
+  total wirelength :     663.78 um ->     600.11 um (-63.67 um, -9.6%)
+  vias             :         23    ->         25
+  corners          :         46    ->         27
+  lower bound      :     493.11 um  (sum of per-net terminal-bbox half-perimeters -- no legal route can beat this)
+  gap to bound     :     170.68 um ->     107.00 um
+
+-- per net -------------------------------------------------------------------
+net    term  len_before  len_after  delta   vias  corners  bound   ratio_b  ratio_a  status
+-----  ----  ----------  ---------  ------  ----  -------  ------  -------  -------  -------
+Iref   0     0.00        0.00       +0.00   0->0  0->0     0.00    -        -
+VDD    4     246.62      246.62     +0.00   4->4  7->7     212.16  1.16x    1.16x
+VSS    7     89.03       68.79      -20.24  7->7  9->3     59.76   1.49x    1.15x    changed
+Vcont  4     40.44       27.30      -13.14  0->0  8->5     23.66   1.71x    1.15x    changed
+voutn  5     135.31      105.02     -30.29  5->7  11->1    81.48   1.66x    1.29x    changed
+voutp  5     111.25      111.25     +0.00   5->5  9->9     78.87   1.41x    1.41x
+vtail  3     41.14       41.14      +0.00   2->2  2->2     37.18   1.11x    1.11x
+
+-- bulk landings released onto their tie rings -------------------------------
+  VSS: XN0  tie ring (219.34, 244.05) .. (226.06, 269.13) um, 32 landable box(es)
+  VSS: XN1  tie ring (219.97, 231.17) .. (245.05, 237.89) um, 32 landable box(es)
+  VSS: XN2  tie ring (148.09, 240.77) .. (213.17, 248.03) um, 34 landable box(es)
+  VSS: XN3  tie ring (147.68, 227.78) .. (212.76, 235.04) um, 34 landable box(es)
+  A tie ring is one node, so these connections may land anywhere on
+  it. The fixed port `fet.py` gives bulk stays as it is -- routing
+  needs one deterministic point; this pass is what may move off it.
+  `bound` below is still measured against the ORIGINAL landings, so
+  a released net can legitimately finish under its own bound.
+
+-- relocated net labels ------------------------------------------------------
+  VSS: (245.335, 238.495) -> (253.104, 249.002) on (69, 20)
+
+-- geometry inherited from the input -----------------------------------------
+gds    glayer  process  wire_w  pdk_min_w  clearance
+-----  ------  -------  ------  ---------  ---------
+68/20  met2    met1     0.210   0.140      0.140
+69/20  met3    met2     0.210   0.140      0.280
+70/20  met4    met3     0.310   0.300      0.400
+71/20  met5    met4     0.310   0.300      0.400
+  wire widths are MEASURED off the input's own wires; clearances come from the PDK.
+  via transitions available (templates found in the input GDS): 67/20-68/20, 68/20-69/20, 69/20-70/20, 70/20-71/20
+
+-- files ---------------------------------------------------------------------
+  Everything this run produced is beside this summary, as files: the
+  shortened GDS, the updated physical_map.json, shortening_report.json,
+  and drc_violations.json (plus drc.log only if DRC did not come out
+  clean). Magic's per-run scratch is deleted once its verdict has been
+  recorded -- pass --keep-work to keep it under _work/ instead.
+
+-- reproducibility -----------------------------------------------------------
+  passes=2 via_weight=2.0 bend_penalty=1.0 min_gain=0.1
+  margin=8.0 max_coords=180 extra_clearance=0.0
+  prune=on reroute=on bulk_relax=on drc_retries=2
+  keep_work=off
+==============================================================================

@@ -1,0 +1,19 @@
+symmetry groups derived from the circuit read
+  manifest      : designs/test_miller_ota_0908/layout/primitives/manifest.json
+  decomposition : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/circuit_decomposition.yaml
+  axis          : shared free axis
+
+-- NO mirror pairs derived -----------------------------------------
+  For a single-ended circuit this is correct. For a differential one it
+  means circuit_decomposition.yaml carries neither a `matched_nets` entry
+  with `kind: differential` nor a two-device tie group with `tied` set and
+  `ratio_carrier: none` -- fix the circuit read (circuit-decomposition
+  Steps 3-4) rather than hand-writing groups here.
+
+-- differential nets identified (matched_nets (authored)) --
+  Vin <-> Vip
+  net4 <-> net5
+
+-- considered and dropped -------------------------------------------
+  XMP1/XMP2                tg3_current_mirror: ratio_carrier is not `none` -- may be ratioed, not asserted as a mirror from the tie group alone
+  XMN1/XMN2                tg2_differential_pair: both devices in macro diff_pair_XMN1_XMN2, matched inside the cell

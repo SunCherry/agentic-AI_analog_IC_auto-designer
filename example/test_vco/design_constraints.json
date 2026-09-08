@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "project_name": "test_vco",
+  "constraints": {
+    "schematic_sizing_iterations": 15,
+    "layout_fix_iterations": 5,
+    "placer_anneal_iters": 20000,
+    "max_canvas_aspect": "4:1"
+  }
+}

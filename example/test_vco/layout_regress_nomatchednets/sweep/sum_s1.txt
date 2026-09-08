@@ -1,0 +1,80 @@
+========================================================================
+PLACEMENT SUMMARY -- vco_lc_final_shaped_flat
+========================================================================
+generated   : 2026-09-07T15:04:09
+manifest    : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives/manifest.json
+macros      : 9 placed  (9 rotated, 5 mirrored)
+runtime     : 6.6s
+overall     : FAIL
+
+-- quality gates ---------------------------------------------------
+  overlap            : PASS   area=0.0000 um^2  (must be 0)
+  routing clearance  : FAIL   worst shortfall=0.1227 um  (must be 0)
+       clearance rule: each pair must be >= max of the two macros'
+       min_distance = 10 * min_metal_spacing * num_nets
+  symmetry           : PASS   4 mirror pair(s), worst offset 0.0100 um  (tol 1.00 um, orientations must match)
+       XN0                    <-> XN1                     dx=  0.001  dy=  0.010  orientation=match
+       XN2                    <-> XN3                     dx=  0.007  dy=  0.008  orientation=match
+       XC0                    <-> XC1                     dx=  0.004  dy=  0.002  orientation=match
+       XL0                    <-> XL1                     dx=  0.004  dy=  0.004  orientation=match
+  canvas aspect      : PASS   1.24:1  (limit 4.00:1, excess 0.00 um)
+       limit from    : 4:1 from /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/design_constraints.json
+       NOT part of `overall` above -- an over-ratio canvas is a floorplan
+       finding (the block won't fit the shape asked for), not a routing
+       blocker the way overlap and clearance are
+
+-- wire length -----------------------------------------------------
+  total HPWL         : 793.12 um
+  nets counted       : 4  (nets touching >= 2 placed macros)
+  mean / max per net : 198.28 um  /  323.84 um
+
+-- placement density -----------------------------------------------
+  bounding box       : 393.48 x 316.28 um   = 124448.55 um^2   (aspect 1.24:1, limit 4.00:1)
+  cell area          : 85833.92 um^2
+  utilization        : 69.0%   (38614.63 um^2 free)
+       low utilization is not automatically bad here -- the clearance
+       penalty deliberately buys routing channels between macros
+
+-- cost breakdown (weight x term = contribution) --------------------
+  wire (HPWL)       :    1.000 x     793.1240 =       793.12  ( 38.9%)
+  overlap           :   50.000 x       0.0000 =         0.00  (  0.0%)
+  symmetry          :   10.000 x       0.0405 =         0.40  (  0.0%)
+  clearance         :    5.000 x       0.1227 =         0.61  (  0.0%)
+  area              :    0.010 x  124448.5509 =      1244.49  ( 61.0%)
+  canvas aspect     :   10.000 x       0.0000 =         0.00  (  0.0%)
+  TOTAL             :                               2038.63
+
+-- worst nets by HPWL ----------------------------------------------
+  voutp               323.84 um  ( 40.8%)  spans 5 macro(s)
+  voutn               323.82 um  ( 40.8%)  spans 5 macro(s)
+  Vcont                97.49 um  ( 12.3%)  spans 2 macro(s)
+  vtail                47.97 um  (  6.0%)  spans 3 macro(s)
+
+-- tightest macro pairs (gap vs required clearance) -----------------
+  XL0                    <-> XL1                    gap=    1.48 required=   1.60 slack=   -0.12  <-- VIOLATION
+  current_mirror_XN5_XN4 <-> XN1                    gap=    4.80 required=   4.80 slack=   +0.00
+  current_mirror_XN5_XN4 <-> XN0                    gap=    4.81 required=   4.80 slack=   +0.01
+  XC1                    <-> XL1                    gap=    1.64 required=   1.60 slack=   +0.04
+  XC0                    <-> XL0                    gap=    1.64 required=   1.60 slack=   +0.04
+  XN0                    <-> XL1                    gap=    4.85 required=   4.80 slack=   +0.05
+  XN0                    <-> XL0                    gap=    4.86 required=   4.80 slack=   +0.06
+  XN1                    <-> XL1                    gap=    4.86 required=   4.80 slack=   +0.06
+
+-- placed macros ---------------------------------------------------
+  macro                          x         y       w       h  rot  nets  min_dist
+  XC0                       218.01    284.15    7.78   12.04  270     1      1.60
+  XC1                       424.81    284.14    7.78   12.04  270     1      1.60
+  XL0                       128.57    297.83  196.00  213.22  180     1      1.60
+  XL1                       326.04    297.82  196.00  213.22  180     1      1.60
+  XN0                       296.58    283.87   26.27    9.10   90     3      4.80
+  XN1                       327.76    283.86   26.27    9.10   90     3      4.80
+  XN2                       243.44    194.77   66.28    9.64  270     2      3.20
+  XN3                       340.92    194.78   66.28    9.64  270     2      3.20
+  current_mirror_XN5_XN4    312.91    264.20   20.75   14.86   90     1      1.60
+
+-- reproducibility -------------------------------------------------
+  seed=1  iters(upper bound)=100000  two_phase=False
+  weights: w_wire=1.0  w_ov=50.0  w_sym=10.0  w_density=5.0  w_area=0.01  w_aspect=10.0
+  min_metal_spacing_um=0.16
+  max_canvas_aspect=4.0000  (4:1 from /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/design_constraints.json)
+========================================================================

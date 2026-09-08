@@ -1,0 +1,244 @@
+========================================================================
+LVS REPORT -- test_vco (LC VCO)
+========================================================================
+agent        : layout-fixer (Step 2 gate)
+report_dir   : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+layout       : routed.gds, top cell `routed`  (delivered as test_vco_fixed.gds, same cell name)
+schematic    : primitives/lvs_compare.sp -> vco_lc.spice, .subckt vco_lc
+               (the placer-built comparison netlist, as instructed -- NOT the golden
+               netlist. The golden netlist was never opened for comparison and never
+               modified.)
+tools        : Magic 8.3 rev 610 (extract + ext2spice lvs) ; Netgen 1.5.322
+netgen setup : $HOME/pdk/manual/sky130A/libs.tech/netgen/sky130A_setup.tcl, COPIED and
+               appended with the two coil black-box lines (below). PDK file untouched.
+budget       : MAX_SUBRETRY = 5 (design_constraints.json: layout_fix_iterations)
+attempts     : 4 extraction/LVS attempts, 2 of which reached netgen. 4/5 of the
+               budget consumed; the last attempt matched.
+artifacts    : layout_fixer_work/lvs_attempt_1 .. lvs_attempt_4 (+ lvs_attempt_2_lefview)
+
+========================================================================
+VERDICT: **MATCH** -- "Netlists match uniquely." / "Circuits match uniquely."
+         9 devices vs 9, 7 nets vs 7, pin lists equivalent, NO property errors.
+         Report: layout_fixer_work/lvs_attempt_4/lvs.out
+========================================================================
+Caveat stated up front, because it changes how much the word MATCH is worth:
+this match required a HAND-BUILT EXTRACTION-ONLY VIEW of the inductor cell
+(section C). No layout geometry was changed to obtain it, and the delivered
+GDS is byte-identical to the router's output, but the verdict is not something
+this flow can currently reproduce unattended. See section F.
+
+------------------------------------------------------------------------
+A. PIN CORRESPONDENCE
+------------------------------------------------------------------------
+| Layout port (circuit1 `routed`) | Schematic port (circuit2 `vco_lc`) | status |
+|---------------------------------|------------------------------------|--------|
+| VDD                             | VDD                                | match  |
+| VSS                             | VSS                                | match  |
+| Iref                            | Iref                               | match  |
+| voutn                           | voutn                              | match  |
+| voutp                           | voutp                              | match  |
+| Vcont                           | Vcont                              | match  |
+"Cell pin lists are equivalent."  All 6 ports, no reordering forced.
+
+Device summary
+| class                     | layout          | schematic     |
+|---------------------------|-----------------|---------------|
+| sky130_fd_pr__nfet_01v8   | 18 -> 7 (merged)| 8 -> 7 (merged)|
+| sky130_fd_pr__cap_mim_m3_1| 2               | 2             |
+| vco_spiral_ind            | (black-boxed)   | (black-boxed) |
+| TOTAL devices             | 9               | 9             |
+| TOTAL nets                | 7               | 7             |
+The 18->7 fold on the layout side is glayout's multi-finger/dummy structure
+plus the 4-leg current mirror merging in parallel; this is exactly why
+lvs_compare.sp folds w to w*nf*m with nf=m=1, and it worked as designed.
+The 7 nets are VDD, VSS, Iref, Vcont, voutp, voutn, vtail.
+
+------------------------------------------------------------------------
+B. IS "MATCH" ACTUALLY CHECKING W/L? -- FALSIFIED, YES
+------------------------------------------------------------------------
+netgen prints "Circuit 1 cell sky130_fd_pr__nfet_01v8 ... are black boxes" and
+"treated as a placeholder", which reads as if device parameters are ignored.
+I did not accept the match until I falsified that:
+    took vco_lc.spice, changed ONLY XN2 w=60 -> w=42, re-ran the same LVS
+    -> "Netlists match uniquely WITH PROPERTY ERRORS" / "Property errors were found."
+So w/l ARE compared, and the clean run's silence on properties is a real
+result, not an unchecked axis. (Artifact: lvs_attempt_4/lvs_wbad.out.)
+
+*** TRAP WORTH RECORDING FOR THIS FLOW ***
+netgen prints "Final result: Circuits match uniquely." EVEN WHEN property
+errors exist. Grepping for that line alone is a false-pass generator. The
+verdict must also require the absence of "Property errors were found."
+
+------------------------------------------------------------------------
+C. MISMATCHES -- one entry each
+------------------------------------------------------------------------
+C1. THE COIL SHORT.  diagnosis = tooling (Magic cannot represent an inductor)
+    STATUS: worked around, on both sides, with a hand-built artifact.
+
+    Symptom: Magic extraction printed, twice,
+        Warning:  Ports "B" and "A" are electrically shorted.
+    and vco_spiral_ind.ext contained the line   equiv "B" "A".
+    There is no `device` line for an inductor in sky130A.tech, so the drawn
+    spiral extracts as plain wire and its two terminals become ONE node.
+
+    This is worse than "LVS cannot match the coil on topology". The short
+    PROPAGATES: each coil ties one of {voutp, voutn} to VDD, so the flat
+    extraction collapsed VDD + voutp + voutn into a single net. The extracted
+    top cell came out as
+        .subckt routed VDD Vcont VSS Iref            <- 4 ports, not 6
+        XXC0_0 VDD VDD XC0                           <- MiM cap, both plates one node
+    Baseline netgen verdict (lvs_attempt_1/lvs.out):
+        "Final result: Top level cell failed pin matching."
+        voutn **Mismatch** / voutp **Mismatch**, "(no pin, node is VSS)" x2.
+
+    The instructed schematic-side fix -- appending
+        ignore class "-circuit1 vco_spiral_ind"
+        ignore class "-circuit2 vco_spiral_ind"
+    to a copy of sky130A_setup.tcl -- is NECESSARY BUT NOT SUFFICIENT, and
+    this is the single most important finding in this report. `ignore class`
+    can only delete a subcircuit INSTANCE. On the layout side there is no
+    instance to delete: ext2spice omits a subcircuit that contains no devices,
+    and by then the A==B merge has already fused the parent's nets. The damage
+    happens inside Magic, upstream of anything netgen can be told.
+
+    What I tried, in order:
+      1. `ignore class` alone (lvs_attempt_1)  -> FAILED. Pin matching failed,
+         4 ports vs 6.
+      2. `property LEFview true` on the coil cell before `extract all`
+         (lvs_attempt_2_lefview) -> FAILED SILENTLY. Magic accepted the
+         command without complaint, still extracted the coil internals, still
+         printed "Ports B and A are electrically shorted", still emitted
+         equiv "B" "A". Its only effect was to make ext2spice now emit
+         `Xvco_spiral_ind_0 VDD VDD vco_spiral_ind` -- both terminals on the
+         same node, i.e. the short made visible but not removed. Magic's
+         documented abstract-view mechanism does not black-box extraction here.
+      3. Hand-editing vco_spiral_ind.ext to delete `equiv "B" "A"` and add a
+         real node "A", then re-running `ext2spice` alone against the edited
+         .ext hierarchy (lvs_attempt_3) -> PARTIALLY WORKED, and is worth
+         recording because it is a genuinely useful technique: `ext2spice`
+         reads .ext files from disk and does NOT re-extract, so the edit
+         survives. voutn came back (5 ports). But voutp did NOT: Magic had
+         already written the PARENT's hierarchical connections against the
+         merged canonical node, so both of coil 1's landings were recorded as
+         `vco_spiral_ind_1/B` and port A got a stray unrelated connection.
+         Splitting the child cannot undo a parent-child assignment that was
+         made while the child was shorted.
+      4. An EXTRACTION-ONLY GDS view (lvs_attempt_4) -> WORKED. In a COPY of
+         the GDS I deleted exactly one polygon: the met5 (72/20) spiral of
+         cell vco_spiral_ind, the single conductor that fuses A to B, and
+         added back a 90,148 - 98,153 um met5 patch so port B's 72/16 pin
+         still lands on real m5. Everything else -- both met4 landing
+         structures, all 340 via4 cuts, both port labels -- is untouched, so
+         both router landings still connect to the same terminals they
+         physically connect to. Result: no short warning, two independent
+         nodes A and B, 6 ports, and a unique match.
+         View file : layout_fixer_work/lvs_attempt_4/routed_lvsview.gds
+         DELIVERED GDS IS NOT THIS FILE and contains the full spiral.
+
+    Where the real fix belongs (NOT layout, NOT mine): this is a
+    tooling/PDK-integration issue for the orchestrator. Either
+      (a) src/cells/primitives/inductor.py emits an abstract/blackbox companion
+          view for extraction, or
+      (b) the flow adds a sky130A.tech `device` entry (or an equivalent
+          extraction-time cut) for the spiral cell,
+    so the black box is produced by a script rather than by an agent editing a
+    GDS copy by hand. As it stands, the LVS gate for this circuit class is not
+    reproducible without manual intervention.
+
+C2. "voutp on XC0 (bottom_met)" predicted DIRTY  -> FALSE ALARM, no short.
+C3. "VDD on XC1 (top_met)" predicted DIRTY       -> FALSE ALARM, no short.
+    routing_summary.txt predicted "expect an extraction-level short on this
+    net" for both. layout-agent could not reproduce either geometrically and
+    left the call to LVS. Settled: BOTH ARE FALSE ALARMS. Evidence, two
+    independent ways:
+      - geometric, per plate and per layer:
+          XC0 met3 bottom plate (224.374,333.539)-(232.156,343.521)
+              touched only by net voutp (2 segments, 0.494 um2)    CORRECT
+          XC0 met4 top-plate contact (224.514,335.879)-(232.016,345.581)
+              touched only by net VDD (1 segment, 0.101 um2)       CORRECT
+          XC1 met3 bottom plate (236.889,280.184)-(244.671,290.166)
+              touched only by net voutn                            CORRECT
+          XC1 met4 top-plate contact (237.029,282.524)-(244.531,292.226)
+              touched only by net VDD                              CORRECT
+        No plate is touched by more than one net, on any layer.
+      - extracted, in the final netlist:
+          XXC0_0 voutp VDD XC0     XXC1_0 voutn VDD XC1
+        matching the schematic's XC0 VDD voutp / XC1 VDD voutn exactly.
+    Root cause of the false prediction: the router's corridor check flags a
+    landing whose corridor crosses another net's metal on ANY layer of the
+    macro box. On a MiM cap the plates are stacked by construction, so a
+    legal landing on one plate always sits over the other -- exactly
+    layout-agent's hypothesis, now confirmed. This is a router-side
+    false-positive worth fixing in route_nets.py's corridor-clean check
+    (it should exempt the other plate of the macro it is landing on);
+    left as a source-fix note, not touched here.
+
+    NOTE: I initially mis-attributed the coil short to XC0 while tracing,
+    because a union-find over the .ext merge graph runs voutp -> XC0 plate ->
+    coil -> XC0 plate -> VDD, and every edge on that path is a bridge. The
+    per-plate/per-layer geometric check above is what disambiguated it. If
+    this trap recurs: an .ext merge path is not evidence of a short at any
+    particular point on the path.
+
+C4. Resistor R-vs-X element-prefix quirk (environment.md): NOT ENCOUNTERED.
+    Checked for it explicitly because the schematic's vco_spiral_ind body
+    contains `R1 n1 B 9.2250`, which is the exact shape that triggers it. It
+    never reached netgen as a device: the coil is black-boxed on both sides,
+    so R1 is inside an ignored class. No dummy_N / proxy nets appear anywhere
+    in the report. No wasted iterations on this one.
+
+C5. Device with drain and source shorted (XN2/XN3, `Vcont ... Vcont`): matched
+    with no special handling. Extracted as `XXN2_0 Vcont voutp Vcont VSS`.
+    Worth recording as a negative result -- this was flagged as a risk for
+    this circuit class and it simply was not one.
+
+------------------------------------------------------------------------
+D. RE-DRC AFTER LVS
+------------------------------------------------------------------------
+Not required, and this is a deliberate statement rather than a skipped step:
+Step 2 changed NO geometry in the delivered layout. Zero LVS-driven layout
+edits were made. The only artifact that differs from routed.gds is the
+extraction-only view in lvs_attempt_4, which is never delivered and never
+simulated. test_vco_fixed.gds is byte-identical (sha256) to the DRC-clean
+routed.gds, so the Step 1 verdict still applies to the delivered file.
+
+------------------------------------------------------------------------
+E. WARNINGS (non-blocking)
+------------------------------------------------------------------------
+* "cell sky130_fd_pr__nfet_01v8 / cap_mim_m3_1 is a placeholder, treated as a
+  black box" x4 -- normal; both netlists call the models as undefined
+  subcircuits. Section B shows properties are still compared.
+* "netgen command 'format'/'global' use fully-qualified name" x2 -- netgen
+  Tcl namespace notice from the PDK setup file.
+* "No property w/l found for device r", "No property nf/mult/... found for
+  device sky130_fd_pr__nfet_01v8" -- the PDK setup declaring properties that
+  this netlist does not carry. Expected: sky130A_setup.tcl deletes nf/mult,
+  which is the whole reason lvs_compare.sp pre-folds w.
+* 5 x layer=64/44 GDS-read warnings, as in drc_report.log.
+
+------------------------------------------------------------------------
+F. WHAT THE ORCHESTRATOR SHOULD CARRY FORWARD
+------------------------------------------------------------------------
+1. The MATCH is real and property-checked, but it is NOT unattended-
+   reproducible: it depends on a hand-built extraction view of the coil
+   (C1.4). Anyone re-running this design from scratch will get C1's failure.
+2. `ignore class` on both circuits is necessary but NOT sufficient for a cell
+   Magic extracts as plain wire. The payload's instruction was correct as far
+   as it goes; the missing half is that the layout side must be cut too.
+3. `property LEFview true` is not a usable black-box lever in Magic 8.3 here
+   -- it fails silently, which is the worst failure mode.
+4. Two router-side source fixes were identified and NOT applied (out of scope
+   for this gate): the corridor-clean false positive on stacked-plate macros
+   (C3), and the placer's single global min_metal_spacing_um vs met5's 1.6 um
+   (drc_report.log section 5).
+5. Nothing here was fixed by moving metal, because nothing here was a metal
+   problem. The router's connectivity was correct on the first pass.
+
+------------------------------------------------------------------------
+G. TOOL-COMPLETION BUDGET
+------------------------------------------------------------------------
+Budget used: 5 min wall per Magic extraction and per netgen call.
+Actual: extraction 1.7 s / 1.5 s ; netgen 0.1 s.
+Exceptions: none. Crashes: none. Malformed netlists: none.
+Tool retries used: 0 of 3.
+========================================================================

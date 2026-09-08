@@ -1,0 +1,111 @@
+
+Note: No compatibility mode selected!
+
+
+Circuit: * vco_lc_pre testbench — transient oscillator characterization.
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+ Reference value :  0.00000e+00
+No. of Data Rows : 1
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+voutn                                  1.79448
+voutp                                  1.79448
+xvco.x0.vtail                         0.850792
+vss                                          0
+vcont                                        0
+iref                                  0.872414
+vdd                                        1.8
+xvco.x0.xc0.a                          1.79448
+xvco.x0.xc0.b1                         1.79448
+xvco.x0.xc1.a                          1.79448
+xvco.x0.xc1.b1                         1.79448
+xvco.x0.xl0.n1                             1.8
+xvco.x0.xl1.n1                             1.8
+l.xvco.l.x0.xl1.l1#branch          0.000598692
+l.xvco.l.x0.xl0.l1#branch          0.000598692
+vctrl#branch                      -1.68566e-74
+vss#branch                          0.00149738
+vdd#branch                         -0.00149738
+
+ Reference value :  4.42610e-08
+No. of Data Rows : 30017
+tlo1                =  3.012923e-08
+tlo2                =  4.201202e-08
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+voutn                                  1.79448
+voutp                                  1.79448
+xvco.x0.vtail                         0.850792
+vss                                          0
+vcont                                      1.8
+iref                                  0.872414
+vdd                                        1.8
+xvco.x0.xc0.a                          1.79448
+xvco.x0.xc0.b1                         1.79448
+xvco.x0.xc1.a                          1.79448
+xvco.x0.xc1.b1                         1.79448
+xvco.x0.xl0.n1                             1.8
+xvco.x0.xl1.n1                             1.8
+l.xvco.l.x0.xl1.l1#branch          0.000598692
+l.xvco.l.x0.xl0.l1#branch          0.000598692
+vctrl#branch                         -7.24e-12
+vss#branch                          0.00149738
+vdd#branch                         -0.00149738
+
+ Reference value :  2.73290e-08
+No. of Data Rows : 30017
+thi1                =  3.004397e-08
+thi2                =  3.987151e-08
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+voutn                                  1.79448
+voutp                                  1.79448
+xvco.x0.vtail                         0.850792
+vss                                          0
+vcont                                      0.9
+iref                                  0.872414
+vdd                                        1.8
+xvco.x0.xc0.a                          1.79448
+xvco.x0.xc0.b1                         1.79448
+xvco.x0.xc1.a                          1.79448
+xvco.x0.xc1.b1                         1.79448
+xvco.x0.xl0.n1                             1.8
+xvco.x0.xl1.n1                             1.8
+l.xvco.l.x0.xl1.l1#branch          0.000598692
+l.xvco.l.x0.xl0.l1#branch          0.000598692
+vctrl#branch                         -3.64e-12
+vss#branch                          0.00149738
+vdd#branch                         -0.00149738
+
+ Reference value :  1.06870e-08 Reference value :  5.58550e-08
+No. of Data Rows : 30017
+t1                  =  3.016508e-08
+t2                  =  4.138820e-08
+vrms                =  9.60010e-01 from=  3.01651e-08 to=  4.13882e-08
+iavg                =  -1.517261e-03 from=  3.016510e-08 to=  4.138900e-08
+ASCII raw file "./simout_vco_lc_pre.out"
+ngspice-45.2 done

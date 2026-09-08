@@ -1,0 +1,42 @@
+2026-09-08 15:57:23.154 | WARNING  | gdsfactory.pdk:get_active_pdk:733 - No active PDK. Activating generic PDK.
+
+2026-09-08 15:57:23.496 | INFO     | gdsfactory.technology.layer_views:__init__:790 - Importing LayerViews from YAML file: '/opt/anaconda3/envs/transconductor/lib/python3.11/site-packages/gdsfactory/generic_tech/layer_views.yaml'.
+2026-09-08 15:57:23.497 | INFO     | gdsfactory.pdk:activate:337 - 'generic' PDK is now active
+2026-09-08 15:57:23.500 | INFO     | gdsfactory.pdk:activate:337 - 'sky130' PDK is now active
+2026-09-08 15:57:23.510 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met2_met3.gds'
+2026-09-08 15:57:23.521 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met3_met4.gds'
+2026-09-08 15:57:23.532 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met4_met5.gds'
+2026-09-08 15:57:23.721 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met2_met3.gds'
+2026-09-08 15:57:23.732 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met3_met4.gds'
+2026-09-08 15:57:23.743 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met4_met5.gds'
+/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/.claude/skills/router/script/route_nets.py:2078: UserWarning: Unnamed cells, 9 in 'routed'
+  top.write_gds(str(out_path))
+2026-09-08 15:57:25.999 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout_fixer_work/sweep/routed_viacost20.gds'
+  grid: 172x145 cells x 4 layers, pitch=0.7200um (coarsest legal layer pitch 0.7200um x1.0)
+  keepout: +0.750um via-pad protrusion allowance on 1 macro(s) declaring one
+  wire widths: met2=0.210um  met3=0.210um  met4=0.310um  met5=0.310um
+  per-layer obstacles (macro x layer -- 'full'=whole box blocked, 'geom'=only real metal, 'free'=open):
+    R0                           met2:free  met3:free  met4:free  met5:free
+    XC0                          met2:free  met3:free  met4:full  met5:full
+    XMN3                         met2:full  met3:geom(2p,7c)  met4:free  met5:free
+    XMN4                         met2:full  met3:geom(2p,3c)  met4:free  met5:free
+    XMN5                         met2:full  met3:geom(2p,6c)  met4:free  met5:free
+    XMP3                         met2:full  met3:geom(2p,6c)  met4:free  met5:free
+    XMP4                         met2:full  met3:geom(2p,6c)  met4:free  met5:free
+    current_mirror_XMP1_XMP2     met2:full  met3:full  met4:free  met5:free
+    diff_pair_XMN1_XMN2          met2:full  met3:full  met4:free  met5:free
+    met2: 5479/24940 cells blocked (22.0%)
+    met3: 2306/24940 cells blocked (9.2%)
+    met4: 3534/24940 cells blocked (14.2%)
+    met5: 3534/24940 cells blocked (14.2%)
+  via cost (scale x real via_stack footprint): met2->met3 0.43um(pads 0.43/0.33) -> 8.6  met3->met4 1.50um(pads 0.58/1.50) -> 30.0  met4->met5 0.38um(pads 0.38/0.34) -> 7.6
+=== Routing 8 net(s) (3 flagged sensitive: gate-connected) + labeling 2 single-macro pin(s) over 9 placed macro(s) ===
+  ripup iter 0: 21 congested cell(s) (0 path-on-path, 19 via/stub-pad, 4 spacing, 1 at pin cells (not routable away)), 0 failed net(s), total overflow=21
+      VSS+net7:12, net3+net5:4, VDD+net7:3, VDD+net5:2
+
+=== Routing result ===
+  routed 8/8 multi-macro net(s), labeled 2/2 single-macro pin(s)  total_wire=717.09um  vias=22 (sensitive=3)
+  Congestion check: PASS (converged, no failed nets)
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout_fixer_work/sweep/routes_viacost20.json
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout_fixer_work/sweep/summary_viacost20.txt (routing performance report)
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout_fixer_work/sweep/routed_viacost20.gds

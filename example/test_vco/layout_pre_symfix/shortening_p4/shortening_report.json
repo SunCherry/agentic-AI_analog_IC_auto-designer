@@ -1,0 +1,228 @@
+{
+  "input_gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/test_vco_fixed.gds",
+  "input_map": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/physical_map.json",
+  "output_gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/shortening_p4/test_vco_fixed_shortened.gds",
+  "output_map": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/shortening_p4/physical_map.json",
+  "drc": "PASS (clean)",
+  "reverted": {},
+  "bulk_landings_released": {
+    "VSS": [
+      {
+        "instance": "XN0",
+        "landable_boxes": 32,
+        "region_bbox": [
+          207.34,
+          423.7,
+          232.42,
+          430.42
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XN1",
+        "landable_boxes": 32,
+        "region_bbox": [
+          207.33,
+          409.0,
+          232.41,
+          415.72
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XN2",
+        "landable_boxes": 34,
+        "region_bbox": [
+          135.46,
+          425.88,
+          200.54500000000002,
+          433.14
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XN3",
+        "landable_boxes": 34,
+        "region_bbox": [
+          135.455,
+          412.015,
+          200.54000000000002,
+          419.275
+        ],
+        "is_ring": true
+      }
+    ]
+  },
+  "before": {
+    "Iref": {
+      "net": "Iref",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "VDD": {
+      "net": "VDD",
+      "wirelength_um": 170.38341461596738,
+      "vias": 3,
+      "corners": 6,
+      "terminals": 4,
+      "bbox_bound_um": 146.75710628794462,
+      "mst_um": 156.35421257588928,
+      "excess_um": 23.62630832802276,
+      "excess_ratio": 1.1609891944971087,
+      "cost": 176.38341461596738
+    },
+    "VSS": {
+      "net": "VSS",
+      "wirelength_um": 94.7872839041303,
+      "vias": 5,
+      "corners": 12,
+      "terminals": 7,
+      "bbox_bound_um": 63.73712745460074,
+      "mst_um": 90.5254499486629,
+      "excess_um": 31.050156449529567,
+      "excess_ratio": 1.4871596460265055,
+      "cost": 104.7872839041303
+    },
+    "Vcont": {
+      "net": "Vcont",
+      "wirelength_um": 41.24645612588614,
+      "vias": 0,
+      "corners": 6,
+      "terminals": 4,
+      "bbox_bound_um": 24.474981812879207,
+      "mst_um": 25.617991495237504,
+      "excess_um": 16.771474313006934,
+      "excess_ratio": 1.6852497150449959,
+      "cost": 41.24645612588614
+    },
+    "voutn": {
+      "net": "voutn",
+      "wirelength_um": 139.6496290440894,
+      "vias": 3,
+      "corners": 16,
+      "terminals": 5,
+      "bbox_bound_um": 83.06557240660231,
+      "mst_um": 103.48307240660233,
+      "excess_um": 56.584056637487095,
+      "excess_ratio": 1.6811974563963832,
+      "cost": 145.6496290440894
+    },
+    "voutp": {
+      "net": "voutp",
+      "wirelength_um": 169.55332936511257,
+      "vias": 6,
+      "corners": 8,
+      "terminals": 5,
+      "bbox_bound_um": 112.0910827494794,
+      "mst_um": 137.10535695696552,
+      "excess_um": 57.46224661563318,
+      "excess_ratio": 1.5126388755121563,
+      "cost": 181.55332936511257
+    },
+    "vtail": {
+      "net": "vtail",
+      "wirelength_um": 30.291417032078755,
+      "vias": 2,
+      "corners": 2,
+      "terminals": 3,
+      "bbox_bound_um": 26.781397941871205,
+      "mst_um": 26.785108303431457,
+      "excess_um": 3.5100190902075497,
+      "excess_ratio": 1.131061832463937,
+      "cost": 34.291417032078755
+    }
+  },
+  "after": {
+    "Iref": {
+      "net": "Iref",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "VDD": {
+      "net": "VDD",
+      "wirelength_um": 170.38341461596738,
+      "vias": 3,
+      "corners": 6,
+      "terminals": 4,
+      "bbox_bound_um": 146.75710628794462,
+      "mst_um": 156.35421257588928,
+      "excess_um": 23.62630832802276,
+      "excess_ratio": 1.1609891944971087,
+      "cost": 176.38341461596738
+    },
+    "VSS": {
+      "net": "VSS",
+      "wirelength_um": 54.37730574747991,
+      "vias": 6,
+      "corners": 3,
+      "terminals": 7,
+      "bbox_bound_um": 63.73712745460074,
+      "mst_um": 90.5254499486629,
+      "excess_um": 0.0,
+      "excess_ratio": 0.8531496149746044,
+      "cost": 66.37730574747991
+    },
+    "Vcont": {
+      "net": "Vcont",
+      "wirelength_um": 41.24645612588614,
+      "vias": 0,
+      "corners": 6,
+      "terminals": 4,
+      "bbox_bound_um": 24.474981812879207,
+      "mst_um": 25.617991495237504,
+      "excess_um": 16.771474313006934,
+      "excess_ratio": 1.6852497150449959,
+      "cost": 41.24645612588614
+    },
+    "voutn": {
+      "net": "voutn",
+      "wirelength_um": 139.6496290440894,
+      "vias": 3,
+      "corners": 16,
+      "terminals": 5,
+      "bbox_bound_um": 83.06557240660231,
+      "mst_um": 103.48307240660233,
+      "excess_um": 56.584056637487095,
+      "excess_ratio": 1.6811974563963832,
+      "cost": 145.6496290440894
+    },
+    "voutp": {
+      "net": "voutp",
+      "wirelength_um": 169.55332936511257,
+      "vias": 6,
+      "corners": 8,
+      "terminals": 5,
+      "bbox_bound_um": 112.0910827494794,
+      "mst_um": 137.10535695696552,
+      "excess_um": 57.46224661563318,
+      "excess_ratio": 1.5126388755121563,
+      "cost": 181.55332936511257
+    },
+    "vtail": {
+      "net": "vtail",
+      "wirelength_um": 30.291417032078755,
+      "vias": 2,
+      "corners": 2,
+      "terminals": 3,
+      "bbox_bound_um": 26.781397941871205,
+      "mst_um": 26.785108303431457,
+      "excess_um": 3.5100190902075497,
+      "excess_ratio": 1.131061832463937,
+      "cost": 34.291417032078755
+    }
+  }
+}

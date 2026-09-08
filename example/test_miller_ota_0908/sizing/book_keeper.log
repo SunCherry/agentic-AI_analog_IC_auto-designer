@@ -1,0 +1,274 @@
+================================================================================
+book_keeper.log -- two_stage_rz  (design test_miller_ota_0908)
+schematic-sizing Step 2, the per-iteration tuning record.
+
+BUDGET N = 8 iterations
+  SOURCE: design_constraints.json, key `schematic_sizing_iterations`, read via
+  .claude/reference/design_constraints.py. NOT overridden by the caller --
+  schematic-agent explicitly declined to override it for this first pass.
+
+TARGET FILE IN FORCE: sizing/harder_target_spec.json  (the runner's default)
+  real  : PM [50,70] deg · UGBW >= 15 MHz · Gain >= 40 dB · Power <= 0.5813 mW
+  harder: PM [52,68] deg · UGBW >= 16.5 MHz · Gain >= 44 dB · Power <= 0.63943 mW
+  !! NOTE THE POWER TRAP: the harder CEILING (0.63943) is LOOSER than the real
+     one (0.5813), by design. The runner's `met` flag for Power therefore does
+     NOT imply the real spec is met. Every entry below scores Power against the
+     REAL 0.5813 explicitly.
+
+TIE CONSTRAINT HELD BY CONSTRUCTION (the point of this run):
+  MN4_W / MN4_L write XMN4, XMN3, XMN5 -- one shared unit w and l, per-leg m.
+  MP1_W / MP1_L write XMP1, XMP2. Nothing below can give a mirror leg its own w.
+  FROZEN and refused by the loop: MP3_M, MP4_M (tunable_by: fold).
+================================================================================
+
+################################################################################
+# NOTE ON THIS BLOCK: entries 0-3 were reconstructed and flushed to disk AFTER
+# iteration 3, from sizing/debug/iter0..3.json plus the agent's own reasoning
+# record. They were not written live -- a session interruption between the
+# runs and the flush. The NUMBERS are read straight out of the saved JSON, so
+# they are measurements and not recollections; the Reasoning/Next lines are the
+# agent's, restated. Entries from 4 on are written as each iteration lands.
+################################################################################
+
+--------------------------------------------------------------------------------
+ITERATION 0 -- baseline at the registry seeds (nothing changed)
+--------------------------------------------------------------------------------
+Changed   (nothing -- this is the seed state setup_sizing.py rendered)
+          MN4_W=47.2 MN4_L=0.15 m=5/2/7 | MN1_W=40 MN1_L=0.15 MN1_M=8
+          MP1_W=14.4 MP1_L=0.15 m=1/1 | MP3_W=40 MP3_L=0.15 MP3_M=3(frozen)
+          R0 w=2.0 l=4.15 | C0 45x45 | MP4_W=2.3 MP4_L=0.15
+          Step 2a fold: every width within the PDK max (100 um); nothing folded.
+Specs     Gain  32.1258 dB   UGBW  9.4312 MHz   PM 72.3228 deg  Power 0.538682 mW
+Target    REAL   Gain FAIL(<40) UGBW FAIL(<15) PM FAIL(>70) Power PASS(<=0.5813)
+          HARDER Gain n(<44)   UGBW n(<16.5)  PM n(>68)    Power y(<=0.63943)
+          judged against sizing/harder_target_spec.json
+Op-point  gm/gds: XMP1 7.77 XMN1 21.10 XMN3 14.00 XMN4 21.11 XMP3 7.90 XMN5 24.63
+          currents: I_ref(XMN4) 101.94 uA | I_tail(XMN3) 26.34 | I_stage2 170.98
+          gm1(XMN1) 0.3414 mS  gm2(XMP3) 2.3778 mS
+          every device at l = 0.15 um = the sky130 MINIMUM.
+Reasoning No change -- establish the seed. Confirms the brief's prediction
+          exactly: UGBW 9.43 MHz vs the golden netlist's 11.46, because the
+          tie-group re-expression shrank XMN3 (-8.0%) and XMN5 (-4.2%).
+          Expected, not a defect.
+Next      TWO findings drive everything after this.
+          (1) gm/gds is 7.8-24.6 -- the floor the process gives, because l is at
+              minimum on all 9 devices. Length is unspent free gain.
+          (2) THE CURRENT BUDGET IS MISALLOCATED: the bias reference burns
+              101.94 uA (34% of supply) to produce a 26.34 uA tail (9%). The
+              signal path is starved while the bias leg is fat.
+          Also: the mirror ratio is badly broken by Vds mismatch at l=0.15 --
+          XMN3/XMN4 should be m 2/5 = 0.400 but measures 26.34/101.94 = 0.258,
+          and XMN5/XMN4 should be 7/5 = 1.400 but measures 1.677. That is
+          channel-length modulation, and raising l fixes the ratio, the ro AND
+          the gain in one move.
+
+--------------------------------------------------------------------------------
+ITERATION 1 -- raise L everywhere (one mechanism: lift ro / gm-gds)
+--------------------------------------------------------------------------------
+Changed   MN4_L 0.15 -> 0.4   (writes XMN4, XMN3, XMN5 together -- tie group)
+          MP1_L 0.15 -> 0.4   (writes XMP1, XMP2 together -- tie group)
+          MP3_L 0.15 -> 0.4
+          MN1_L 0.15 -> 0.3   (less than the rest, to protect gm1 for UGBW)
+          Step 2a fold: nothing to fold.
+Specs     Gain  61.9039 dB (+29.778)  UGBW 17.6094 MHz (+8.178)
+          PM    47.0891 deg (-25.234) Power 0.604905 mW (+0.066223)
+Target    REAL   Gain PASS UGBW PASS PM FAIL(<50) Power FAIL(>0.5813)
+          HARDER Gain y    UGBW y    PM n         Power y
+Op-point  gm/gds: XMP1 7.77->88.70  XMN1 21.10->47.45  XMN4 21.11->85.79
+                  XMP3 7.90->87.11  XMN5 24.63->95.97
+          currents: I_ref 118.63 | I_tail 43.40 | I_stage2 174.03
+          gm1 0.3414 -> 0.5543 mS   gm2 2.3778 -> 2.1729 mS
+Reasoning spec_analysis.log KEY 1 named this: every device at the process minimum
+          l is the worst intrinsic gain the process offers, and raising l is the
+          one Gain lever that costs no current. Predicted a large Gain rise and
+          a UGBW fall (gm down at fixed current, cgg up).
+Next      PREDICTION PARTLY WRONG, and the miss is informative: UGBW went UP
+          (9.43 -> 17.61), not down. Reason: the nfets sit at gm/id ~ 23-26, i.e.
+          moderate-to-weak inversion, where gm tracks CURRENT and is nearly
+          independent of W/L -- so lengthening cost almost no gm, while fixing
+          the mirror's Vds error RAISED the tail current 26.34 -> 43.40 uA.
+          gm1 rose 62%. Two problems left, both small: PM 47.09 is below the 50
+          floor, and Power 0.6049 is 4% over the real ceiling.
+          R0 = 100 ohm against 1/gm2 = 460 ohm -- the nulling resistor is 4.6x
+          UNDER-sized, so the RHP zero is not being cancelled at all. Sizing R0
+          ABOVE 1/gm2 turns it into an LHP zero that can cancel the output pole:
+          a large PM gain for zero current. That is iteration 2.
+
+--------------------------------------------------------------------------------
+ITERATION 2 -- LHP zero via R0 (PM), and trade gain surplus for power
+--------------------------------------------------------------------------------
+Changed   R0_L  4.15 -> 50    (R ~ 48.2 ohm/sq * l/w: 100 -> ~1205 ohm)
+          MN5_M 7 -> 6        (mirror ratio carrier -- stage-2 branch current)
+          Step 2a fold: nothing to fold.
+Specs     Gain  61.9213 dB (+0.017)   UGBW 18.1962 MHz (+0.587)
+          PM    71.5497 deg (+24.461) Power 0.585016 mW (-0.019889)
+Target    REAL   Gain PASS UGBW PASS PM FAIL(>70) Power FAIL(>0.5813 by 0.0037)
+          HARDER Gain y    UGBW y    PM n         Power y
+Op-point  I_ref 118.63 | I_tail 43.40 | I_stage2 174.03 -> 162.98
+          gm2 2.1729 -> 2.0567 mS ; 1/gm2 = 486 ohm, R0 now ~1205 ohm > 1/gm2
+          XMN5 gm/gds 95.97 -> 110.56 (less current, more ro)
+Reasoning Two independent mechanisms on two different keys, so attribution stays
+          clean. (a) R0 sized ABOVE 1/gm2 puts the zero in the LEFT half plane
+          near the output pole gm2/CL -- predicted a large PM rise at zero
+          current cost. (b) MN5_M 7->6 cuts the stage-2 branch ~14%, spending
+          part of the 21.9 dB gain surplus to get Power under its ceiling.
+Next      (a) LANDED, and then some: +24.5 deg of phase margin for zero power
+          and zero gain. It OVERSHOT -- PM 71.55 is now above the range TOP.
+          This key fails from above, which spec_analysis.log flagged as the one
+          a "more is better" reflex gets wrong.
+          (b) UNDERSHOT: Power 0.585 is still 0.0037 mW over the real 0.5813.
+          MN5_M was too small a lever for the job. The real target is the bias
+          reference: I_ref is STILL 118.63 uA = 36% of supply, spent purely on
+          biasing. Cut MP4_W next -- XMP4 is the small device that sets the
+          reference current for the whole design.
+
+--------------------------------------------------------------------------------
+ITERATION 3 -- cut the bias-leg overhead
+--------------------------------------------------------------------------------
+Changed   MP4_W 2.3 -> 1.4
+          Step 2a fold: nothing to fold.
+Specs     Gain  62.3872 dB (+0.466)   UGBW 11.9492 MHz (-6.247)
+          PM    65.7845 deg (-5.765)  Power 0.382772 mW (-0.202244)
+Target    REAL   Gain PASS UGBW FAIL(<15) PM PASS Power PASS
+          HARDER Gain y    UGBW n        PM y     Power y
+Op-point  I_ref 118.63 -> 77.25 | I_tail 43.40 -> 28.47 | I_stage2 162.98 -> 106.93
+          gm1 0.5543 -> 0.3692 mS   gm2 2.0567 -> 1.4973 mS
+          total supply 325.0 -> 212.65 uA
+Reasoning XMP4 is the self_biased_reference's smaller device and therefore sets
+          I_ref for every mirror leg (circuit_decomposition.yaml xpd2). Cutting
+          its width was predicted to cut I_ref and, through net7, every leg
+          current with it -- buying a large Power reduction.
+Next      LANDED HARD -- and OVERSHOT in the other direction. Power fell 34%
+          below its ceiling (0.383 vs 0.5813), but the leg currents fell with it
+          and gm1 dropped 33%, taking UGBW from 18.20 down to 11.95 -- now the
+          ONLY failing key, short by 3.05 MHz.
+          This is a good position, not a bad one: the design now has 22.4 dB of
+          Gain margin and 0.199 mW (110 uA) of unspent Power headroom against
+          ONE key that misses by 20%. The correction is to put a fraction of
+          that current back into the SIGNAL path rather than the bias leg --
+          i.e. raise the tail ratio MN3_M, which is exactly the mirror-ratio
+          lever this contract made tunable. UGBW ~ gm1/(2*pi*Cc) and gm1 tracks
+          current at gm/id ~ 26, so MN3_M 2 -> 3 should give ~1.5x gm1.
+          PM will fall as UGBW rises (p2 = gm2/CL is unchanged); PM 65.78 has
+          ~15.8 deg of room down to the 50 floor, so there is margin to spend.
+
+--------------------------------------------------------------------------------
+ITERATION 4 -- buy UGBW with the one lever that costs no current
+--------------------------------------------------------------------------------
+Changed   C0_W 45 -> 38 ; C0_L 45 -> 38   (Cc area 2025 -> 1444 um^2, x0.713)
+          Step 2a fold: nothing to fold.
+Specs     Gain  62.3872 dB (0.000)    UGBW 15.3803 MHz (+3.431)
+          PM    56.3580 deg (-9.427)  Power 0.382772 mW (0.000000)
+Target    REAL   Gain PASS UGBW PASS PM PASS Power PASS   <-- all four REAL met
+          HARDER Gain y    UGBW n(<16.5) PM y  Power y
+Op-point  IDENTICAL to iteration 3 in every device, to 4 decimal places.
+Reasoning UGBW ~ gm1/(2*pi*Cc) and gm1 is set by the tail CURRENT (gm/id ~ 26,
+          i.e. moderate/weak inversion, where gm tracks id and barely responds
+          to width). Two ways to raise UGBW: more current, or less Cc. The
+          objective is every key met at MINIMUM POWER, so the current-free lever
+          goes first. Predicted UGBW x1.40 and a PM fall.
+Next      UGBW rose x1.287, not the x1.402 that 1/Cc alone predicts -- so net5
+          and vout carry fixed capacitance beyond Cc, and Cc's authority over
+          UGBW is sub-linear (exponent ~0.75). The op-point being bit-identical
+          CONFIRMS Cc is a pure AC lever with no DC cost. First state in the run
+          with all four REAL keys met, and at 0.383 mW. Harder UGBW short 1.12
+          MHz. Budget remains, so keep aiming at the harder bar -- UGBW is
+          precisely the key layout parasitics eat.
+
+--------------------------------------------------------------------------------
+ITERATION 5 -- raise the tail via the mirror ratio  (FAILED -- and worth reading)
+--------------------------------------------------------------------------------
+Changed   MN3_M 2 -> 3  (tail ratio 2/5 -> 3/5) ; C0 38 -> 45 (Cc restored, to
+          convert the extra gm1 into phase margin rather than excess bandwidth)
+          Step 2a fold: nothing to fold.
+Specs     Gain  37.3155 dB (-25.072)  UGBW 11.9202 MHz (-3.460)
+          PM    71.0054 deg (+14.647) Power 0.429229 mW (+0.046457)
+Target    REAL   Gain FAIL UGBW FAIL PM FAIL Power PASS
+          HARDER Gain n    UGBW n    PM n    Power y
+Op-point  THE DIAGNOSIS IS IN ONE DEVICE:
+            XMP3  vds 0.0903  vdsat 0.1102 -> 0.1275   vov = -0.037  OUT OF SAT
+            XMP3  gds 20.00 -> 636.46 uS   gm/gds 74.87 -> 2.03
+            XMN5  vds 1.1846 -> 1.7097     (vout railed toward VDD)
+          I_tail 28.47 -> 42.49 ; I_XMP1 14.24 -> 21.25
+Reasoning Predicted gm1 x1.5 -> UGBW x1.5 at restored Cc, PM roughly held.
+          Expected ~17.9 MHz.
+Next      PREDICTION WRONG, and the mechanism is a real constraint this design
+          has that nothing had yet written down:
+            XMP3's gate is net5 and XMP1/XMP2's gate is net4, and in balance the
+            two nodes sit at the SAME DC level -- so XMP3 sees the same Vgs as
+            the load mirror, and therefore
+                I_XMP3 = I_XMP1 * (W/L)_XMP3/(W/L)_XMP1 = I_XMP1 * 120/14.4
+                       = 8.333 * I_tail/2
+            The output only sits mid-rail when XMN5 sinks exactly that. Raising
+            the tail 1.5x demands 1.5x from XMN5 too; leaving MN5_M at 6 left
+            XMP3 driving 177 uA into a 107 uA sink, so vout railed high and the
+            stage-2 pfet fell into triode -- taking 25 dB of gain with it.
+          So the tail is NOT independently tunable: I_tail and I_XMN5 must move
+          TOGETHER, in the ratio the XMP3/XMP1 width ratio fixes. To rerun this
+          properly MN5_M would need ~10, costing ~0.53 mW -- 40% more power than
+          iteration 4 already achieves. REJECTED on the minimum-power objective.
+          Reverting the tail and going back to the compensation network instead:
+          shrink Cc for UGBW and RE-TUNE R0 for the new Cc (xpd1 says they move
+          together), which buys the harder bar for zero current.
+
+--------------------------------------------------------------------------------
+ITERATION 6 -- CONVERGED. Cc down + R0 zero retuned for the new Cc
+--------------------------------------------------------------------------------
+Changed   MN3_M 3 -> 2   (revert iteration 5's tail rise)
+          C0_W 45 -> 36 ; C0_L 45 -> 36   (Cc 2025 -> 1296 um^2, x0.640)
+          R0_L  50 -> 62  (R ~1205 -> ~1494 ohm; 1/gm2 = 668 ohm)
+          Step 2a fold: nothing to fold.
+Specs     Gain  62.3872 dB   UGBW 16.7834 MHz   PM 56.9566 deg  Power 0.382772 mW
+Target    REAL   Gain PASS(>=40) UGBW PASS(>=15)   PM PASS([50,70])  Power PASS(<=0.5813)
+          HARDER Gain y(>=44)    UGBW y(>=16.5)    PM y([52,68])     Power y(<=0.63943)
+          >>> EVERY KEY OF harder_target_spec.json MET -- stop condition 1. <<<
+Reasoning Cc alone would have landed PM near 53.5 (extrapolating iteration 3->4's
+          -37.3 deg per natural-log of UGBW). xpd1 in the circuit read says R0
+          and Cc are one network: the LHP zero sits at 1/(Cc*(R0 - 1/gm2)), so
+          shrinking Cc moves the zero and R0 must be re-sized to keep it doing
+          its job. Raised R0 with Cc to hold the zero near the output pole.
+Next      LANDED BETTER THAN PREDICTED: PM 56.96, about 3.5 deg above the
+          Cc-only extrapolation -- that difference is the retuned zero, and it
+          is the reason this converged instead of scraping the harder PM floor.
+          Stopping here per stop condition 1. Iteration 7 of 8 left UNSPENT:
+          the budget is a ceiling, not a quota, and gilding a met spec risks it.
+
+================================================================================
+CONVERGED ENTRY -- FULL STATE (the only record of what produced these numbers)
+================================================================================
+Converged at ITERATION 6 of a budget of 8 (7 unspent).
+
+FULL PARAMETER SET (sizing/two_stage_rz_tuning.sp):
+  MN4_W = 47.2    MN4_L = 0.4     MN4_M = 5   MN3_M = 2   MN5_M = 6
+  MN1_W = 40      MN1_L = 0.3     MN1_M = 8
+  MP1_W = 14.4    MP1_L = 0.4     MP1_M = 1   MP2_M = 1
+  MP3_W = 40      MP3_L = 0.4     MP3_M = 3   (frozen -- fold only)
+  MP4_W = 1.4     MP4_L = 0.15    MP4_M = 1   (frozen -- fold only)
+  R0_W  = 2.0     R0_L  = 62.0
+  C0_W  = 36.0    C0_L  = 36.0
+
+MIRROR TIE -- THE PROPERTY THIS RUN EXISTS TO TEST:
+  XMN4 / XMN3 / XMN5 : one shared w = 47.2, one shared l = 0.4, m = 5 / 2 / 6.
+  XMP1 / XMP2        : one shared w = 14.4, one shared l = 0.4, m = 1 / 1.
+  HELD. Every render wrote the legs from MN4_W/MN4_L, so they could not
+  come apart; no leg ever had an independent width at any iteration.
+
+ACHIEVED, AGAINST BOTH TARGET FILES:
+  Gain   62.3872 dB   real >=40      MET (+22.39)  harder >=44        MET (+18.39)
+  UGBW   16.7834 MHz  real >=15      MET (+1.78)   harder >=16.5      MET (+0.28)
+  PM     56.9566 deg  real [50,70]   MET           harder [52,68]     MET
+  Power  0.382772 mW  real <=0.5813  MET (-0.199)  harder <=0.63943   MET
+
+OP POINT AT CONVERGENCE:
+  dev     id(uA)   gm(mS)  gds(uS)  gm/gds  gm/id     vds   vdsat  cgg(fF)
+  XMP1     14.24   0.1957     2.17   90.28  13.75  1.0386  0.1127    27.96
+  XMP2     14.24   0.1957     2.17   90.28  13.75  1.0386  0.1127    27.96
+  XMN1     14.24   0.3692     7.64   48.31  25.93  0.4378  0.0436   348.01
+  XMN2     14.24   0.3692     7.64   48.31  25.93  0.4378  0.0436   348.01
+  XMN3     28.47   0.6572    10.82   60.72  23.08  0.3236  0.0510   169.44
+  XMN4     77.25   1.7726    21.34   83.05  22.95  0.5815  0.0511   422.71
+  XMP3    106.93   1.4973    20.00   74.87  14.00  0.6154  0.1102   231.82
+  XMN5    106.93   2.4189    22.55  107.27  22.62  1.1846  0.0513   507.69
+  XMP4     77.25   0.2419    27.88    8.68   3.13  1.2185  0.4793     1.40
+  supply total 212.65 uA ; every MOS in saturation (vds > vdsat on all nine).
+================================================================================

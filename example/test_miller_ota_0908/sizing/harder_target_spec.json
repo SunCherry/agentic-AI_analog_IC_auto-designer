@@ -1,0 +1,25 @@
+{
+  "PM": {
+    "Direction": "RANGE",
+    "Value": [
+      52.0,
+      68.0
+    ],
+    "Units": "degree"
+  },
+  "UGBW": {
+    "Direction": "FLOOR",
+    "Value": 16.5,
+    "Units": "MHz"
+  },
+  "Gain": {
+    "Direction": "FLOOR",
+    "Value": 44.0,
+    "Units": "dB"
+  },
+  "Power": {
+    "Direction": "CEILING",
+    "Value": 0.63943,
+    "Units": "mW"
+  }
+}

@@ -1,0 +1,80 @@
+==============================================================================
+ROUTE SHORTENING SUMMARY
+==============================================================================
+design      : two_stage_rz_final_shaped_flat
+input GDS   : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/test_miller_ota_0908_fixed.gds
+input map   : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/physical_map.json
+top cell    : routed
+PDK         : sky130A
+runtime     : 15.4 s
+
+-- gates ---------------------------------------------------------------------
+  exact legality re-check on every new rectangle : PASS (no route was committed without it)
+  every net still spans all of its own landings  : PASS
+  Magic DRC on the output                        : PASS (clean)
+  LVS                                            : NOT RUN HERE -- hand the output to layout-fixer
+
+-- totals --------------------------------------------------------------------
+  total wirelength :     703.86 um ->     545.75 um (-158.10 um, -22.5%)
+  vias             :         27    ->         23
+  corners          :         55    ->         44
+  lower bound      :     572.15 um  (sum of per-net terminal-bbox half-perimeters -- no legal route can beat this)
+  gap to bound     :     131.71 um ->     -26.40 um
+
+-- per net -------------------------------------------------------------------
+net   term  len_before  len_after  delta    vias  corners  bound   ratio_b  ratio_a  status
+----  ----  ----------  ---------  -------  ----  -------  ------  -------  -------  --------
+VDD   7     131.88      85.07      -46.81   8->7  4->2     109.30  1.21x    0.78x    changed
+VSS   7     131.27      28.36      -102.91  7->4  11->4    84.70   1.55x    0.33x    changed
+Vin   0     0.00        0.00       +0.00    0->0  0->0     0.00    -        -
+Vip   0     0.00        0.00       +0.00    0->0  0->0     0.00    -        -
+net3  2     79.54       71.15      -8.39    1->1  4->2     69.81   1.14x    1.02x    changed
+net4  2     20.50       20.50      +0.00    0->0  2->2     19.62   1.04x    1.04x
+net5  4     119.28      119.28     +0.00    3->3  8->8     107.27  1.11x    1.11x
+net7  6     100.27      100.27     +0.00    0->0  21->21   72.31   1.39x    1.39x
+net8  2     49.91       49.91      +0.00    4->4  1->1     48.77   1.02x    1.02x
+vout  3     71.22       71.22      +0.00    4->4  4->4     60.37   1.18x    1.18x    reverted
+
+-- reverted ------------------------------------------------------------------
+  vout: reverted: new DRC violation on its rebuilt metal
+
+-- bulk landings released onto their tie rings -------------------------------
+  VDD: XMP3  tie ring (-398.76, -165.43) .. (-387.23, -148.83) um, 72 landable box(es)
+  VDD: XMP4  tie ring (-402.59, -200.50) .. (-396.32, -197.52) um, 18 landable box(es)
+  VSS: XMN1  tie ring (-381.75, -170.03) .. (-345.62, -145.04) um, 3 landable box(es)
+  VSS: XMN3  tie ring (-375.01, -185.97) .. (-352.36, -174.99) um, 96 landable box(es)
+  VSS: XMN4  tie ring (-391.61, -205.87) .. (-355.37, -194.89) um, 150 landable box(es)
+  VSS: XMN5  tie ring (-423.39, -190.89) .. (-380.22, -179.91) um, 178 landable box(es)
+  A tie ring is one node, so these connections may land anywhere on
+  it. The fixed port `fet.py` gives bulk stays as it is -- routing
+  needs one deterministic point; this pass is what may move off it.
+  `bound` below is still measured against the ORIGINAL landings, so
+  a released net can legitimately finish under its own bound.
+
+-- relocated net labels ------------------------------------------------------
+  VDD: (-387.040, -157.185) -> (-364.137, -130.978) on (69, 20)
+  VSS: (-363.450, -174.785) -> (-363.685, -169.300) on (69, 20)
+
+-- geometry inherited from the input -----------------------------------------
+gds    glayer  process  wire_w  pdk_min_w  clearance
+-----  ------  -------  ------  ---------  ---------
+68/20  met2    met1     0.210   0.140      0.140
+69/20  met3    met2     0.210   0.140      0.280
+70/20  met4    met3     0.339   0.300      0.400
+71/20  met5    met4     0.339   0.300      0.400
+  wire widths are MEASURED off the input's own wires; clearances come from the PDK.
+  via transitions available (templates found in the input GDS): 67/20-68/20, 68/20-69/20, 69/20-70/20, 70/20-71/20
+
+-- files ---------------------------------------------------------------------
+  Everything this run produced is beside this summary, as files: the
+  shortened GDS, the updated physical_map.json, shortening_report.json,
+  and drc_violations.json (plus drc.log only if DRC did not come out
+  clean). Magic's per-run scratch is deleted once its verdict has been
+  recorded -- pass --keep-work to keep it under _work/ instead.
+
+-- reproducibility -----------------------------------------------------------
+  passes=2 via_weight=2.0 bend_penalty=0.2 min_gain=0.1
+  margin=8.0 max_coords=180 extra_clearance=0.0
+  prune=on reroute=on bulk_relax=on drc_retries=2
+  keep_work=off
+==============================================================================

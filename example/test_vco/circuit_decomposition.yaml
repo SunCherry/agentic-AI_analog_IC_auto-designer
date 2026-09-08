@@ -1,0 +1,601 @@
+# circuit_decomposition.yaml -- the circuit read that schematic-agent and
+# schematic-sizing work from. Conclusions only: which patterns the netlist
+# contains, and which devices must share a tunable parameter. The scan
+# evidence behind them is printed by build_decomposition.py, not stored
+# here. Key meanings: .claude/skills/circuit-decomposition/SKILL.md
+#
+#   `hierarchy` is machine-written -- re-run the script rather than editing.
+#   `patterns`, `unmatched_devices`, `tie_groups`, `open_questions` are
+#   AUTHORED against pattern-table.md, and are empty until SKILL.md's
+#   judgment steps have run. Empty means "not done yet", never "none found".
+schema: circuit-decomposition/v1
+netlist: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/netlist/vco_lc.sp
+top: vco_lc
+generated: '2026-09-03'
+confirmed_by_user: false
+hierarchy:
+  diagram: |-
+    vco_lc   (2 cap, 6 mos)
+    |-- XL0 : vco_spiral_ind   (2 cap, 1 ind, 1 res)
+    `-- XL1 : vco_spiral_ind   (2 cap, 1 ind, 1 res)
+  levels: 2
+  blocks:
+  - name: vco_spiral_ind
+    pins: [A, B]
+    instance_paths: [/XL0, /XL1]
+    own_devices: 4
+    sub_instances: []
+  - name: vco_lc
+    pins: [Vcont, Iref, VDD, VSS, voutp, voutn]
+    instance_paths: [(top)]
+    own_devices: 8
+    sub_instances:
+    - {instance: XL0, subckt: vco_spiral_ind}
+    - {instance: XL1, subckt: vco_spiral_ind}
+patterns:
+- pattern: cross_coupled_pair
+  block: vco_lc
+  instance_paths: ['(top)']
+  devices: [XN0, XN1]
+  matched_by: |-
+    Structure test PASSES exactly: XN0.gate == XN1.drain (voutp) and
+    XN1.gate == XN0.drain (voutn), sources shared at vtail, same type
+    (both sky130_fd_pr__nfet_01v8). Presents -2/gm at the drains.
+  confidence: certain
+  device_params:
+  - {ref: XN0, model: sky130_fd_pr__nfet_01v8, w: 20, l: 0.15, m: 1, nf: 1}
+  - {ref: XN1, model: sky130_fd_pr__nfet_01v8, w: 20, l: 0.15, m: 1, nf: 1}
+  note: |-
+    DETECTOR OVERRIDE. detect_topology.py reported this group as
+    `differential_pair` ("shared tail=vtail, gates=voutp/voutn"). That is the
+    exact confusion pattern-table.md's differential_pair "Watch out" row names,
+    and the disambiguator settles it against the detector: a diff pair's gates
+    are driven from OUTSIDE the pair, these gates come from the pair's own
+    drains. Copying the auto finding through would have mislabelled the one
+    device group the whole circuit exists for. Recorded here so the override is
+    auditable rather than silent.
+
+- pattern: current_mirror
+  block: vco_lc
+  instance_paths: ['(top)']
+  devices: [XN5, XN4]
+  reference: XN5
+  legs: [XN4]
+  matched_by: |-
+    Auto (detect_topology.py `current_mirror`): XN5 is diode-connected
+    (g == d == Iref); XN4 shares XN5's gate net (Iref) and source net (VSS)
+    with a distinct drain (vtail). One reference, one output leg -> a single
+    1:N finding with N=1.
+  confidence: certain
+  device_params:
+  - {ref: XN5, model: sky130_fd_pr__nfet_01v8, w: 15, l: 0.5, m: 1, nf: 1}
+  - {ref: XN4, model: sky130_fd_pr__nfet_01v8, w: 60, l: 0.5, m: 1, nf: 1}
+  note: |-
+    The ratio is carried in `w` (60/15 = 4:1), not in `m` (both m=1) -- see the
+    ratio_conflict tie group below. The single leg is a diff-pair-style tail
+    source; l=0.5 (long) is the usual bias-mirror choice for output resistance.
+
+- pattern: capacitor_bank
+  block: vco_lc
+  instance_paths: ['(top)']
+  devices: [XC0, XC1]
+  matched_by: |-
+    Manual (the detector parses MOS/BJT only, so no C ever reaches it).
+    Structure test: two capacitors sharing one plate net (VDD) with their other
+    plates on distinct nodes (voutp / voutn). Test passes as written.
+  confidence: likely
+  device_params:
+  - {ref: XC0, model: sky130_fd_pr__cap_mim_m3_1, w: 16, l: 16, m: 1}
+  - {ref: XC1, model: sky130_fd_pr__cap_mim_m3_1, w: 16, l: 16, m: 1}
+  note: |-
+    `likely`, not `certain`, and the caveat matters: pattern-table.md's
+    capacitor_bank assumes the RATIO between units is the design intent
+    (a CDAC / binary-weighted array). Here the intent is the opposite --
+    a 1:1 MATCHED pair, one unit per differential half. The structural
+    consequence taken forward is right anyway (both units share one tunable
+    w/l), but `ratio_carrier: m` is nominal only: an m ratio between these two
+    would be a defect, not a design. `w`/`l` are MiM PLATE DIMENSIONS in um
+    (~2 fF/um^2 -> 16x16 = ~512 fF each), not a channel; they are a first-class
+    sizing knob here because they set the fixed part of the tank capacitance.
+
+unmatched_devices:
+- refs: [XN2, XN3]
+  block: vco_lc
+  device_params:
+  - {ref: XN2, model: sky130_fd_pr__nfet_01v8, w: 40, l: 0.5, m: 1, nf: 1, nets: 'd=Vcont g=voutp s=Vcont b=VSS'}
+  - {ref: XN3, model: sky130_fd_pr__nfet_01v8, w: 40, l: 0.5, m: 1, nf: 1, nets: 'd=Vcont g=voutn s=Vcont b=VSS'}
+  structure: |-
+    Same-type MOS, drain AND source shorted to the same net (Vcont), gate on a
+    distinct node (voutp / voutn), bulk on VSS. A channel-shorted MOS is a
+    two-terminal device: a gate-to-channel capacitor whose value depends on
+    Vgs -- i.e. a MOS varactor. The two form a symmetric pair across the
+    differential tank.
+  why_unmatched: |-
+    NO ROW IN pattern-table.md MATCHES, and inventing one is forbidden.
+    Every registered MOS pattern (current_mirror, differential_pair,
+    cross_coupled_pair, cascode_stage, common_source/gate_stage,
+    source_follower, FVF, transmission_gate, push_pull, diode_connected_load,
+    self_biased_reference, beta_multiplier_bias, quad_pair) requires a device
+    with three DISTINCT terminals; a shorted d/s fails all of them.
+    capacitor_bank was considered and REJECTED: its structure test is written
+    over C devices, and adopting it would attach `ratio_carrier: m` semantics
+    to a pair whose whole requirement is to be identical.
+  detector_said: unclassified
+  consequence: |-
+    These are the frequency-TUNING elements -- the primary TuningRange knob --
+    so the single most spec-relevant device group in the circuit reaches
+    schematic-sizing with no pattern and, without the symmetry tie group below,
+    would have reached it with no matching constraint either.
+
+- refs: [Cpa, L1, R1, Cpb]
+  block: vco_spiral_ind
+  instance_paths: [/XL0, /XL1]
+  device_params:
+  - {ref: Cpa, kind: capacitor, value: 146.35f, nets: 'A - 0'}
+  - {ref: L1,  kind: inductor,  value: 3.9860n, nets: 'A - n1'}
+  - {ref: R1,  kind: resistor,  value: 9.2250,  nets: 'n1 - B'}
+  - {ref: Cpb, kind: capacitor, value: 146.35f, nets: 'B - 0'}
+  structure: |-
+    A pi-model of a spiral inductor: series L-R between the two pins with a
+    shunt cap to ground at each pin. Values are VALUE-form (no w/l geometry),
+    fixed by the physical coil the generator draws
+    (src/cells/primitives/inductor.py --turns 4.5 --inner 100 --width 8
+    --space 2 --shape octagon).
+  why_unmatched: |-
+    pattern-table.md registers no inductor-bearing pattern at all -- there is no
+    `lc_tank`, no `spiral_inductor`, no `pi_network` row -- so this block cannot
+    match anything by construction. NOT A DEFECT and NOT A MISSING SCAN.
+  detector_said: |-
+    Nothing (parse_devices() is MOS/BJT-only, so all four are invisible to it).
+    The affinity pass hinted `rc_compensation_network` on the R1~Cpb pair;
+    REJECTED -- that pattern requires the cap to BRIDGE two high-impedance gain
+    nodes, and Cpb goes B-to-ground. R1 is coil series loss, Cpb is substrate
+    shunt. The hint is a false positive of net cohesion, not a match.
+  consequence: |-
+    NOTHING IN THIS BLOCK IS SIZABLE. No w/l exists to tune, and the values are
+    set by a drawn coil, not by the sizer. schematic-sizing must treat this
+    whole block as fixed; device-shaper must skip it (no MOS).
+
+tie_groups:
+- id: TG1_xcp
+  pattern: cross_coupled_pair
+  devices: [XN0, XN1]
+  tied: [w, l]
+  also_must_match: [m, nf]
+  ratio_carrier: none
+  free: none
+  status: ok
+  as_written: {XN0: 'w=20 l=0.15 m=1 nf=1', XN1: 'w=20 l=0.15 m=1 nf=1'}
+  rationale: |-
+    pattern-table.md gives cross_coupled_pair `tied: [w, l, m, nf]` -- the two
+    halves must be IDENTICAL, not ratioed; asymmetry is duty-cycle error and
+    static offset. Split here because `m`/`nf` are frozen layout levers that
+    schematic-sizing never templates: `w`/`l` are the one shared TUNABLE,
+    while `m`/`nf` are a constraint device-shaper must honour (equal across the
+    pair) rather than a knob. As-written values already agree -- no conflict.
+
+- id: TG2_tail_mirror
+  pattern: current_mirror
+  devices: [XN5, XN4]
+  tied: []
+  ratio_carrier: m
+  free: none
+  status: ratio_conflict
+  as_written:
+    XN5: {w: 15, l: 0.5, m: 1, role: reference}
+    XN4: {w: 60, l: 0.5, m: 1, role: leg}
+  implied_ratio: 'I_XN4 / I_XN5 = 4 : 1, expressed entirely in w (60/15); m is 1:1'
+  rationale: |-
+    RATIO-CONFLICT RULE APPLIED. The legs already carry DIFFERENT `w`, so one
+    shared tunable `w` cannot reproduce the intended 4:1 tail-current gain.
+    Per SKILL.md Step 3 the group is NOT tied and NOT rescaled. `l` alone is
+    common (0.5 on both) and could be tied without touching the ratio; `w` is
+    left free per device, and it is on the sizer to move them together
+    deliberately if it wants the ratio preserved.
+    Expressing the 4:1 in `m` instead (XN5 w=15 m=1 / XN4 w=15 m=4) WOULD make
+    the group tie-able -- but `m` is frozen for sizing, so that is a proposal
+    for the user, not something to apply. Carried to open_questions Q2.
+  affects: [Power, OutputPower, OscFreq]
+
+- id: TG3_mim_tank_caps
+  pattern: capacitor_bank
+  devices: [XC0, XC1]
+  tied: [w, l]
+  ratio_carrier: 'm (nominal only -- see pattern note; intent is 1:1, not a weighted array)'
+  free: none
+  status: ok
+  as_written: {XC0: 'w=16 l=16 m=1', XC1: 'w=16 l=16 m=1'}
+  rationale: |-
+    Both units must present the same capacitance to their half of the
+    differential tank. As-written values agree. `w`/`l` are the shared tunable
+    and are plate dimensions, so this group is a real area/capacitance knob.
+
+- id: TG4_varactor_pair
+  pattern: none
+  devices: [XN2, XN3]
+  tied: [w, l]
+  also_must_match: [m, nf]
+  ratio_carrier: none
+  free: none
+  status: ok
+  source: |-
+    NOT DERIVED FROM A REGISTERED PATTERN. There is no pattern-table.md row
+    these devices match (see unmatched_devices), so this group is emitted from
+    the structural symmetry requirement alone: XN2 and XN3 are the two halves
+    of one differential element, one per tank node, with identical as-written
+    geometry. Emitted rather than omitted because "must NOT differ" is exactly
+    the kind of constraint schematic-sizing needs, and an unmatched device
+    would otherwise arrive with no constraint at all.
+  as_written: {XN2: 'w=40 l=0.5 m=1 nf=1', XN3: 'w=40 l=0.5 m=1 nf=1'}
+  affects: [TuningRange, OscFreq]
+
+- id: TG5_inductor_block
+  pattern: none
+  devices: [Cpa, L1, R1, Cpb]
+  block: vco_spiral_ind
+  tied: []
+  ratio_carrier: none
+  free: none
+  status: not_tunable
+  source: |-
+    Emitted as an explicit FROZEN marker, not as a matching constraint. This
+    block has no w/l at all -- value-form passives fixed by a drawn coil.
+    Recorded so a consumer cannot mistake "no tie group" for "free to tune".
+
+# =============================================================================
+# Step 4 -- matched nets. The layout half of a tie group: a tie group makes two
+# devices identical, which does not make them MATCHED. Authored from Step 1's
+# `[net-match: ...]` candidates plus the manual patterns no detector reaches.
+# Supply rails are absent throughout: VDD/VSS carry no matching constraint.
+# =============================================================================
+matched_nets:
+- id: MN1_tank_outputs
+  nets: [voutp, voutn]
+  kind: differential
+  pattern: cross_coupled_pair
+  devices: [XN0, XN1]
+  terminal: |-
+    drain AND gate on XN0/XN1 -- per pattern-table.md, a cross-coupled pair's
+    two terminals carry the SAME two nets swapped, so {A.drain,B.drain} and
+    {A.gate,B.gate} are one differential pair, not two.
+  carried_outward:
+    - {devices: [XN2, XN3], terminal: gate,     note: varactor gates -- the tuning elements hang off the tank}
+    - {devices: [XC0, XC1], terminal: plate-2,  note: MiM tap plates (capacitor_bank per-unit taps)}
+    - {devices: [XL0, XL1], terminal: B,        note: coil outer terminals -- the tank inductors themselves}
+  why: |-
+    This is the resonant tank, so a routing difference between the halves is
+    not merely offset: each half's parasitic C adds directly to its own half
+    of the LC, so unequal routing detunes the two halves against each other.
+    Measured on this design, mirroring the two coils as separate cells put
+    their terminals face to face and more than doubled the direct voutp-voutn
+    coupling cap (1.55 -> 3.67 fF); entering differentially at 2x, that alone
+    cost the design its TuningRange floor post-layout. Route as mirror images
+    about the pair's axis.
+  detector_note: |-
+    Step 1's detector reported these two as `differential_pair` (shared tail,
+    same type). Step 2's disambiguator -- gate origin -- makes it
+    `cross_coupled_pair`: the gates come from the pair's own drains. The NETS
+    are the same differential pair either way, so the candidate stands; only
+    the pattern label changed.
+
+- id: MN2_tail
+  nets: [vtail]
+  kind: common
+  pattern: cross_coupled_pair
+  devices: [XN0, XN1, XN4]
+  terminal: source on XN0/XN1, drain on XN4
+  why: |-
+    Shared by construction. It is a common node, not a twin pair, but it still
+    carries a constraint: a daisy chain outward from the tail device makes the
+    two halves see different series R to their own source, which is a static
+    imbalance the identical devices cannot cancel. One low-R spine, symmetric
+    taps.
+
+- id: MN3_mirror_bias
+  nets: [Iref]
+  kind: common
+  pattern: current_mirror
+  devices: [XN5, XN4]
+  terminal: gate (both), drain on the XN5 reference
+  why: |-
+    The gate net is the one that bites: it carries no DC current, so its
+    resistance is invisible to simulation, yet each leg samples Vgs where IT
+    taps. Spine with symmetric taps, never a chain outward from the reference.
+
+- id: MN4_mirror_leg_drains
+  nets: [Iref, vtail]
+  kind: branch
+  pattern: current_mirror
+  devices: [XN5, XN4]
+  terminal: drain
+  why: |-
+    Leg drains of a mirror, NOT twins. TG2_tail_mirror is `ratio_conflict` --
+    the legs are deliberately 4:1 in w (15 / 60 um) -- so promoting this to
+    `differential` would assert a symmetry the circuit does not have. Recorded
+    so layout treats it as a ratioed branch: match the current density, not
+    the geometry.
+
+- id: MN5_varactor_control
+  nets: [Vcont]
+  kind: common
+  pattern: none
+  devices: [XN2, XN3]
+  terminal: drain AND source on both (the varactors short D and S to Vcont)
+  why: |-
+    The tuning node. Both varactors must see the same control potential and
+    the same series R to it, or the two tank halves tune by different amounts
+    and the differential output is amplitude- and phase-imbalanced across the
+    sweep. No registered pattern names these devices (see unmatched_devices),
+    so this entry is authored, not proposed by the scan.
+
+open_questions:
+- id: Q1
+  about: [XN2, XN3]
+  question: |-
+    A channel-shorted MOS varactor pair matches no row in pattern-table.md, and
+    inductors/LC tanks are absent from the registry entirely. Should
+    `mos_varactor_pair` (and an `lc_tank` / `spiral_inductor` row) be
+    registered, so oscillator-class designs decompose instead of landing in
+    unmatched_devices?
+  why_structure_cannot_settle_it: |-
+    Registering a pattern is a change to a shared skill reference and, for auto
+    detection, to reference/detect_topology.py -- out of scope for a scan of one
+    netlist. Structure tells us what these devices ARE; only the user decides
+    whether the registry grows.
+  impact_if_unanswered: |-
+    None on THIS run -- TG4 supplies the matching constraint the missing pattern
+    would have carried. It is a flow gap, not a blocker.
+
+- id: Q2
+  about: [XN4, XN5]
+  question: |-
+    The tail mirror's 4:1 gain lives in `w` (60/15), which triggers the
+    ratio_conflict rule and leaves both widths untied. Is the intent (a) a 4:1
+    ratio to be PRESERVED while sizing -- in which case moving it into `m`
+    (w=15 both, m=4 on XN4) would make the group tie-able, at the cost of
+    editing an `m` that sizing is meant to freeze -- or (b) simply two
+    independently sizable devices, the mirror gain itself being a knob?
+  why_structure_cannot_settle_it: |-
+    Both readings produce the identical netlist. Only the designer's intent for
+    the tail current separates them.
+  impact_if_unanswered: |-
+    Real. Tail current sets Power (CEILING 3.0 mW, only 4% margin at baseline)
+    and, through the tank swing, OutputPower (FLOOR 10 dBm). The sizer will
+    move these widths either way; the question is whether their RATIO is
+    allowed to move with them.
+
+- id: Q3
+  about: [XN0, XN1]
+  question: |-
+    Confirm the cross_coupled_pair override of the detector's
+    `differential_pair` finding is the intended topology (gates cross to the
+    opposite drains = positive feedback / negative resistance), and not a
+    transcription slip in the port order.
+  why_structure_cannot_settle_it: |-
+    Structure settles it FULLY -- this question is a confirmation request, not
+    an ambiguity. Raised only because the automatic detector disagrees and the
+    two topologies differ by nothing but a swapped pair of net names.
+  impact_if_unanswered: none_structural
+
+# =============================================================================
+# APPENDED BY schematic-agent (step 2b/2c). Everything above this line is
+# circuit-decomposition's -- SHAPE. Everything below is FUNCTION and PARASITIC
+# EXPOSURE, which structure alone does not carry.
+# =============================================================================
+
+function_analysis:
+  summary: |-
+    This is a cross-coupled NMOS LC voltage-controlled oscillator: a tuned
+    tank plus an active negative resistance that cancels the tank's loss, so
+    the circuit has no input and no stable operating point -- it sustains its
+    own differential limit cycle at the tank's resonance. The "signal path" is
+    a loop, not a chain: the differential tank voutp/voutn (two spiral
+    inductors from VDD, two MiM caps, two MOS varactors) sets the frequency;
+    XN0/XN1 sense that tank on their gates and drive it in phase from their
+    drains, presenting -2/gm and replacing exactly the energy R1 dissipates.
+    The feedback is positive and DC-coupled by construction -- it is the
+    topology, not a compensation network, and there is no Miller cap, no
+    nulling resistor and no phase margin to hold. Biasing is a single NMOS
+    current mirror: an external 300 uA Iref into the diode-connected XN5,
+    mirrored 4:1 by width into the tail XN4, which sets the current the
+    oscillation amplitude is limited by. Frequency is steered by Vcont moving
+    the varactors' gate-to-channel capacitance, which is the only tunable
+    element in the loop.
+  blocks:
+  - ref: [XN0, XN1]
+    function: cross-coupled -gm core -- the negative resistance that starts and sustains oscillation
+    spec_keys: [OutputPower, OscFreq, Power]
+  - ref: [XN2, XN3]
+    function: MOS varactor pair -- the voltage-variable half of the tank capacitance, steered by Vcont
+    spec_keys: [TuningRange, OscFreq]
+  - ref: XN4
+    function: tail current source -- sets the current the limit-cycle amplitude is clipped by
+    spec_keys: [Power, OutputPower]
+  - ref: XN5
+    function: diode-connected mirror reference -- converts the external Iref into the tail gate bias
+    spec_keys: [Power, OutputPower]
+  - ref: [XC0, XC1]
+    function: fixed MiM tank capacitance -- the coarse, untunable part of C_tank
+    spec_keys: [OscFreq, TuningRange]
+  - ref: [XL0, XL1]
+    function: tank inductance (two vco_spiral_ind instances, VDD to each output) -- the L in 1/sqrt(LC), and via R1 the loss that -gm must beat
+    spec_keys: [OscFreq, OutputPower]
+  - ref: [Cpa, L1, R1, Cpb]
+    function: 'inside vco_spiral_ind: L1 the 3.986 nH coil, R1 its 9.225 ohm series loss, Cpa/Cpb the split substrate cap. Fixed, not sizable.'
+    spec_keys: [OscFreq, OutputPower]
+  critical_techniques:
+  - technique: cross-coupled positive feedback (-2/gm negative resistance)
+    devices: [XN0, XN1]
+    buys: cancels the tank's finite Q with two transistors and no bias network; guarantees start-up whenever gm*R_tank > 1
+    costs: consumes the entire tail current and loads both tank nodes with Cgd+Cdb+Cgs, which lowers f0 and dilutes the varactors' share of C_tank
+  - technique: tail current-source biasing (current-limited amplitude regime)
+    devices: [XN4, XN5]
+    buys: makes the swing set by I_tail*R_tank rather than by the rail, so OutputPower is a design variable and supply current is bounded
+    costs: 'Power and OutputPower become one knob pulled two ways: the 3.0 mW ceiling caps the same current the 10 dBm floor wants raised'
+  - technique: MOS varactor tuning with the channel shorted to Vcont
+    devices: [XN2, XN3]
+    buys: a monotonic voltage-controlled capacitance in a PDK with no dedicated varactor device, using only an nfet
+    costs: 'Cmax/Cmin is modest, so wide tuning demands a large varactor share of C_tank -- which fights OscFreq: the same width that buys TuningRange drags f0 down'
+  - technique: fully differential tank (both halves duplicated about voutp/voutn)
+    devices: [XL0, XL1, XC0, XC1, XN2, XN3, XN0, XN1]
+    buys: even-order harmonics and common-mode supply noise cancel at the differential output; the swing is doubled for the same node amplitude
+    costs: every element must be laid out as a matched pair -- a mismatch is direct amplitude/phase imbalance, and it doubles the area of an already inductor-dominated floorplan
+  - technique: series-R pi model standing in for the spiral's finite Q
+    devices: [L1, R1, Cpa, Cpb]
+    buys: the pre-layout tank is honest about its own loss and its own substrate loading instead of assuming a lossless L
+    costs: 'a lumped L-R-C model at ~0.75x f_SR is optimistic; the real coil at 3.5 GHz will show lower Q and higher effective C than this model reports'
+
+parasitic_sensitivity:
+- ref: [voutp, voutn tank nodes -- XN0, XN1, XN2, XN3, XC0, XC1, XL0, XL1 all land here]
+  nodes: [voutp, voutn]
+  mechanism: |-
+    Every femtofarad of routing, junction and coupling capacitance on these two
+    nodes adds directly to C_tank, and f0 = 1/(2*pi*sqrt(L*C_tank)). This is
+    the one node pair in the circuit where layout capacitance is not a
+    second-order loading effect but a first-order term of the spec itself.
+  spec_keys: [OscFreq, TuningRange]
+  severity: high
+  why: |-
+    Structure: eight device terminals plus two long inductor leads converge on
+    two nodes, and the coils are ~196 x 213 um each, so the tank wiring is
+    hundreds of microns of metal by geometry alone, not by bad routing. A
+    fixed parasitic also shrinks the varactor's FRACTION of C_tank, so it
+    pushes OscFreq down and TuningRange down at the same time. No PEX number
+    exists yet; the ranking is from node count and inductor size.
+- ref: [XN2, XN3]
+  nodes: [voutp, voutn, Vcont]
+  mechanism: |-
+    The tuning element's authority is a ratio, C_var/C_tank, so it is degraded
+    by anything that adds fixed C in parallel: the varactors' own gate routing,
+    their drain/source diffusion to the Vcont rail, and gate resistance that
+    caps how much of the device is electrically active at 3.5 GHz.
+  spec_keys: [TuningRange, OscFreq]
+  severity: high
+  why: |-
+    These are the only devices that move OscFreq with Vcont, and TuningRange is
+    the spec key furthest from target (226 MHz vs 600 MHz floor, 2.65x). They
+    are also the widest devices likely to survive sizing, so their finger count
+    and gate-resistance behaviour is exactly what device-shaper should measure
+    rather than assume.
+- ref: [XN0, XN1]
+  nodes: [voutp, voutn, vtail]
+  mechanism: |-
+    Cgd sits between gate and drain of a pair whose gate IS the other's drain,
+    so it appears across the tank undiminished (no Miller reduction -- the
+    cross-coupling makes it worse, not better). Gate resistance in series with
+    Cgs degrades the effective -gm and therefore the sustained amplitude;
+    asymmetric routing between the two halves unbalances the limit cycle.
+  spec_keys: [OutputPower, OscFreq]
+  severity: high
+  why: |-
+    l=0.15 um at w=20 um is a wide short-channel device -- exactly the geometry
+    whose Rg and drain junction area depend most on how it is folded. The pair
+    is TG1-tied, so any layout asymmetry between XN0 and XN1 breaks a matching
+    constraint the netlist explicitly asserts.
+- ref: [XL0, XL1]
+  nodes: [voutp, voutn, VDD]
+  mechanism: |-
+    Two ~196 x 213 um spirals dominate the floorplan; their mutual coupling,
+    their coupling to the routing that must pass them, and the real substrate
+    capacitance the pi-model approximates all shift L and Q away from the
+    modelled 3.986 nH / 9.225 ohm.
+  spec_keys: [OscFreq, OutputPower]
+  severity: high
+  why: |-
+    Nothing downstream can size these away -- the values are frozen -- so any
+    deviation lands entirely on the spec. The netlist header already flags the
+    model as optimistic at 0.75x f_SR. This is ranked from geometry and the
+    model's own stated limits; it is NOT resolvable pre-layout, and an
+    EM-extracted model is the only real answer.
+- ref: XN4
+  nodes: [vtail, Iref]
+  mechanism: |-
+    Cdb on vtail is a common-mode load: it does not shift the differential
+    resonance, but it sets how hard the tail is switched at 2x f0 and thus how
+    cleanly the current limits. Series R in the VSS return raises the tail's
+    effective source degeneration.
+  spec_keys: [Power, OutputPower]
+  severity: medium
+  why: |-
+    vtail is not a tank node, so its parasitics are one loop removed from
+    OscFreq. But XN4 is the widest MOS in the netlist (w=60) and Power has only
+    4% margin, so a degeneration-like series R is not free.
+- ref: XN5
+  nodes: [Iref]
+  mechanism: DC bias node driven by an external current source; parasitic C is irrelevant at DC and parasitic R shifts the mirror gate bias only slightly.
+  spec_keys: [Power]
+  severity: low
+  why: A diode-connected reference carrying 300 uA sees no signal; only gross Iref routing resistance or a mirror-mismatching layout would matter.
+- ref: [XC0, XC1]
+  nodes: [voutp, voutn, VDD]
+  mechanism: MiM plate-to-substrate fringe adds to the fixed tank C; a mismatch between the two units unbalances the differential resonance.
+  spec_keys: [OscFreq]
+  severity: low
+  why: |-
+    The MiM cap is on met3 and its intended capacitance is already ~512 fF, so
+    the fringe addition is a small relative error -- unlike the varactors,
+    whose whole job is a capacitance ratio. Low here means "small relative to
+    its own value", not "irrelevant to the tank".
+
+# --- schematic-agent: resolution of circuit-decomposition's open_questions ---
+open_question_resolutions:
+- id: Q1
+  resolution: DEFERRED_TO_USER (no impact on this run)
+  by: reasoning
+  detail: |-
+    Confirmed as a real registry gap, not a scan failure: pattern-table.md has
+    no row that a channel-shorted MOS varactor or an inductor-bearing tank can
+    match, so an oscillator's two most characteristic structures are
+    unmatchable by construction. Not settled here because registering a pattern
+    edits a shared skill reference (and, for auto-detection,
+    reference/detect_topology.py) -- a repo change, not a finding about this
+    netlist. This run is unaffected: TG4_varactor_pair carries the matching
+    constraint the missing pattern would have carried, and TG5_inductor_block
+    marks the coil model frozen. Reported to the user as a flow gap.
+- id: Q2
+  resolution: 'SETTLED -- reading (b): the mirror gain is itself a knob; the widths are independently sizable'
+  by: evidence
+  detail: |-
+    Settled from the provenance design sheets
+    (example/training_example/VCO/first/spice_netlist/netlist), which the
+    netlist header cites. The source Spectre schematic sizes the two mirror
+    devices with SEPARATE design variables --
+      N5 (net16 net16 0 GND) nmos w=Wn5 l=45n m=1
+      N4 (net1  net16 0 GND) nmos w=Wn6 l=45n m=40
+    -- so the reference and the leg were never intended to share one width, and
+    the mirror gain was a deliberate degree of freedom the Spectre sizer owned.
+    The sky130 port flattened m to 1 and folded the ratio into w, giving the
+    60/15 = 4:1 that triggered the ratio_conflict. CONSEQUENCE FOR SIZING:
+    XN4.w and XN5.w stay untied and independently tunable; the 4:1 is a
+    starting point, not an invariant to preserve. No `m` edit is proposed, so
+    the freeze on m/nf is untouched.
+- id: Q3
+  resolution: SETTLED -- cross_coupled_pair is correct; the detector's differential_pair finding is wrong
+  by: evidence
+  detail: |-
+    Structure settles it, and the provenance netlist confirms the port order is
+    not a transcription slip -- the source carries the same crossing:
+      N1 (Vout+ Vout- net1 GND)   N0 (Vout- Vout+ net1 GND)
+    i.e. each device's gate on the other's drain, sources common. A VCO with
+    uncrossed gates would be a differential amplifier and would not oscillate;
+    the deck does oscillate, at 2.72 GHz, which is independent confirmation.
+
+# The role file requires `confirmed_by_user: true` before this read is final,
+# and forbids schematic-agent setting it on its own inference. It ran here as
+# a subagent with no interactive channel, so it recorded PENDING and reported
+# the read upward; the orchestrating session put it to the user, who confirmed
+# it, and closed the gate below. The read is complete: hierarchy, 3 patterns,
+# 2 unmatched groups, 5 tie groups (1 ratio_conflict), function_analysis,
+# parasitic_sensitivity, and all 3 open_questions resolved.
+confirmation:
+  status: CONFIRMED
+  confirmed_by_user: true
+  confirmed_on: 2026-09-03
+  reason: |-
+    Presented to the user by the orchestrating session and confirmed as read.
+    Covers: XN0/XN1 = cross_coupled_pair (overriding the automatic detector's
+    differential_pair), XN5/XN4 = current_mirror carrying a ratio_conflict,
+    XC0/XC1 = capacitor_bank, and the varactors XN2/XN3 plus both
+    vco_spiral_ind instances left in unmatched_devices because
+    pattern-table.md registers no oscillator-class rows.
+  blocking: false

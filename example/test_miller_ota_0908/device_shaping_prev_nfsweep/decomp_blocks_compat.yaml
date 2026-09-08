@@ -1,0 +1,43 @@
+# COMPATIBILITY SHIM for device-shaper Step 5 (fold_multipliers.py). NOT a
+# circuit read -- circuit_decomposition.yaml is, and this file is derived from
+# it mechanically, changing only the SPELLING of each pattern's device list.
+#
+# WHY IT EXISTS. fold_multipliers.blocked_devices() collects a pattern's
+# devices with exactly one regex:
+#       re.findall(r'\{\s*ref:\s*([A-Za-z0-9_.]+)', stripped)
+# so it only sees a device list written as mappings, `devices: [{ref: XMN4}]`.
+# circuit_decomposition.yaml writes the plain-scalar form the decomposition
+# skill's own schema uses, `devices: [XMN4, XMN3, XMN5]`, which that regex
+# never matches. Every pattern then parses with an EMPTY device list, nothing
+# reaches the >= 2 MOS test, and every device is reported `standalone`.
+#
+# THAT FAILURE IS SILENT. The guard `seen_patterns_key and not patterns` does
+# not fire, because the 6 pattern entries DO parse -- they just parse with no
+# devices. Verified against the real file: the dry-run listed XMN1/XMN2
+# (differential_pair) and XMN3/XMN4/XMN5 + XMP1/XMP2 (current_mirror) all as
+# `standalone`, and would have rewritten m on all of them -- destroying the
+# 5:2:6 mirror ratio and the pair's match, which is precisely what the skill's
+# "Composed blocks are skipped, not as an optimization" rule forbids.
+#
+# Reported as a finding. This shim is the workaround, not the fix; the fix is
+# for fold_multipliers.py to accept both spellings, as its sibling parser
+# already does for `- id:` vs `- pattern:`.
+patterns:
+- pattern: current_mirror
+  id: tg1_nfet_bias_mirror
+  devices: [{ref: XMN4}, {ref: XMN3}, {ref: XMN5}]
+- pattern: current_mirror
+  id: tg3_pfet_load_mirror
+  devices: [{ref: XMP1}, {ref: XMP2}]
+- pattern: differential_pair
+  id: tg2_input_pair
+  devices: [{ref: XMN1}, {ref: XMN2}]
+- pattern: self_biased_reference
+  id: sbr_bias_leg
+  devices: [{ref: XMP4}, {ref: XMN4}]
+- pattern: common_source_stage
+  id: stage2_gain_device
+  devices: [{ref: XMP3}]
+- pattern: rc_compensation_network
+  id: miller_branch
+  devices: [{ref: R0}, {ref: XC0}]

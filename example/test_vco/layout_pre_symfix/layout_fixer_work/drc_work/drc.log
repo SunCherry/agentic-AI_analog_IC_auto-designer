@@ -1,0 +1,70 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/layout_fixer_work/drc_work/drc.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "routed".
+Reading "Unnamed_8a89893b".
+Reading "via_stack_18d6ab16$4".
+Reading "via_stack_686e5d96$33".
+Reading "XC0".
+Reading "Unnamed_43f39a32".
+Reading "via_stack_918d05dd$2".
+Reading "via_stack_627eccf4$2".
+Reading "via_stack_627eccf4$5".
+Reading "via_stack_18d6ab16$3".
+Reading "via_stack_2e2571cb$2".
+Reading "current_mirror_XN5_XN4".
+Reading "via_stack_f018e2c2".
+Reading "vco_spiral_ind".
+Reading "via_stack_2e2571cb".
+Reading "XN1".
+Reading "Unnamed_6f40f37b".
+Reading "Unnamed_1dc60c31".
+Reading "Unnamed_c0a30604".
+Reading "XC1".
+Reading "XN3".
+Reading "Unnamed_4b7a68c3".
+Reading "Unnamed_dbd01499".
+Reading "via_stack_627eccf4$4".
+Reading "via_stack_918d05dd$3".
+Reading "via_stack_2e2571cb$3".
+Reading "XN0".
+Reading "via_stack_627eccf4$3".
+Reading "via_stack_18d6ab16$2".
+Reading "via_stack_2e2571cb$1".
+Reading "XN2".
+DRC style is now "drc(full)"
+Loading DRC CIF style.
+DRC_TOTAL: 0
+CELLCOUNT: via_stack_2e2571cb$3 3
+CELLCOUNT: via_stack_2e2571cb$1 3
+CELLCOUNT: via_stack_918d05dd$2 3
+CELLCOUNT: via_stack_918d05dd$3 3
+CELLCOUNT: via_stack_686e5d96$33 1
+CELLCOUNT: via_stack_2e2571cb 3
+CELLCOUNT: via_stack_2e2571cb$2 3
+No errors found.
+
+Error while reading cell "Unnamed_43f39a32" (byte position 20984): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_6f40f37b" (byte position 240076): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_1dc60c31" (byte position 608464): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_c0a30604" (byte position 752084): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_4b7a68c3" (byte position 895864): Unknown layer/datatype in boundary, layer=64 type=44

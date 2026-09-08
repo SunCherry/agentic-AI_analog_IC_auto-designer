@@ -1,0 +1,120 @@
+================================================================================
+DRC REPORT -- test_vco (vco_lc), placement candidate U12 (aspect 1.50:1)
+report_dir : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+generated  : 2026-09-04  by layout-fixer (Step 1 gate)
+NOTE: OVERWRITES the previous run's drc_report.log in this directory. Archived
+copies of the earlier runs are preserved and untouched at
+  layout_run1_4x1/  and  layout_aspect1x1/.
+================================================================================
+
+VERDICT: CLEAN.  DRC_TOTAL = 0, rects = 0, distinct violated rules = 0.
+  fix iterations consumed : 0 of 5
+    MAX_SUBRETRY = 5 = design_constraints.json key `layout_fix_iterations`,
+    read via .claude/reference/design_constraints.py (not a number I chose).
+  Passed at attempt 1 -- the baseline. Nothing was fixed because nothing failed,
+  so no re-route was run and no router knob was touched.
+
+  ERRORS: none.   WARNINGS: none blocking (see "Warnings" below).
+
+--------------------------------------------------------------------------------
+WHAT WAS CHECKED
+--------------------------------------------------------------------------------
+  gds        : layout/routed.gds
+               sha256 38e7f584e8dbdd224fbe20cc7b1dcfe706f7d9b5d1bdfed3e26d9630b286d728
+  top cell   : `routed`  -- read out of the GDS with gdstk top_level(), NOT taken
+               from the filename or the design name. Passed as --top routed on
+               every Magic call. Magic's `load` silently CREATES a missing cell and
+               would DRC an empty one, i.e. a false PASS; that trap is avoided here.
+  tool       : .claude/skills/router/script/run_drc.py (the validated Tcl -- not
+               hand-rolled), PDK_ROOT=/Users/cherrysun/pdk/manual, sky130A,
+               magicrc from .claude/reference/pdk_config.py. No hardcoded paths.
+  work dirs  : layout_fixer_work/drc_work  (reused, overwritten per attempt --
+               the durable history is layout_fixer_work/bookkeeper.log)
+  runtime    : ~1.3 s per DRC call against a 5-min budget. 0 retries, 0 exceptions.
+
+--------------------------------------------------------------------------------
+ERRORS BY RULE CATEGORY
+--------------------------------------------------------------------------------
+  | Category   | Rule | Count | Fixable? |
+  |------------|------|-------|----------|
+  | spacing    | --   | 0     | n/a      |
+  | width      | --   | 0     | n/a      |
+  | enclosure  | --   | 0     | n/a      |
+  | other      | --   | 0     | n/a      |
+  `drc listall why` reports 0 distinct violated rules and 0 instances in the
+  expanded top cell. drc_violations.json is empty.
+
+  NETS ranked by violation count: all 7 nets (VDD, VSS, voutp, voutn, Vcont,
+  vtail, Iref) have 0. Leading with nets rather than devices because this GDS is a
+  router hand-off, so any violation would have been net geometry.
+  DEVICES ranked by violation count: all 10 (XC0 XC1 XL0 XL1 XN0..XN5) have 0.
+  Spacing-violation pair table: empty -- there are no spacing violations to pair.
+  Per-error modification notes: none, because there are no errors.
+
+--------------------------------------------------------------------------------
+THE 19-COUNT PHANTOM -- VERIFIED HERE, NOT TAKEN ON TRUST
+--------------------------------------------------------------------------------
+  `drc listall count` reports 19 errors, all inside standalone via_stack subcells:
+    via_stack_2e2571cb=3, $1=3, $2=3, $3=3, via_stack_686e5d96$33=1,
+    via_stack_918d05dd$2=3, $3=3
+  while `drc listall why` reports 0 rules / 0 instances in the expanded top cell.
+  These are OUT-OF-CONTEXT subcell errors -- the geometry that completes those vias
+  lives in the parent -- and run_drc.py flags exactly this case in its own output.
+
+  The hand-off told me this was already settled. I did not rely on that. Independent
+  re-derivation: flattened routed.gds with gdstk (20186 polygons, top cell kept as
+  `routed`) and re-ran the identical run_drc.py on the flat file:
+        `drc listall count` = 0     AND     `drc listall why` = 0 rules / 0 instances
+  BOTH metrics agree at 0 once the parent geometry is in context. Confirmed.
+  Scratch artifacts (not delivered): scratchpad/flat/routed_flat_check.gds,
+  scratchpad/flat/drc_flat/.
+  These 19 are NOT violations and NOT fixable geometry; zero budget was spent on them.
+
+  One correction to the hand-off, immaterial to the verdict: routed.gds is NOT
+  byte-identical to sweep/gds/U12_routed_flat.gds (38e7f584... vs 504705fc...).
+  That is expected -- flattening rewrites GDS structure -- and the hand-off's
+  sha256 for routed.gds itself is correct. Both DRC clean, so nothing turns on it.
+
+--------------------------------------------------------------------------------
+VIOLATION CLASSES THE HAND-OFF FLAGGED AS LATENT -- ALL ABSENT HERE
+--------------------------------------------------------------------------------
+  capm.2b / met3.2 at the MiM cap landings (voutp/XC0, voutn/XC1): ABSENT.
+    grep of the full drc.log finds no capm.2b and no met3.2 anywhere in this run.
+    This is the class that consumed the previous fixer's entire 5-iteration budget
+    on placement U7 and was categorized there as a router defect. It is
+    placement-dependent (fired on U7/U18/U5/U6/U19, not on U12). It did NOT fire on
+    this geometry, so there is nothing to escalate and no source fix to request.
+  met4.2 / met4.5b at XL1 (via landing inside the coil's keepout_um=0.4): ABSENT.
+    The one class that WOULD have been knob-fixable here (track-multiplier 1.5-1.6
+    at via-cost 10). Not needed -- no re-route was run.
+
+--------------------------------------------------------------------------------
+CATEGORIZATION (inherited vs router-introduced)
+--------------------------------------------------------------------------------
+  Not applicable, and deliberately not run. Categorization exists only to decide
+  WHICH lever to reach for (re-place vs re-route vs escalate); with 0 violations
+  there is no lever to choose and a second DRC would produce no decision.
+  layout_fixer_work/drc_work_placement was therefore left exactly as the previous
+  run left it rather than being overwritten with a redundant result.
+  For the record, the hand-off states placement_visualization.gds for U12 was
+  independently DRC'd at 0 errors / 0 rules, so both the pre-routing and the routed
+  layout are clean and the router introduced nothing.
+
+--------------------------------------------------------------------------------
+WARNINGS (non-blocking)
+--------------------------------------------------------------------------------
+  Magic: "WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9" x1 -- environment,
+    not layout.  "Calma reading is not undoable" x1 -- informational GDS-read notice.
+  No layer 64/44 GDS-read warnings surfaced in this run's log (layer 64/44 IS drawn,
+  10 polygons, it simply did not warn).
+  Errors and warnings are NOT both non-empty: the error set is empty.
+
+--------------------------------------------------------------------------------
+ITERATION HISTORY
+--------------------------------------------------------------------------------
+  attempt 1   baseline, routed.gds, stock router knobs   CLEAN (0/0/0)  <- gate passed
+  (re-check)  test_vco_fixed.gds by its delivered name   CLEAN (0/0/0)
+              Not a fix cycle and does not consume budget; run to prove the
+              deliverable passes under the name it ships as, still --top routed.
+  No re-routes, no knob changes, no placement moves, no hand-edited polygons.
+================================================================================

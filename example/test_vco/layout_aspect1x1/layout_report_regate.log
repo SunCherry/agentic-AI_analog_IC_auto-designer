@@ -1,0 +1,151 @@
+================================================================================
+LAYOUT REPORT -- RE-GATE after route-shortner
+design      : test_vco  (vco_lc -- cross-coupled LC VCO, two spiral inductors)
+report_dir  : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+DELIVERED   : test_vco_fixed_shortened.gds        TOP CELL = routed
+              physical_map_shortened.json
+PDK         : sky130A
+budget      : MAX_SUBRETRY = 5 per gate (design_constraints.json:layout_fix_iterations,
+              read via .claude/reference/design_constraints.py). Not changed.
+
+BOTH GATES PASSED.  DRC: PASS, 0 fix iterations.  LVS: MATCH, 0 fix iterations.
+No geometry was modified by layout-fixer. The delivered GDS is byte-identical to
+route-shortner's output (sha256 46d05b0fa8cf7d16bb60bd3ba07e988045d9ee1282244ae9fc01352671477f43).
+
+TOP CELL NAME
+--------------------------------------------------------------------------------
+`routed` -- NOT `test_vco_fixed_shortened`. Renaming the file did not rename the
+cell. Every downstream tool must be passed --top routed explicitly; `load` on the
+filename stem would silently CREATE an empty cell and report a false clean.
+
+DEVICE COUNT BY KIND  (from physical_map_shortened.json)
+--------------------------------------------------------------------------------
+| Kind  | Count | Instances                          |
+|-------|-------|------------------------------------|
+| nfet  | 6     | XN0 XN1 XN2 XN3 XN4 XN5            |
+| pfet  | 0     | --                                 |
+| cap   | 2     | XC0 XC1 (cap_mim_m3_1, 7.5x7.5)    |
+| res   | 0     | --                                 |
+| bjt   | 0     | --                                 |
+| ind   | 2     | XL0 XL1 (vco_spiral_ind)           |
+| other | 0     | --                                 |
+| TOTAL | 10    |                                    |
+Plus 2 glayout tie-off dummies that exist in silicon and are extracted by Magic;
+they are declared in lvs_compare.sp as XDUMMY1/XDUMMY2 and are not placed devices.
+XN4 and XN5 share one primitive cell (current_mirror_XN5_XN4) and therefore report
+the same bounding box.
+
+TOTAL PLACEMENT AREA
+--------------------------------------------------------------------------------
+bounding box over physical_map devices, via .claude/reference/generate_grid.py
+overall_bbox() (not re-derived):
+    (133.892, 74.416) .. (527.498, 468.022) um
+    393.606 x 393.606 um  =  154925.85 um^2
+(The full GDS extent is slightly larger, (131.865, 74.415)..(527.500, 470.055) um,
+because routing metal and labels reach past the device boxes.)
+
+DISTINCT GDS LAYERS ACTUALLY DRAWN  (read from the delivered GDS, not the PDK list)
+--------------------------------------------------------------------------------
+22 distinct layer/datatype pairs, polygon counts flattened through the hierarchy:
+   64/44      10      65/20    2505      66/20      63      66/44    5760
+   67/20    7330      67/44    1554      68/16      12      68/20    1770
+   68/44      22      69/16       4      69/20      52      69/44       3
+   70/20      23      70/44     134      71/20     171      71/44     680
+   72/16       4      72/20       4      89/44       2      93/44      18
+   94/20       9      95/20      22
+label layers: 236/0 x10 (instance labels), 68/5 x13, 69/5 x6, 71/5 x8 (net labels),
+72/16 x4 (coil ports A/B).
+Note 71/44 = 680: the 340 via4 cuts of each of the two spiral inductors.
+Note 64/44 is glayout's pwell glayer, which sky130A.tech does not map -- it is the
+source of the 5 harmless GDS-read warnings, and Magic drops it.
+
+DRC FINAL STATUS
+--------------------------------------------------------------------------------
+PASS (clean). DRC_TOTAL = 0, violation rectangles = 0, violated rules = 0.
+Fix iterations: 0 of 5 (clean on the baseline run; no fix was ever needed).
+Detail: drc_report_regate.log   Raw history: layout_fixer_work/bookkeeper.log
+Guarded against the empty-cell false pass (flatten bbox == source bbox, non-empty)
+and against a dead checker (injected met1.2 violation was caught).
+
+LVS FINAL STATUS
+--------------------------------------------------------------------------------
+MATCH. 9 devices / 7 nets both sides, 6/6 pins, ZERO property errors.
+Iterations: 1 attempt, 0 fix iterations of 5.
+Detail: lvs_report_regate.log   Artifacts: layout_fixer_work/regate/lvs_attempt_1/
+Requires a HAND-BUILT extraction-only GDS view to black-box the spiral inductors --
+see lvs_report_regate.log. Not reproducible unattended for this circuit class.
+
+PER-ITERATION HISTORY (append-only; both phases, this re-gate)
+--------------------------------------------------------------------------------
+[pre] route-shortner rebuilt VSS, Vcont, voutp. 1385.76 -> 1220.47 um (-165.29,
+      -11.9%), corners 42 -> 21, vias 21 -> 24. voutn rebuilt then REVERTED by the
+      skill's own DRC gate; VDD excluded; vtail no gain. GDS 37 -> 28 cells as
+      unused via_stacks were pruned. This invalidated the previous DRC+LVS verdict
+      and is why this re-gate ran.
+
+DRC-1  gds=shortening/test_vco_fixed_shortened.gds top=routed. knobs: baseline
+      (route-shortner output as handed off; nothing changed by me).
+      DRC_TOTAL=0 rects=0 rules=0 -> CLEAN. delta 0 -> 0 vs pre-shortening [same].
+      16 out-of-context via_stack subcell errors (19 pre-shortening), disproven by
+      a flatten re-check on THIS geometry: FLAT_DRC_TOTAL=0, FLAT_BBOX==SRC_BBOX.
+      Negative control on THIS file caught an injected met1.2 pair. No fix applied.
+
+DRC-cat  SKIPPED deliberately: zero violations, so there is nothing to categorize
+      as inherited-vs-introduced and no lever to reach for. drc_work_placement was
+      not re-run; it is only an attribution aid for violations that exist.
+
+LVS-1  Rebuilt the extraction-only view routed_lvsview.gds against the NEW geometry
+      (coil cell first verified bit-identical to the baseline: 347 polys, same layer
+      histogram, same labels, same bbox). Deleted the single 74-point met5 spiral
+      polygon, re-added an 8x5 um met5 patch under port B, kept all 340 via4 cuts,
+      all met4 landings and both labels. Magic: 0 shorts, 6 ports. netgen:
+      "Netlists match uniquely", 9/9 devices, 7/7 nets, 6/6 pins, 0 property errors
+      -> MATCH. No layout geometry touched, so no DRC re-run was required (2.6).
+
+LVS-1b  Falsification, not a fix attempt: XN2 w=60->42 on the schematic side ->
+      "Property errors were found" while netgen STILL printed "Final result:
+      Circuits match uniquely". Confirms w/l are really compared (so the MATCH is
+      meaningful) and confirms the documented trap. Reverted; the shipped
+      comparison used the unmodified lvs_compare.sp.
+
+MAP    Shipped route-shortner's own physical_map.json, NOT a regenerated one, and
+      NOT the pre-shortening map. Verified non-degenerate and current -- see below.
+
+PHYSICAL MAP VALIDITY (asserted, not assumed)
+--------------------------------------------------------------------------------
+Shipped: physical_map_shortened.json (copy of shortening/physical_map.json).
+  - 10/10 devices with real x0/y0/x1/y1, rotation_deg emitted (90 x6, 0 x4),
+    mirror emitted (False x10), primitive_cell set on all 10. No nulls.
+  - 7/7 nets traced, all "source": "router"; 6 carry segments (Iref legitimately
+    has none -- it is internal to the current_mirror_XN5_XN4 macro, and the
+    shortening summary independently reports Iref with 0 terminals / 0.00 um).
+  - 24 vias total, per net VDD 4 / VSS 4 / Vcont 2 / voutn 5 / voutp 7 / vtail 2 --
+    exactly the POST-shortening counts.
+
+  I did NOT run physical_map_from_placement.py, and that is deliberate. The bridge
+  reads the canonical routes.json, which is still the PRE-shortening routing
+  (total_wire_um = 1397.22, total_vias = 21). Regenerating would have produced a
+  map describing routing that no longer exists -- the exact stale-map failure the
+  role file warns about -- and route-shortner is not the router, so there is no
+  "winning attempt" routes.json to copy over the canonical name. The map built
+  from the final geometry is the shortener's own.
+
+  Independently verified rather than trusted, by boolean area comparison of every
+  map segment polygon against the flattened GDS:
+      vs delivered shortened GDS : 421.68 um^2 of map metal, 0.545 um^2 not present
+                                   = 0.129% -- and all 43 residual fragments are
+                                   1-116 nm-wide edge slivers (boolean/grid rounding),
+                                   not missing wire.
+      vs pre-shortening baseline : 130.703 um^2 not present = 30.996% missing.
+  So the shipped map describes the delivered geometry and NOT the baseline's.
+
+FILES PRESERVED, NOT OVERWRITTEN
+--------------------------------------------------------------------------------
+The pre-shortening gate's deliverables and reports are intact, because that layout
+is the documented fallback and its verdict must stay auditable:
+  test_vco_fixed.gds  (sha256 0e1856dc...899f, re-verified unchanged this run)
+  physical_map.json, drc_report.log, lvs_report.log, layout_report.log
+  layout_fixer_work/lvs_attempt_1..4/
+This re-gate's reports therefore carry the _regate suffix, and its LVS artifacts
+live under layout_fixer_work/regate/.
+================================================================================

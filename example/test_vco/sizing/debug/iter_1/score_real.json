@@ -1,0 +1,41 @@
+[
+  {
+    "key": "OscFreq",
+    "direction": "RANGE",
+    "target": [
+      3.4,
+      3.6
+    ],
+    "units": "GHz",
+    "sim_si": 3544450000.0,
+    "measured": 3.5444500000000003,
+    "met": true
+  },
+  {
+    "key": "TuningRange",
+    "direction": "FLOOR",
+    "target": 600,
+    "units": "MHz",
+    "sim_si": 451310000.0,
+    "measured": 451.31,
+    "met": false
+  },
+  {
+    "key": "OutputPower",
+    "direction": "FLOOR",
+    "target": 10,
+    "units": "dBm",
+    "sim_si": 12.6614,
+    "measured": 12.6614,
+    "met": true
+  },
+  {
+    "key": "Power",
+    "direction": "CEILING",
+    "target": 3.0,
+    "units": "mW",
+    "sim_si": 0.00273174,
+    "measured": 2.73174,
+    "met": true
+  }
+]

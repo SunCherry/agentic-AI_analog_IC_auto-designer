@@ -1,0 +1,8 @@
+Simulated performance ...
+OscFreq: 2.72465E+09
+OutputPower: 8.66583
+TuningRange: 2.2643E+08
+Power: 0.00287729
+f_lo: 2.67404E+09
+f_hi: 2.90047E+09
+Vamp_fund: 0.857613

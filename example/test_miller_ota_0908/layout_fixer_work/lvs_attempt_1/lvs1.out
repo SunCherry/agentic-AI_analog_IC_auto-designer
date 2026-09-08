@@ -1,0 +1,90 @@
+
+Circuit 1 cell sky130_fd_pr__nfet_01v8 and Circuit 2 cell sky130_fd_pr__nfet_01v8 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__nfet_01v8         |Circuit 2: sky130_fd_pr__nfet_01v8         
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__nfet_01v8 and sky130_fd_pr__nfet_01v8 are equivalent.
+
+Circuit 1 cell sky130_fd_pr__cap_mim_m3_1 and Circuit 2 cell sky130_fd_pr__cap_mim_m3_1 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__cap_mim_m3_1      |Circuit 2: sky130_fd_pr__cap_mim_m3_1      
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__cap_mim_m3_1 and sky130_fd_pr__cap_mim_m3_1 are equivalent.
+
+Circuit 1 cell sky130_fd_pr__pfet_01v8 and Circuit 2 cell sky130_fd_pr__pfet_01v8 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__pfet_01v8 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__pfet_01v8 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__pfet_01v8         |Circuit 2: sky130_fd_pr__pfet_01v8         
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__pfet_01v8 and sky130_fd_pr__pfet_01v8 are equivalent.
+Flattening unmatched subcell XMN4 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_1794b227 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XC0 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_fd2fdf59 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XMP3 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_4641b33a in circuit routed (0)(1 instance)
+Flattening unmatched subcell R0 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_09165038 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XMN5 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_485c261d in circuit routed (0)(1 instance)
+Flattening unmatched subcell XMN3 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_23a0d124 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XMP4 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_60ff7c9a in circuit routed (0)(1 instance)
+Flattening unmatched subcell current_mirror_XMP1_XMP2 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_aeefb555 in circuit routed (0)(1 instance)
+Flattening unmatched subcell diff_pair_XMN1_XMN2 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_fb441e19 in circuit routed (0)(1 instance)
+
+Class routed (0):  Merged 217 parallel devices.
+Class two_stage_rz (1):  Merged 1 parallel devices.
+Subcircuit summary:
+Circuit 1: routed                          |Circuit 2: two_stage_rz                    
+-------------------------------------------|-------------------------------------------
+sky130_fd_pr__nfet_01v8 (200->6)           |sky130_fd_pr__nfet_01v8 (7->6)             
+sky130_fd_pr__cap_mim_m3_1 (1)             |sky130_fd_pr__cap_mim_m3_1 (1)             
+sky130_fd_pr__pfet_01v8 (28->5)            |sky130_fd_pr__pfet_01v8 (5)                
+sky130_fd_pr__res_generic_po (1)           |sky130_fd_pr__res_generic_po (1)           
+Number of devices: 13                      |Number of devices: 13                      
+Number of nets: 10                         |Number of nets: 10                         
+---------------------------------------------------------------------------------------
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: routed                          |Circuit 2: two_stage_rz                    
+-------------------------------------------|-------------------------------------------
+Vip                                        |Vip                                        
+Vin                                        |Vin                                        
+vout                                       |vout                                       
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes routed and two_stage_rz are equivalent.
+
+Final result: Circuits match uniquely.
+.

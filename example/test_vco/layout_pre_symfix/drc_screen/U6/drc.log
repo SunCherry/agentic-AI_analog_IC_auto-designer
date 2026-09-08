@@ -1,0 +1,119 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U6/drc.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "routed".
+Reading "Unnamed_8a89893b".
+Reading "XC1".
+Reading "XN3".
+Reading "Unnamed_4b7a68c3".
+Reading "via_stack_686e5d96$33".
+Reading "Unnamed_dbd01499".
+Reading "via_stack_627eccf4$4".
+Reading "XC0".
+Reading "Unnamed_43f39a32".
+Reading "via_stack_2e2571cb$3".
+Reading "via_stack_918d05dd$2".
+Reading "via_stack_ea9c5ac0".
+Reading "via_stack_627eccf4$2".
+Reading "via_stack_627eccf4$5".
+Reading "via_stack_18d6ab16$3".
+Reading "XN0".
+Reading "via_stack_2e2571cb$2".
+Reading "current_mirror_XN5_XN4".
+Reading "via_stack_f018e2c2".
+Reading "vco_spiral_ind".
+Reading "via_stack_2e2571cb".
+Reading "via_stack_627eccf4$3".
+Reading "via_stack_627eccf4$6".
+Reading "via_stack_18d6ab16$2".
+Reading "XN1".
+Reading "via_stack_2e2571cb$1".
+Reading "via_stack_2e2571cb$4".
+Reading "Unnamed_6f40f37b".
+Reading "Unnamed_1dc60c31".
+Reading "XN2".
+Reading "Unnamed_c0a30604".
+DRC style is now "drc(full)"
+Loading DRC CIF style.
+DRC_TOTAL: 13
+CELLCOUNT: via_stack_2e2571cb$1 3
+CELLCOUNT: via_stack_2e2571cb$4 3
+CELLCOUNT: routed 13
+CELLCOUNT: via_stack_918d05dd$2 3
+CELLCOUNT: via_stack_2e2571cb$3 3
+CELLCOUNT: via_stack_2e2571cb 3
+CELLCOUNT: via_stack_2e2571cb$2 3
+CELLCOUNT: via_stack_686e5d96$33 1
+RULE: (6) Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b)
+COORD: Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b) @ 51526 70444 51528 70505
+COORD: Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b) @ 51528 70444 51529 70505
+COORD: Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b) @ 51526 70442 51529 70444
+COORD: Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b) @ 51591 70444 51592 70505
+COORD: Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b) @ 51592 70444 51594 70505
+COORD: Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b) @ 51591 70442 51594 70444
+RULE: (12) MiM cap bottom plate spacing < 1.2um (capm.2b)
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44574 57739 44798 57810
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44814 57508 45038 57510
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44574 57510 44798 57629
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44568 55531 44798 55650
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44329 55110 44391 55469
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44808 55311 45038 55350
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44568 55350 44798 55469
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44814 57739 45038 57908
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44814 57510 45038 57629
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44808 55531 45038 55711
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44498 55350 44631 55469
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 44808 55350 45038 55469
+RULE: (12) Metal3 spacing < 0.3um (met3.2)
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44814 57810 44858 57870
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44814 57739 44858 57870
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44754 57739 44798 57810
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44814 57508 44858 57510
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44814 57508 44858 57629
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44754 57510 44798 57629
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44808 55650 44858 55710
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44808 55531 44858 55710
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44748 55531 44798 55650
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44808 55311 44858 55350
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44808 55311 44858 55469
+COORD: Metal3 spacing < 0.3um (met3.2) @ 44748 55350 44798 55469
+RULE: (14) Metal4 spacing < 0.3um (met4.2)
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51466 70383 51526 70425
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51466 70382 51526 70383
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51466 70383 51529 70425
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51466 70382 51529 70383
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51591 70383 51654 70425
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51591 70382 51654 70383
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51594 70383 51654 70425
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51594 70382 51654 70383
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51526 70444 51528 70485
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51528 70444 51529 70485
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51526 70442 51529 70444
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51591 70444 51592 70485
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51592 70444 51594 70485
+COORD: Metal4 spacing < 0.3um (met4.2) @ 51591 70442 51594 70444
+
+Error while reading cell "Unnamed_4b7a68c3" (byte position 20462): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_43f39a32" (byte position 398760): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_6f40f37b" (byte position 619666): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_1dc60c31" (byte position 988054): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_c0a30604" (byte position 1131754): Unknown layer/datatype in boundary, layer=64 type=44

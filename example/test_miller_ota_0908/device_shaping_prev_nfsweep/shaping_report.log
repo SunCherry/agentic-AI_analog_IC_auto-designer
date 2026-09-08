@@ -1,0 +1,215 @@
+================================================================================
+shaping_report.log -- two_stage_rz   (design test_miller_ota_0908)
+device-shaper, single pass after schematic-sizing CONVERGED. PDK: sky130A.
+
+  HEADLINE:  THE Nf SWEEP DID NOT RUN.  nf IS UNMEASURED FOR THIS DESIGN.
+  Every device leaves this skill with nf = 1 -- the value the netlist already
+  carried. That is a CARRIED-THROUGH finger count, NOT a chosen one, and the
+  two are indistinguishable by looking at the netlist. Steps 1, 3, 4 and 5
+  (which need no parasitic table) did run; Step 5 changed XMP3's arrangement.
+
+  THIS REPORT IS HAND-WRITTEN. sweep_fingers.py's --report-out could not
+  produce it, because the sweep it reports on never executed.
+================================================================================
+
+--------------------------------------------------------------------------------
+WHY THE SWEEP DID NOT RUN  (a missing input -- not a failure, not a shortfall)
+--------------------------------------------------------------------------------
+sweep_fingers.py refused sky130A BY NAME, at argument parsing, before doing any
+work:
+
+    sweep_fingers.py: error: argument --pdk: invalid choice: 'sky130A'
+                      (choose from )
+
+The choice set is EMPTY -- no PDK is currently shapeable, sky130A included.
+Root cause, and it is deliberate rather than broken:
+
+  .claude/skills/parasitic-estimation/script/estimate_parasitics.py, line 96
+      PDK_TABLES = {}
+
+  with the module docstring stating that the per-process parasitic COEFFICIENT
+  table is "DELIBERATELY NOT RESTORED ... Those are measured process numbers;
+  inventing them would produce plausible, wrong nf decisions. It is left EMPTY
+  on purpose so the caller reports the nf as never measured, rather than
+  silently shaping against fabricated physics."
+
+So this is the designed behaviour on a PDK with no measured coefficient table,
+and the correct outcome is exactly what this report does: say plainly that nf
+was never measured. Nothing here was estimated to fill the gap.
+
+CONSEQUENCES, stated so nothing downstream over-reads this file:
+  - There is NO per-Nf table, NO selected Nf, and NO ideal-vs-annotated drop
+    measurement anywhere below. Those all belong to Step 2.
+  - No spec was re-measured under annotated parasitics, so this skill reports
+    NO shortfall against any spec -- not "no shortfall found", but "NOT
+    MEASURED". The sizing numbers stand unchallenged because nothing challenged
+    them.
+  - Whether nf=1 is a good finger count for these devices is UNKNOWN. Several
+    are wide (XMN4 236um total, XMN5 283.2um, XMN1/XMN2 320um each) and would
+    normally be strong folding candidates.
+
+--------------------------------------------------------------------------------
+STEP 1 -- device selection (this DID run)
+--------------------------------------------------------------------------------
+Source: circuit_decomposition.yaml `parasitic_sensitivity`, severity=high.
+Selected 7 to sweep: XMP3, XMN5, XMP2, XMN2, XMN4, XMN3, XMP4
+Pinned at the netlist nf (2): XMP1=nf1, XMN1=nf1
+Specs at risk per the read: Gain, PM, Power, UGBW
+
+  NOTE (from the script): one high-severity entry names NO MOS device --
+     'R0 + XC0 (rc_compensation_network), net8'
+  That entry is ranked FIRST in the circuit read, and it is the one this skill
+  has no lever for at all: R0 and XC0 are passives, they have no nf, and folding
+  cannot touch them. The sensitivity is real and is carried to layout unchanged
+  -- routing resistance in series with R0 (~1494 ohm, but only ~100 ohm of it is
+  "small-resistor" margin) lands directly on the LHP zero that is holding PM at
+  56.96 deg, and routing capacitance on net8 shunts Cc. Threatens PM and UGBW.
+
+  WARNING (from the script): circuit_decomposition.yaml has
+  confirmed_by_user: false. The severity ranking this selection rests on is
+  therefore PROVISIONAL -- authored by schematic-agent, not yet confirmed by the
+  user. Said here because the selection is only as good as that ranking.
+
+  FINDING -- THE SELECTION SPLITS THREE TIE GROUPS. select_shape_devices.py
+  does not consult `tie_groups`, so it chose XMP2 but pinned XMP1 (one
+  current_mirror), and chose XMN2 but pinned XMN1 (the differential_pair).
+  Sweeping one half of a matched pair to a different nf than the other would
+  break exactly the matching those groups exist to protect. It did not bite
+  THIS run only because the sweep never executed. If a coefficient table is
+  ever added for sky130A, this must be fixed first -- either by widening the
+  selection to whole tie groups or by passing --devices explicitly.
+
+--------------------------------------------------------------------------------
+STEP 3 -- the shaped hand-off netlist
+--------------------------------------------------------------------------------
+  device_shaping/two_stage_rz_final_shaped.sp
+Written with nf passed explicitly as the value each device already carried
+(all nine at nf=1), because the script requires a finger count and none was
+measured. NOTHING about the netlist changed at this step. W, L, m, total width
+and topology are identical to sizing/two_stage_rz_final.sp.
+
+VERIFIED SIMULABLE, and identical to the sizing result:
+  Gain 62.3872 dB · UGBW 16.7834 MHz · PM 56.9566 deg · Power 0.382772 mW
+  (re-run through device_shaping/two_stage_rz_tb_shaped.spice, ngspice exit 0)
+This matches sizing_report.log exactly -- shaping cost this design nothing,
+because shaping measured nothing.
+
+--------------------------------------------------------------------------------
+STEP 4 -- device extent leveling  (ran; no action needed)
+--------------------------------------------------------------------------------
+extent = w/nf (per-finger drawn width); mean over 9 MOS = 32.422 um
+flag threshold = 3.0 x mean = 97.267 um ; tie groups enforced: 3
+
+  device        w    nf    extent     ->  nf   extent
+  XMN3      47.200    1    47.200         1   47.200
+  XMN4      47.200    1    47.200         1   47.200
+  XMN5      47.200    1    47.200         1   47.200
+  XMN1      40.000    1    40.000         1   40.000
+  XMN2      40.000    1    40.000         1   40.000
+  XMP3      40.000    1    40.000         1   40.000
+  XMP1      14.400    1    14.400         1   14.400
+  XMP2      14.400    1    14.400         1   14.400
+  XMP4       1.400    1     1.400         1    1.400
+
+NO DEVICE EXCEEDS THE THRESHOLD -- nothing folded, and no --apply was needed.
+The largest extent (47.2um) is 1.46x the mean, well inside 3.0x. So:
+  - No device had a measured nf overridden by a geometric one (none was measured
+    anyway, and none was leveled).
+  - No device was folded without a measurement of what it costs.
+The spread here is naturally tight because the sizing left only three distinct
+widths in the design (47.2 / 40 / 14.4, plus the 1.4um bias pfet).
+
+--------------------------------------------------------------------------------
+STEP 5 -- fold m into nf for STANDALONE primitives  (layout hand-off only)
+--------------------------------------------------------------------------------
+  device_shaping/two_stage_rz_final_shaped_primitives.sp
+
+  device  grouping                          w    nf  m  ->    w  nf  m   total w*m
+  XMP1    in current_mirror                14.4   1  1     skipped        14.40
+  XMP2    in current_mirror                14.4   1  1     skipped        14.40
+  XMN1    in differential_pair               40   1  8     skipped       320.00
+  XMN2    in differential_pair               40   1  8     skipped       320.00
+  XMN3    in current_mirror                 47.2  1  2     skipped        94.40
+  XMN4    in self_biased_reference          47.2  1  5     skipped       236.00
+  XMN5    in current_mirror                 47.2  1  6     skipped       283.20
+  XMP4    in self_biased_reference           1.4  1  1     skipped         1.40
+  XMP3    standalone                          40  1  3  ->  120   3  1   120.00  FOLDED
+
+ONE device folded: XMP3, the lone common_source_stage gain device.
+BOTH INVARIANTS HELD for it:
+    total width w*m : 40 x 3 = 120  ->  120 x 1 = 120     unchanged
+    finger extent w/nf : 40 / 1 = 40  ->  120 / 3 = 40    unchanged
+Only the arrangement changed: 3 rows of 1 finger -> 1 row of 3 fingers.
+
+EIGHT devices skipped, every one because it sits inside a composed block. That
+is correct and load-bearing: rewriting m on a mirror leg changes the leg ratio
+the mirror is built from (5:2:6 here), and rewriting it on a diff-pair half
+breaks the common-centroid split.
+
+  *** GEOMETRY ONLY -- DO NOT SIMULATE two_stage_rz_final_shaped_primitives.sp ***
+  XMP3's folded w = 120um passes sky130's widest pfet model bin (100um), so it
+  matches no model card. That is expected and is why the file is separate. It
+  would silently undo design-sheets-checker Step 2a's model-bin fold.
+  THE SIMULABLE HAND-OFF REMAINS two_stage_rz_final_shaped.sp. Do not let the
+  primitives file replace it; mixing them up yields a netlist with no model card.
+
+  FINDING -- fold_multipliers.py MIS-PARSED THE REAL circuit_decomposition.yaml,
+  SILENTLY, AND WOULD HAVE FOLDED EVERY MIRROR AND THE DIFF PAIR.
+  blocked_devices() collects a pattern's devices with exactly one regex,
+      re.findall(r'\{\s*ref:\s*([A-Za-z0-9_.]+)', stripped)
+  so it only recognizes the mapping spelling `devices: [{ref: XMN4}, ...]`.
+  circuit_decomposition.yaml uses the plain-scalar spelling the decomposition
+  skill's own schema writes, `devices: [XMN4, XMN3, XMN5]`, which that regex
+  never matches. All 6 patterns then parsed with EMPTY device lists, none
+  reached the `>= 2 MOS` test, and the dry-run reported ALL NINE devices as
+  `standalone` -- XMN1/XMN2 and XMN3/XMN4/XMN5 and XMP1/XMP2 included.
+  The guard `if seen_patterns_key and not patterns` did NOT fire, because the
+  pattern entries themselves parse fine; only their contents are lost. So this
+  is precisely the silent failure that guard was written to prevent, arriving
+  through a hole the guard does not cover.
+  WORKED AROUND, not fixed: device_shaping/decomp_blocks_compat.yaml restates
+  the same six patterns in the mapping spelling, and the table above is the
+  result of running against it. circuit_decomposition.yaml was NOT edited.
+  THE FIX belongs in fold_multipliers.py -- accept both spellings, exactly as
+  its sibling parser already accepts both `- id:` and `- pattern:`.
+
+--------------------------------------------------------------------------------
+PERFORMANCE DROP ANALYSIS
+--------------------------------------------------------------------------------
+NOT MEASURED -- and this section is deliberately not filled with reasoning that
+would look like a measurement. No Nf was swept, no parasitic was annotated, and
+no spec was re-simulated under one, so there is no ideal-vs-annotated pair and
+no rel_drop for any of Gain, UGBW, PM or Power.
+
+What IS known, from the circuit read rather than from a measurement, is which
+nodes would carry that drop if it were measured, in the read's own ranking:
+  1. net8 / the R0-XC0 branch (PM, UGBW) -- no MOS, so no nf lever exists.
+  2. vout, from XMP3 and XMN5 drains plus the MiM plate (PM, UGBW, Gain).
+  3. net5, the highest-impedance node in the design (PM, UGBW, Gain).
+  4. net7, the gate-only bias spine (Power, UGBW, Gain) -- carries no DC
+     current, so its resistance is invisible to simulation entirely.
+Devices 2-4 are folding candidates that were never folded. The honest summary
+is that the design goes to layout with UGBW at +11.9% over its real bar and no
+measurement of what fingers would have cost or saved it.
+
+--------------------------------------------------------------------------------
+THE HAND-OFF
+--------------------------------------------------------------------------------
+  device_shaping/two_stage_rz_final_shaped.sp             SIMULABLE hand-off.
+      Carries nf=1 on all 9 MOS -- CARRIED THROUGH, NOT CHOSEN.
+      W/L/m/total width identical to sizing/two_stage_rz_final.sp.
+      Mirror tie intact: XMN4/XMN3/XMN5 l=0.4 w=47.2 m=5/2/6 ;
+                         XMP1/XMP2      l=0.4 w=14.4 m=1/1.
+  device_shaping/two_stage_rz_final_shaped_primitives.sp  GEOMETRY ONLY, will
+      not simulate. XMP3 folded to w=120 nf=3 m=1.
+  device_shaping/two_stage_rz_tb_shaped.spice   deck pointing at _shaped.sp.
+  device_shaping/shape_devices.json             Step 1 selection.
+  device_shaping/multiplier_fold.json           Step 5 per-device decisions.
+  device_shaping/decomp_blocks_compat.yaml      the Step 5 parser shim + why.
+
+RECOMMENDATION: treat nf as an OPEN question, not a settled one. Either add a
+measured sky130A parasitic coefficient table to parasitic-estimation and re-run
+this skill (fixing the tie-group split in Step 1 first), or accept nf=1 as an
+explicit, recorded choice made without measurement. Do not report nf=1 as
+"shaped".
+================================================================================

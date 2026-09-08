@@ -1,0 +1,693 @@
+{
+ "design": "vco_lc_final_shaped_flat",
+ "netlist": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/vco_lc_final_shaped_flat.sp",
+ "macros": [
+  {
+   "name": "current_mirror_XN5_XN4",
+   "kind": "current_mirror",
+   "devices": [
+    "XN5",
+    "XN4"
+   ],
+   "generation": "auto",
+   "constraints": {
+    "centroid_match": true
+   },
+   "reference_device": "XN5",
+   "glayout_call": "current_mirror(pdk, mirror_ratio=[4], device='nfet', width=15, length=0.5, fingers=1, substrate_tap=True, dummy=True)  # cells/blocks/current_mirror.py",
+   "subckt_instance": null,
+   "w": 14.86,
+   "h": 20.75,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/modules/current_mirror_XN5_XN4.gds",
+   "ports": {
+    "Iref": [
+     {
+      "x": -3.08,
+      "y": 10.375,
+      "layer": "met3",
+      "width": 0.29,
+      "pin": "drain_ref"
+     },
+     {
+      "x": -3.08,
+      "y": 10.375,
+      "layer": "met3",
+      "width": 0.29,
+      "pin": "drain_ref"
+     }
+    ],
+    "VSS": [
+     {
+      "x": -2.4,
+      "y": -10.375,
+      "layer": "met3",
+      "width": 0.29,
+      "pin": "source_ref"
+     },
+     {
+      "x": -0.48,
+      "y": -10.375,
+      "layer": "met3",
+      "width": 0.29,
+      "pin": "source_out1"
+     },
+     {
+      "x": -6.89,
+      "y": -10.04,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     },
+     {
+      "x": 6.89,
+      "y": 0.0,
+      "layer": "met1",
+      "width": 19.67,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -7.3,
+      "y": 0.0,
+      "layer": "met1",
+      "width": 19.67,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -6.89,
+      "y": 10.04,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -7.095,
+      "y": 9.835,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -0.0,
+      "y": 10.245,
+      "layer": "met1",
+      "width": 13.78,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -0.0,
+      "y": -9.835,
+      "layer": "met1",
+      "width": 13.78,
+      "pin": "tap_ring"
+     },
+     {
+      "x": 7.095,
+      "y": 9.835,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     },
+     {
+      "x": 6.89,
+      "y": 10.04,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     },
+     {
+      "x": 7.3,
+      "y": 0.0,
+      "layer": "met1",
+      "width": 19.67,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -6.89,
+      "y": 0.0,
+      "layer": "met1",
+      "width": 19.67,
+      "pin": "tap_ring"
+     },
+     {
+      "x": 6.89,
+      "y": -10.04,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     },
+     {
+      "x": 7.095,
+      "y": -9.835,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -0.0,
+      "y": 9.835,
+      "layer": "met1",
+      "width": 13.78,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -0.0,
+      "y": -10.245,
+      "layer": "met1",
+      "width": 13.78,
+      "pin": "tap_ring"
+     },
+     {
+      "x": -7.095,
+      "y": -9.835,
+      "layer": "met1",
+      "width": 0.41,
+      "pin": "tap_ring"
+     }
+    ],
+    "vtail": [
+     {
+      "x": -1.16,
+      "y": 10.375,
+      "layer": "met3",
+      "width": 0.29,
+      "pin": "drain_out1"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    1.78,
+    0.04
+   ]
+  },
+  {
+   "name": "XN2",
+   "kind": "single_nfet",
+   "devices": [
+    "XN2"
+   ],
+   "generation": "auto",
+   "constraints": {},
+   "glayout_call": null,
+   "w": 9.64,
+   "h": 66.28,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives/XN2.gds",
+   "ports": {
+    "voutp": [
+     {
+      "x": 4.82,
+      "y": -30.815,
+      "layer": "met2",
+      "width": 0.33,
+      "pin": "gate"
+     }
+    ],
+    "Vcont": [
+     {
+      "x": -4.82,
+      "y": 30.86,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "drain"
+     },
+     {
+      "x": 4.82,
+      "y": 30.43,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "source"
+     }
+    ],
+    "VSS": [
+     {
+      "x": 0.0,
+      "y": -33.14,
+      "layer": "met3",
+      "width": 0.32999999999999996,
+      "pin": "bulk"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "XN3",
+   "kind": "single_nfet",
+   "devices": [
+    "XN3"
+   ],
+   "generation": "auto",
+   "constraints": {},
+   "glayout_call": null,
+   "w": 9.64,
+   "h": 66.28,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives/XN3.gds",
+   "ports": {
+    "voutn": [
+     {
+      "x": 4.82,
+      "y": -30.815,
+      "layer": "met2",
+      "width": 0.33,
+      "pin": "gate"
+     }
+    ],
+    "Vcont": [
+     {
+      "x": -4.82,
+      "y": 30.86,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "drain"
+     },
+     {
+      "x": 4.82,
+      "y": 30.43,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "source"
+     }
+    ],
+    "VSS": [
+     {
+      "x": 0.0,
+      "y": -33.14,
+      "layer": "met3",
+      "width": 0.32999999999999996,
+      "pin": "bulk"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "XC0",
+   "kind": "single_cap",
+   "devices": [
+    "XC0"
+   ],
+   "generation": "auto",
+   "constraints": {},
+   "glayout_call": null,
+   "topology_hint": "capacitor_bank",
+   "w": 12.04,
+   "h": 7.78,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives/XC0.gds",
+   "ports": {
+    "VDD": [
+     {
+      "x": 6.02,
+      "y": 0.0,
+      "layer": "met5",
+      "width": 2.0,
+      "pin": "top_met"
+     }
+    ],
+    "voutp": [
+     {
+      "x": -6.02,
+      "y": 0.0,
+      "layer": "met4",
+      "width": 2.0,
+      "pin": "bottom_met"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    -0.07,
+    0.0
+   ],
+   "keepout_um": 1.2
+  },
+  {
+   "name": "XC1",
+   "kind": "single_cap",
+   "devices": [
+    "XC1"
+   ],
+   "generation": "auto",
+   "constraints": {},
+   "glayout_call": null,
+   "topology_hint": "capacitor_bank",
+   "w": 12.04,
+   "h": 7.78,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives/XC1.gds",
+   "ports": {
+    "VDD": [
+     {
+      "x": 6.02,
+      "y": 0.0,
+      "layer": "met5",
+      "width": 2.0,
+      "pin": "top_met"
+     }
+    ],
+    "voutn": [
+     {
+      "x": -6.02,
+      "y": 0.0,
+      "layer": "met4",
+      "width": 2.0,
+      "pin": "bottom_met"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    -0.07,
+    0.0
+   ],
+   "keepout_um": 1.2
+  },
+  {
+   "name": "XN0",
+   "kind": "single_nfet",
+   "devices": [
+    "XN0"
+   ],
+   "generation": "auto",
+   "constraints": {},
+   "glayout_call": null,
+   "topology_hint": "cross_coupled_pair",
+   "w": 9.1,
+   "h": 26.27,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives/XN0.gds",
+   "ports": {
+    "voutp": [
+     {
+      "x": 4.55,
+      "y": -10.815,
+      "layer": "met2",
+      "width": 0.33,
+      "pin": "gate"
+     }
+    ],
+    "voutn": [
+     {
+      "x": -4.55,
+      "y": 10.86,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "drain"
+     }
+    ],
+    "vtail": [
+     {
+      "x": 4.55,
+      "y": 10.43,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "source"
+     }
+    ],
+    "VSS": [
+     {
+      "x": 0.0,
+      "y": -13.135,
+      "layer": "met3",
+      "width": 0.32999999999999996,
+      "pin": "bulk"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "XN1",
+   "kind": "single_nfet",
+   "devices": [
+    "XN1"
+   ],
+   "generation": "auto",
+   "constraints": {},
+   "glayout_call": null,
+   "topology_hint": "cross_coupled_pair",
+   "w": 9.1,
+   "h": 26.27,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives/XN1.gds",
+   "ports": {
+    "voutn": [
+     {
+      "x": 4.55,
+      "y": -10.815,
+      "layer": "met2",
+      "width": 0.33,
+      "pin": "gate"
+     }
+    ],
+    "voutp": [
+     {
+      "x": -4.55,
+      "y": 10.86,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "drain"
+     }
+    ],
+    "vtail": [
+     {
+      "x": 4.55,
+      "y": 10.43,
+      "layer": "met2",
+      "width": 0.29,
+      "pin": "source"
+     }
+    ],
+    "VSS": [
+     {
+      "x": 0.0,
+      "y": -13.135,
+      "layer": "met3",
+      "width": 0.32999999999999996,
+      "pin": "bulk"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "XL0",
+   "kind": "inductor",
+   "devices": [
+    "XL0"
+   ],
+   "generation": "manual",
+   "constraints": {
+    "matched_with": [
+     "XL1"
+    ]
+   },
+   "glayout_call": "make_inductor.py -> src/cells/primitives/inductor.py::spiral_inductor(n_turns=4.5, inner_diameter=100, width=8, space=2, shape='octagon')",
+   "subckt_instance": "vco_spiral_ind",
+   "w": 196.0,
+   "h": 213.22,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/modules/vco_spiral_ind.gds",
+   "ports": {
+    "VDD": [
+     {
+      "x": 0.0,
+      "y": 100.11,
+      "layer": "met5",
+      "width": 5.0,
+      "pin": "A"
+     }
+    ],
+    "voutp": [
+     {
+      "x": 94.0,
+      "y": 87.89,
+      "layer": "met5",
+      "width": 5.0,
+      "pin": "B"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    0.0,
+    62.61
+   ],
+   "keepout_um": 0.4
+  },
+  {
+   "name": "XL1",
+   "kind": "inductor",
+   "devices": [
+    "XL1"
+   ],
+   "generation": "manual",
+   "constraints": {
+    "matched_with": [
+     "XL0"
+    ]
+   },
+   "glayout_call": "make_inductor.py -> src/cells/primitives/inductor.py::spiral_inductor(n_turns=4.5, inner_diameter=100, width=8, space=2, shape='octagon')",
+   "subckt_instance": "vco_spiral_ind",
+   "w": 196.0,
+   "h": 213.22,
+   "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/modules/vco_spiral_ind.gds",
+   "ports": {
+    "VDD": [
+     {
+      "x": 0.0,
+      "y": 100.11,
+      "layer": "met5",
+      "width": 5.0,
+      "pin": "A"
+     }
+    ],
+    "voutn": [
+     {
+      "x": 94.0,
+      "y": 87.89,
+      "layer": "met5",
+      "width": 5.0,
+      "pin": "B"
+     }
+    ]
+   },
+   "bbox_center_offset": [
+    0.0,
+    62.61
+   ],
+   "keepout_um": 0.4
+  }
+ ],
+ "primitives_dir": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/primitives",
+ "modules_dir": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/modules",
+ "device_index": {
+  "XN0": {
+   "drain": "voutn",
+   "gate": "voutp",
+   "source": "vtail",
+   "bulk": "VSS",
+   "kind": "nfet",
+   "macro": "XN0"
+  },
+  "XN1": {
+   "drain": "voutp",
+   "gate": "voutn",
+   "source": "vtail",
+   "bulk": "VSS",
+   "kind": "nfet",
+   "macro": "XN1"
+  },
+  "XN2": {
+   "drain": "Vcont",
+   "gate": "voutp",
+   "source": "Vcont",
+   "bulk": "VSS",
+   "kind": "nfet",
+   "macro": "XN2"
+  },
+  "XN3": {
+   "drain": "Vcont",
+   "gate": "voutn",
+   "source": "Vcont",
+   "bulk": "VSS",
+   "kind": "nfet",
+   "macro": "XN3"
+  },
+  "XN4": {
+   "drain": "vtail",
+   "gate": "Iref",
+   "source": "VSS",
+   "bulk": "VSS",
+   "kind": "nfet",
+   "macro": "current_mirror_XN5_XN4"
+  },
+  "XN5": {
+   "drain": "Iref",
+   "gate": "Iref",
+   "source": "VSS",
+   "bulk": "VSS",
+   "kind": "nfet",
+   "macro": "current_mirror_XN5_XN4"
+  },
+  "XC0": {
+   "drain": "VDD",
+   "gate": null,
+   "source": "voutp",
+   "bulk": null,
+   "kind": "cap",
+   "macro": "XC0"
+  },
+  "XC1": {
+   "drain": "VDD",
+   "gate": null,
+   "source": "voutn",
+   "bulk": null,
+   "kind": "cap",
+   "macro": "XC1"
+  },
+  "XL0": {
+   "drain": "VDD",
+   "gate": null,
+   "source": "voutp",
+   "bulk": null,
+   "kind": "ind",
+   "macro": "XL0"
+  },
+  "XL1": {
+   "drain": "VDD",
+   "gate": null,
+   "source": "voutn",
+   "bulk": null,
+   "kind": "ind",
+   "macro": "XL1"
+  }
+ },
+ "manual_composition": [
+  {
+   "topology": "cross_coupled_pair",
+   "devices": [
+    "XN0",
+    "XN1"
+   ],
+   "detail": "circuit_decomposition.yaml pattern cross_coupled_pair (confidence: certain) -- Structure test PASSES exactly: XN0.gate == XN1.drain (voutp) and\nXN1.gate == XN0.drain (voutn), sources shared at vtail, same type\n(both sky130_fd_pr__nfet_01v8). Presents -2/gm at the drains.",
+   "doc": "../../circuit-decomposition/pattern-table.md"
+  },
+  {
+   "topology": "capacitor_bank",
+   "devices": [
+    "XC0",
+    "XC1"
+   ],
+   "detail": "circuit_decomposition.yaml pattern capacitor_bank (confidence: likely) -- Manual (the detector parses MOS/BJT only, so no C ever reaches it).\nStructure test: two capacitors sharing one plate net (VDD) with their other\nplates on distinct nodes (voutp / voutn). Test passes as written.",
+   "doc": "../../circuit-decomposition/pattern-table.md"
+  }
+ ],
+ "supply_rail_names": [
+  "avdd",
+  "avss",
+  "dvdd",
+  "dvss",
+  "gnd",
+  "vbulk",
+  "vcc",
+  "vdd",
+  "vee",
+  "vnb",
+  "vpb",
+  "vss"
+ ],
+ "top_pins": [
+  "Vcont",
+  "Iref",
+  "VDD",
+  "VSS",
+  "voutp",
+  "voutn"
+ ],
+ "min_metal_spacing_um": 0.14,
+ "min_metal_spacing_layer": "met2"
+}

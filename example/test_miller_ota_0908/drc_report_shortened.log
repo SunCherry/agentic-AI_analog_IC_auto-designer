@@ -1,0 +1,129 @@
+==============================================================================
+DRC REPORT -- PASS 2 RE-GATE (post route-optimizer)
+==============================================================================
+report_dir  : designs/test_miller_ota_0908/        (<design_dir>, as specified)
+filename    : drc_report_shortened.log -- DELIBERATELY distinct from pass 1's
+              drc_report.log, which is the pre-shortening fallback's evidence and
+              was not touched.
+gds         : designs/test_miller_ota_0908/layout/shortening/
+              test_miller_ota_0908_fixed_shortened.gds
+top cell    : routed        (file was renamed, the CELL was not -- --top routed passed
+                             on every invocation; read from gdstk top_level(), not the
+                             filename)
+golden ref  : n/a for DRC
+pdk         : sky130A (PDK_ROOT=/Users/cherrysun/pdk/manual, from pdk_config.py)
+budget      : layout_fix_iterations = 5, from
+              `python .claude/reference/design_constraints.py designs/test_miller_ota_0908
+               --key layout_fix_iterations`.  CONSUMED: 0 fix cycles.
+tool        : .claude/skills/router/script/run_drc.py (carries environment.md's validated
+              Tcl verbatim: drc on + drc catchup before drc check, expand before checking,
+              `drc listall why` cross-checked against DRC_TOTAL)
+work dir    : designs/test_miller_ota_0908/layout_fixer_work/drc_work
+
+------------------------------------------------------------------------------
+VERDICT: PASS -- DRC CLEAN.  VIOLATION COUNT = 0.
+------------------------------------------------------------------------------
+  DRC_TOTAL              : 0
+  violation rectangles   : 0
+  distinct violated rules: 0   (`drc listall why`: 0 rules, 0 instances)
+  fix iterations needed  : 0   (clean on the first, baseline run)
+  runtime                : 1.6 s wall (5 min budget; no retry, no exception)
+
+This is NOT taken on trust from route-optimizer's self-gate or from the
+orchestrator's verify_shortening.py run. It is an independent Magic DRC run,
+logged at layout_fixer_work/drc_work/drc.log.
+
+------------------------------------------------------------------------------
+FALSE-PASS GUARD (environment.md: "THREE ways to get a clean 0 from nothing")
+------------------------------------------------------------------------------
+A 0 that is not bound-checked is not evidence. All three traps were checked:
+
+  1. filename != top cell   -> top cell read from gdstk read_gds().top_level()
+                               = 'routed'; passed as --top routed. Magic's log shows
+                               "Reading \"routed\"" plus 33 real subcells, not a
+                               silently-created empty cell.
+  2. rejected flatten flag  -> no flatten used in this flow.
+  3. missing drc on/catchup -> present in the emitted drc.tcl (verified by reading it).
+
+  BBOX CHECK (the cheap guard):
+    Magic SRC_BBOX      : -87819 -41174 -68869 -26115  (internal units)
+    x 0.005             : (-439.095, -205.870) .. (-344.345, -130.575) um
+    gdstk bbox of file  : (-439.095, -205.870) .. (-344.345, -130.575) um   MATCH
+    cells               : 34
+    flat polygons       : 38084
+    distinct layer/dt   : 21
+  Non-empty and equal to the source => the 0 is a real clean layout.
+
+------------------------------------------------------------------------------
+ERRORS BY RULE CATEGORY
+------------------------------------------------------------------------------
+| Category   | Rule   | Count | Fixable? |
+|------------|--------|-------|----------|
+| spacing    | (none) |     0 | n/a      |
+| width      | (none) |     0 | n/a      |
+| enclosure  | (none) |     0 | n/a      |
+| other      | (none) |     0 | n/a      |
+  TOTAL: 0.  All tables below are empty for the same reason.
+
+------------------------------------------------------------------------------
+NETS RANKED BY VIOLATION COUNT   (nets lead, not devices -- see note)
+------------------------------------------------------------------------------
+| Rank | Net | Violation count | Rule categories involved |
+|------|-----|-----------------|--------------------------|
+|  --  |  -- |               0 | --                       |
+
+  Ordering note: this GDS's changed geometry is ROUTING (route-optimizer rebuilt
+  net wiring; placement is provably untouched -- 0 of 11 devices moved, verified by
+  diffing device boxes/rotation/mirror between the pre- and post-shortening maps).
+  For a routing-sourced GDS the net table leads; a device table would read as an
+  accusation against devices that were not modified. Both are empty here anyway.
+
+------------------------------------------------------------------------------
+DEVICES RANKED BY VIOLATION COUNT
+------------------------------------------------------------------------------
+| Rank | Device | Violation count | Rule categories involved |
+|------|--------|-----------------|--------------------------|
+|  --  |   --   |               0 | --                       |
+
+------------------------------------------------------------------------------
+SPACING VIOLATIONS (pairwise)
+------------------------------------------------------------------------------
+| Rule | Between | Location (um) | Fix applied/suggested |
+|------|---------|---------------|-----------------------|
+| (none)|   --   |      --       | --                    |
+
+------------------------------------------------------------------------------
+INHERITED vs INTRODUCED
+------------------------------------------------------------------------------
+Not applicable: there are no violations to categorize. The pre-routing baseline
+(placement_visualization.gds, top=placement_visualization) was already recorded
+CLEAN in pass 1 under layout_fixer_work/drc_work_placement, so re-running it would
+add no information and was skipped. Stated rather than silently omitted.
+
+Notably, route-optimizer introduced ZERO new violations even though it rebuilt
+VDD, VSS and net3. Its own DRC self-gate is corroborated here, independently.
+The one net whose rebuild DID draw a violation (vout) was reverted by the
+optimizer before hand-off, so that geometry never reached this gate.
+
+------------------------------------------------------------------------------
+MODIFICATIONS MADE BY THIS AGENT
+------------------------------------------------------------------------------
+NONE. No geometry was edited, no re-route was run, no knob was changed. The GDS
+was already clean on arrival; the correct action for a clean gate is to certify
+it, not to touch it.
+
+------------------------------------------------------------------------------
+WARNINGS (non-blocking -- there are no errors, so nothing precedes these)
+------------------------------------------------------------------------------
+- Out-of-context subcell error counts, 6 total: via_stack_2e2571cb=3,
+  via_stack_686e5d96$66=1, $67=1, $68=1. `drc listall why` reports NOTHING in the
+  expanded top cell, so per run_drc.py's documented reading rule these are
+  out-of-context subcell errors (the geometry completing them lives in the parent),
+  not violations of the assembled layout. Pass 1 saw 7 of the same class; the drop
+  to 6 tracks the 27->23 via reduction.
+- Layer 64/44 GDS-read warnings x4 ("Unknown layer/datatype in boundary"). Expected
+  and harmless per environment.md: glayout's internal pwell glayer, which sky130A.tech
+  does not recognize and Magic correctly drops. Counted and named, not transcribed.
+- netgen/Magic placeholder and "no property" notes belong to the LVS run; see
+  lvs_report_shortened.log.
+==============================================================================

@@ -1,0 +1,134 @@
+================================================================================
+LAYOUT REPORT -- test_vco (vco_lc), placement candidate U12
+report_dir : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+generated  : 2026-09-04  by layout-fixer (Step 3, after BOTH gates passed)
+================================================================================
+
+DELIVERABLE
+  final GDS  : layout/test_vco_fixed.gds
+  TOP CELL   : `routed`  -- renaming the file did NOT rename the top cell. Anything
+               downstream must pass --top routed; without it Magic's `load` creates
+               an empty cell and silently checks nothing.
+  sha256     : 38e7f584e8dbdd224fbe20cc7b1dcfe706f7d9b5d1bdfed3e26d9630b286d728
+               identical to routed.gds -- a pure copy. NO geometry was modified by
+               me at any point, in either gate.
+
+--------------------------------------------------------------------------------
+DEVICE COUNT BY KIND (from physical_map.json)
+--------------------------------------------------------------------------------
+  | Kind  | Count | Instances                     |
+  |-------|-------|-------------------------------|
+  | nfet  | 6     | XN0 XN1 XN2 XN3 XN4 XN5       |
+  | cap   | 2     | XC0 XC1  (sky130_fd_pr__cap_mim_m3_1) |
+  | ind   | 2     | XL0 XL1  (vco_spiral_ind)     |
+  | pfet  | 0     |                               |
+  | res   | 0     |                               |
+  | bjt   | 0     |                               |
+  | other | 0     |                               |
+  | TOTAL | 10    |                               |
+  XN4 and XN5 share ONE placed macro, current_mirror_XN5_XN4, so they report the
+  same bounding box -- 10 devices sit in 9 distinct macro boxes. That is correct,
+  not a duplicate.
+  LVS sees 9 devices because the 2 inductors are black-boxed out on both sides
+  (Magic cannot extract an inductor); 6 nfets + 2 caps + 1 merged = 9 vs 9.
+
+--------------------------------------------------------------------------------
+PLACEMENT AREA
+--------------------------------------------------------------------------------
+  Bounding box over physical_map.json `devices` via
+  .claude/reference/generate_grid.py :: overall_bbox()  (not re-derived by hand):
+    (x0, y0) = (39.109, 178.255)     (x1, y1) = (451.259, 452.907)  um
+    extent   = 412.15 x 274.65 um
+    AREA     = 113197.83 um^2
+    aspect   = 1.5006 : 1   -- WITHIN the hard 4:1 user constraint, with margin.
+  Matches the placer's reported canvas exactly. Utilization 75.8% (placer).
+  No re-placement was performed, so there is NO wirelength cost to report:
+  wirelength stands at the router's 658.41 um, unchanged.
+
+--------------------------------------------------------------------------------
+DISTINCT GDS LAYERS ACTUALLY DRAWN (read from the GDS, not the PDK layer list)
+--------------------------------------------------------------------------------
+  22 distinct layer/datatype pairs, flattened top cell, 20186 polygons:
+    (64,44):10     (65,20):2505   (66,20):63     (66,44):5760
+    (67,20):7330   (67,44):1554   (68,16):12     (68,20):1777
+    (68,44):17     (69,16):4      (69,20):66     (69,44):3
+    (70,20):46     (70,44):134    (71,20):166    (71,44):680
+    (72,16):4      (72,20):4      (89,44):2      (93,44):18
+    (94,20):9      (95,20):22
+  Routing stack present as expected: li1/met1..met5 (67..72) plus their via
+  datatypes (44). 72/20 met5 is the two spiral coils; 72/16 are the coil port pins.
+
+--------------------------------------------------------------------------------
+DRC FINAL STATUS
+--------------------------------------------------------------------------------
+  STATUS : CLEAN.  DRC_TOTAL = 0, rects = 0, distinct violated rules = 0.
+  fix iterations : 0  (clean on the first pass -- attempt 1, the baseline)
+  budget         : 0 of 5 consumed. MAX_SUBRETRY = 5 = `layout_fix_iterations` from
+                   example/test_vco/design_constraints.json, read via
+                   .claude/reference/design_constraints.py.
+  The 19 `drc listall count` errors are out-of-context via_stack subcell errors,
+  independently re-verified by flattening (20186 polygons -> count 0 AND why 0).
+  Not violations. Detail: -> drc_report.log
+  capm.2b / met3.2 at the cap landings, and met4.2 / met4.5b at XL1: ABSENT.
+
+--------------------------------------------------------------------------------
+LVS FINAL STATUS
+--------------------------------------------------------------------------------
+  STATUS : MATCH.  "Netlists match uniquely" AND 0 property errors (both checked --
+           netgen prints the match line even when property errors exist).
+  iterations : 2 attempts, 1 fix iteration consumed of 5.
+  6/6 pins equivalent, 9/9 devices, 7/7 nets, 0 "no matching".
+  Compared against layout/primitives/lvs_compare.sp (UNMODIFIED); the frozen
+  netlist device_shaping/vco_lc_final_shaped.sp was never used for the comparison
+  and never modified. Detail: -> lvs_report.log
+
+--------------------------------------------------------------------------------
+PER-ITERATION HISTORY (append-only, both phases)
+--------------------------------------------------------------------------------
+  [DRC 1]  routed.gds, top=routed, stock router knobs as delivered.
+           Ran run_drc.py. -> DRC_TOTAL=0, rects=0, rules=0. CLEAN.
+           Changed: NOTHING. No re-route, no knob, no macro move, no polygon edit.
+  [DRC x]  Independent cross-check of the 19-count phantom: flattened with gdstk,
+           re-ran the same DRC -> 0 and 0, both metrics agreeing. Not a fix cycle;
+           consumed no budget. Changed: nothing (scratch file only).
+  [LVS 1]  Extracted routed.gds with the FULL spiral, stock netgen setup,
+           unmodified lvs_compare.sp. -> MISMATCH: 2x coil port A/B short, top
+           extracted with 4 ports instead of 6, top-level pin matching failed.
+           Changed: NOTHING -- diagnosis only. Root-caused to Magic having no
+           inductor device in sky130A.tech, i.e. tooling, not layout.
+  [LVS 2]  Built an EXTRACTION-ONLY coil view (scratch, never delivered): deleted
+           the 74-point met5 spiral polygon in cell vco_spiral_ind, added an 8x5 um
+           met5 patch at (90,148)..(98,153) so port B still lands on real metal;
+           kept all 340 via4 cuts, 3 met4 landings, the port-A stub and both labels.
+           -> MATCH: 0 shorts, 6 ports, 6/6 pins, 9/9 devices, 7/7 nets,
+           0 property errors.
+           Changed: NO delivered geometry. The shipped GDS keeps the full spiral
+           and its sha256 is unchanged. Stock netgen setup, unmodified netlist --
+           unlike the prior run, no `ignore class` lines and no netlist edit needed.
+  [DRC re-check] test_vco_fixed.gds under its DELIVERED name, --top routed.
+           -> DRC_TOTAL=0, 0 rules. CLEAN. Not a fix cycle; consumed no budget.
+
+  Total: 0 DRC fix iterations, 1 LVS fix iteration. No geometry modified anywhere,
+  so physical_map.json is NOT stale -- see below.
+
+--------------------------------------------------------------------------------
+physical_map.json -- CURRENT, and asserted non-degenerate
+--------------------------------------------------------------------------------
+  path : layout/physical_map.json
+  NOT regenerated, and that is correct rather than an omission: regeneration is
+  required only when the geometry changes, and I changed none. Provenance checked
+  rather than assumed -- its mtime post-dates both routes.json and routed.gds, so
+  it was built from exactly the geometry being delivered. It was produced by the
+  placer/router bridge (geometry_source = "placement_pos.json" on every device),
+  which is the correct script for this provenance;
+  extract_physical_info.py was NOT run and must not be -- on a placer/router layout
+  it silently yields nulls and "unmatched".
+  Non-degeneracy asserted, not presumed:
+    devices with a real position : 10 / 10
+    devices with rotation emitted: 10 / 10   (0 deg x2, 90 deg x8)
+    nets traced                  : 7 / 7, every one source="router"
+      VDD 18 segs, VSS 40, Vcont 19, voutn 42, voutp 27, vtail 11, Iref 0.
+      Iref at 0 segments is EXPECTED and not a defect: it is the single-macro net
+      the router labeled as a pin rather than routing (6/6 multi-macro nets routed,
+      +1 single-macro pin labeled).
+================================================================================

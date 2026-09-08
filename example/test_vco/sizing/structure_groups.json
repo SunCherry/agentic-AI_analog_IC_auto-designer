@@ -1,0 +1,81 @@
+{
+  "groups": {
+    "N0_W": {
+      "param": "w",
+      "members": [
+        "XN0",
+        "XN1"
+      ]
+    },
+    "N0_L": {
+      "param": "l",
+      "members": [
+        "XN0",
+        "XN1"
+      ]
+    },
+    "N2_W": {
+      "param": "w",
+      "members": [
+        "XN2",
+        "XN3"
+      ]
+    },
+    "N2_L": {
+      "param": "l",
+      "members": [
+        "XN2",
+        "XN3"
+      ]
+    },
+    "N5_W": {
+      "param": "w",
+      "members": [
+        "XN4",
+        "XN5"
+      ]
+    },
+    "N5_L": {
+      "param": "l",
+      "members": [
+        "XN4",
+        "XN5"
+      ]
+    },
+    "N4_M": {
+      "param": "m",
+      "members": [
+        "XN4"
+      ]
+    },
+    "C0_W": {
+      "param": "w",
+      "members": [
+        "XC0"
+      ]
+    },
+    "C0_L": {
+      "param": "l",
+      "members": [
+        "XC0"
+      ]
+    },
+    "C1_W": {
+      "param": "w",
+      "members": [
+        "XC1"
+      ]
+    },
+    "C1_L": {
+      "param": "l",
+      "members": [
+        "XC1"
+      ]
+    }
+  },
+  "fixed": {
+    "XN5": {
+      "m": 1
+    }
+  }
+}

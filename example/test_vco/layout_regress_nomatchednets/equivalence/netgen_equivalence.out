@@ -1,0 +1,79 @@
+
+Circuit 1 cell sky130_fd_pr__nfet_01v8 and Circuit 2 cell sky130_fd_pr__nfet_01v8 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__nfet_01v8         |Circuit 2: sky130_fd_pr__nfet_01v8         
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__nfet_01v8 and sky130_fd_pr__nfet_01v8 are equivalent.
+
+Circuit 1 cell sky130_fd_pr__cap_mim_m3_1 and Circuit 2 cell sky130_fd_pr__cap_mim_m3_1 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__cap_mim_m3_1      |Circuit 2: sky130_fd_pr__cap_mim_m3_1      
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__cap_mim_m3_1 and sky130_fd_pr__cap_mim_m3_1 are equivalent.
+
+Class vco_spiral_ind (0):  Merged 1 series devices.
+Class vco_spiral_ind (1):  Merged 1 series devices.
+Subcircuit summary:
+Circuit 1: vco_spiral_ind                  |Circuit 2: vco_spiral_ind                  
+-------------------------------------------|-------------------------------------------
+c (2->1)                                   |c (2->1)                                   
+l (1)                                      |l (1)                                      
+r (1)                                      |r (1)                                      
+Number of devices: 3                       |Number of devices: 3                       
+Number of nets: 3                          |Number of nets: 3                          
+---------------------------------------------------------------------------------------
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: vco_spiral_ind                  |Circuit 2: vco_spiral_ind                  
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes vco_spiral_ind and vco_spiral_ind are equivalent.
+
+Subcircuit summary:
+Circuit 1: vco_lc                          |Circuit 2: vco_lc                          
+-------------------------------------------|-------------------------------------------
+sky130_fd_pr__nfet_01v8 (9->6)             |sky130_fd_pr__nfet_01v8 (9->6)             
+sky130_fd_pr__cap_mim_m3_1 (2)             |sky130_fd_pr__cap_mim_m3_1 (2)             
+vco_spiral_ind (2)                         |vco_spiral_ind (2)                         
+Number of devices: 10                      |Number of devices: 10                      
+Number of nets: 7                          |Number of nets: 7                          
+---------------------------------------------------------------------------------------
+Resolving symmetries by property value.
+Resolving symmetries by pin name.
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: vco_lc                          |Circuit 2: vco_lc                          
+-------------------------------------------|-------------------------------------------
+Vcont                                      |Vcont                                      
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+Iref                                       |Iref                                       
+voutn                                      |voutn                                      
+voutp                                      |voutp                                      
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes vco_lc and vco_lc are equivalent.
+
+Final result: Circuits match uniquely.
+.

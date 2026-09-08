@@ -1,0 +1,151 @@
+================================================================================
+DRC REPORT -- test_vco (vco_lc), aspect-4:1 re-placement run
+report_dir : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+generated  : 2026-09-04  by layout-fixer (Step 1 gate)
+NOTE: this file OVERWRITES the previous (1:1) run's drc_report.log. The byte-
+identical archived copy of that run is preserved at
+  example/test_vco/layout_aspect1x1/drc_report.log  (verified present).
+================================================================================
+
+VERDICT: PASS -- DRC CLEAN.  0 errors, 0 warnings that block.
+  fix iterations consumed : 0 of 5  (MAX_SUBRETRY = layout_fix_iterations = 5,
+    read from example/test_vco/design_constraints.json via
+    `python .claude/reference/design_constraints.py example/test_vco
+     --key layout_fix_iterations` -> 5. Not a number I chose.)
+
+--------------------------------------------------------------------------------
+WHAT WAS CHECKED
+--------------------------------------------------------------------------------
+  primary GDS  : layout/shortening/routed_shortened.gds
+                 sha256 3b381cc34b103a1a3987c7840c818743a9d37128aae0d5f55265ebe32cf2f0fd
+  delivered as : layout/test_vco_fixed.gds   (byte-identical copy, same sha256)
+  top cell     : routed
+                 Read from gdstk.read_gds(...).top_level() -> ['routed'] (29 cells),
+                 NOT from the filename stem 'routed_shortened' / 'test_vco_fixed'.
+                 --top routed was passed to every Magic invocation.
+  baseline GDS : layout/placement_visualization.gds, top cell
+                 'placement_visualization' (pre-routing, attribution aid)
+  tool         : Magic 8.3 rev 610, PDK_ROOT=$HOME/pdk/manual, sky130A
+  harness      : .claude/skills/router/script/run_drc.py (validated Tcl from
+                 .claude/reference/environment.md; not hand-rolled)
+  work dirs    : layout_fixer_work/drc_work            (GDS under test)
+                 layout_fixer_work/drc_work_placement  (pre-routing baseline)
+                 layout_fixer_work/drc_flat_shortened  (flatten re-check)
+                 Two SEPARATE dirs, so the categorization run cannot clobber the
+                 log of the run it is categorizing.
+
+--------------------------------------------------------------------------------
+ERRORS BY RULE CATEGORY
+--------------------------------------------------------------------------------
+  | Category   | Rule | Count | Fixable? |
+  |------------|------|-------|----------|
+  | spacing    | --   |   0   |   n/a    |
+  | width      | --   |   0   |   n/a    |
+  | enclosure  | --   |   0   |   n/a    |
+  | other      | --   |   0   |   n/a    |
+  | TOTAL      |      |   0   |          |
+
+  `drc list count total`  -> DRC_TOTAL = 0
+  `drc listall why`       -> 0 distinct rules, 0 instances (empty)
+  drc_violations.json     -> "drc_total": 0, "violations": {}
+  Both numbers are reported here and they agree. No RULE: line was emitted.
+
+--------------------------------------------------------------------------------
+NETS RANKED BY VIOLATION COUNT  (leading with NETS: this is a router/shortener
+hand-off, so any violation here would be net geometry, not a device's fault)
+--------------------------------------------------------------------------------
+  | Rank | Net   | Violation count | Rule categories involved |
+  |------|-------|-----------------|--------------------------|
+  |  --  | Iref  |        0        |            --            |
+  |  --  | VDD   |        0        |            --            |
+  |  --  | VSS   |        0        |            --            |
+  |  --  | Vcont |        0        |            --            |
+  |  --  | voutn |        0        |            --            |
+  |  --  | voutp |        0        |            --            |
+  |  --  | vtail |        0        |            --            |
+  All 7 nets clean. The three nets route-shortner actually rewired
+  (VSS, Vcont, voutn -- from shortening_report.json) are among them.
+
+DEVICES RANKED BY VIOLATION COUNT
+  | Rank | Device | Violation count | Rule categories involved |
+  |------|--------|-----------------|--------------------------|
+  |  --  | XN0..XN5, XC0, XC1, XL0, XL1 (10 devices) | 0 | -- |
+
+SPACING VIOLATIONS, PAIRWISE
+  | Rule | Between | Location (um) | Fix applied/suggested |
+  |------|---------|---------------|-----------------------|
+  | (none) |       |               |                       |
+
+  Attribution method: not needed -- there are no coordinates to attribute.
+  Had there been, routes.json (exact, per-net wire/via geometry) would have been
+  used in preference to label proximity.
+
+--------------------------------------------------------------------------------
+INHERITED vs ROUTER-INTRODUCED
+--------------------------------------------------------------------------------
+  Pre-routing baseline placement_visualization.gds : DRC_TOTAL = 0  [CLEAN]
+  Routed + shortened routed_shortened.gds          : DRC_TOTAL = 0  [CLEAN]
+  Inherited violations   : none (empty set)
+  Introduced violations  : none (empty set)
+  Nothing to classify as placement-fixable / routing-fixable / router-defect /
+  intrinsic, and no lever to reach for. No knob was changed, no re-route was run.
+
+--------------------------------------------------------------------------------
+WHY THIS ZERO IS A REAL ZERO  (three guards, none taken on trust)
+--------------------------------------------------------------------------------
+  1. BOUND CHECK (against the empty-cell false pass, environment.md).
+     SRC_BBOX = 2000 2000 87580 54064 internal units
+              = (10.0, 10.0) .. (437.9, 270.32) um.
+     Identical to gdstk's own bbox for cell 'routed'. The cell Magic checked is
+     the real, non-empty layout -- not a cell `load` silently created.
+
+  2. FLATTEN RE-CHECK (settles the via_stack question by measurement).
+     flatten -dobox -nolabels routed_flat  ->  FLAT_BBOX == SRC_BBOX exactly,
+     FLAT_DRC_TOTAL = 0, "No errors found", ZERO FLATCELLCOUNT lines.
+     The 19 subcell-level counts do NOT survive expansion. Confirmed
+     out-of-context, per the payload's instruction to verify rather than trust.
+     Log: layout_fixer_work/drc_flat_shortened/flat.log
+
+  3. NEGATIVE CONTROL (against a dead checker).
+     Two met1 (68/20) rectangles injected 0.05 um apart at (200,200) in a scratch
+     copy -> the SAME harness reported
+       "Metal1 spacing < 0.14um (met1.2)" x2
+       at (200.55, 200.0)..(200.64, 200.5) and (200.41, 200.0)..(200.5, 200.5)
+     with correct coordinates. The checker is live on this file.
+
+--------------------------------------------------------------------------------
+WARNINGS  (non-blocking -- there are NO errors, so nothing outranks these)
+--------------------------------------------------------------------------------
+  19 x out-of-context subcell error counts, all inside via_stack cells:
+       via_stack_2e2571cb=3, $1=3, $2=3, $4=3,
+       via_stack_918d05dd$2=3, $4=3, via_stack_686e5d96$33=1.
+       Disproven by guard 2 above -- these are via stacks whose completing
+       geometry lives in the parent. Not violations of the assembled layout.
+   5 x "Unknown layer/datatype in boundary, layer=64 type=44"
+       glayout's internal pwell glayer, which sky130A.tech does not map.
+       Expected per environment.md; Magic correctly drops it.
+   0 x "off lambda grid ... snapped to grid"  -- no sub-grid geometry at all,
+       so no DRC margin was resolved on a snapped copy.
+
+--------------------------------------------------------------------------------
+PREDICTIONS FROM THE HAND-OFF, SETTLED
+--------------------------------------------------------------------------------
+  - MiM-cap landing class (capm.2b 1.2 um bottom-plate spacing + met3.2, ~11
+    instances, near XC0/XC1): DID NOT OCCUR. Zero capm.2b and zero met3.2 in this
+    run. The shipped routing candidate is the DRC-clean one, and shortening did
+    not disturb it (voutp and VDD were both left at +0.00 um by the shortener,
+    i.e. the two cap-landing nets were never rewired).
+  - via_stack out-of-context errors: confirmed by flatten, not on trust (guard 2).
+
+--------------------------------------------------------------------------------
+ITERATION HISTORY
+--------------------------------------------------------------------------------
+  attempt 1 (baseline)  routed_shortened.gds       DRC_TOTAL=0  CLEAN   knobs: baseline
+  attempt 1 (placement) placement_visualization.gds DRC_TOTAL=0 CLEAN   attribution aid
+  attempt 1-final       test_vco_fixed.gds          DRC_TOTAL=0 CLEAN   delivered file, by name
+  No fix iteration was consumed. Full record: layout_fixer_work/bookkeeper.log
+  (RUN 3 section; earlier sections are the 1:1 run's, preserved append-only).
+
+  Tool budget: 5 min per Magic call. Actual: 1.1-1.5 s each. 0 retries,
+  0 exceptions, 0 crashes.
+================================================================================

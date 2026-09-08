@@ -1,0 +1,28 @@
+{
+  "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/routed.gds",
+  "top_cell": "routed",
+  "units": "um",
+  "drc_total": 2,
+  "violations": {
+    "Metal2 spacing < 0.14um (met2.2)": [
+      [
+        -401.63,
+        -191.135,
+        -401.57,
+        -191.12
+      ],
+      [
+        -401.77,
+        -190.995,
+        -401.57,
+        -190.98
+      ],
+      [
+        -401.77,
+        -190.995,
+        -401.63,
+        -190.98
+      ]
+    ]
+  }
+}

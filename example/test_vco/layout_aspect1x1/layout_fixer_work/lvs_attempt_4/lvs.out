@@ -1,0 +1,72 @@
+
+Circuit 1 cell sky130_fd_pr__nfet_01v8 and Circuit 2 cell sky130_fd_pr__nfet_01v8 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__nfet_01v8         |Circuit 2: sky130_fd_pr__nfet_01v8         
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__nfet_01v8 and sky130_fd_pr__nfet_01v8 are equivalent.
+
+Circuit 1 cell sky130_fd_pr__cap_mim_m3_1 and Circuit 2 cell sky130_fd_pr__cap_mim_m3_1 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__cap_mim_m3_1      |Circuit 2: sky130_fd_pr__cap_mim_m3_1      
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__cap_mim_m3_1 and sky130_fd_pr__cap_mim_m3_1 are equivalent.
+Flattening unmatched subcell XN0 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_b8d8d2c8 in circuit routed (0)(1 instance)
+Flattening unmatched subcell current_mirror_XN5_XN4 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_c2c574c1 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XC0 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_5d39a6f6 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XN3 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_b74db7d7 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XN1 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_e30dc562 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XC1 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_7533bd66 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XN2 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_4ab843b8 in circuit routed (0)(1 instance)
+
+Class routed (0):  Merged 11 parallel devices.
+Class vco_lc (1):  Merged 1 parallel devices.
+Subcircuit summary:
+Circuit 1: routed                          |Circuit 2: vco_lc                          
+-------------------------------------------|-------------------------------------------
+sky130_fd_pr__nfet_01v8 (18->7)            |sky130_fd_pr__nfet_01v8 (8->7)             
+sky130_fd_pr__cap_mim_m3_1 (2)             |sky130_fd_pr__cap_mim_m3_1 (2)             
+Number of devices: 9                       |Number of devices: 9                       
+Number of nets: 7                          |Number of nets: 7                          
+---------------------------------------------------------------------------------------
+Resolving symmetries by property value.
+Resolving symmetries by pin name.
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: routed                          |Circuit 2: vco_lc                          
+-------------------------------------------|-------------------------------------------
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+Iref                                       |Iref                                       
+voutn                                      |voutn                                      
+voutp                                      |voutp                                      
+Vcont                                      |Vcont                                      
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes routed and vco_lc are equivalent.
+
+Final result: Circuits match uniquely.
+.

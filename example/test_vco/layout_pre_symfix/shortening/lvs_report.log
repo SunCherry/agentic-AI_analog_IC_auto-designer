@@ -1,0 +1,142 @@
+================================================================================
+LVS REPORT -- test_vco (vco_lc) RE-GATE of route-shortner output
+report_dir : .../example/test_vco/layout/shortening/   (see drc_report.log for why)
+generated  : 2026-09-04  by layout-fixer (Step 2 gate)
+================================================================================
+
+VERDICT: MATCH.
+  Asserted on BOTH required conditions, never on the match line alone:
+    (1) "Netlists match uniquely." / "Final result: Circuits match uniquely."  PRESENT
+    (2) property-error line                                                    ABSENT
+          grep -ci "property error" lvs.out    -> 0
+          grep -ci "property error" netgen.log -> 0
+          grep -ci "no matching"    lvs.out    -> 0
+  fix iterations consumed : 1 of 5 (MAX_SUBRETRY = 5 = layout_fix_iterations from
+    example/test_vco/design_constraints.json). Step 1 used 0, independently budgeted.
+    attempt 1 = coil diagnosis (MISMATCH, no geometry touched)
+    attempt 2 = + extraction-only coil view -> MATCH
+  GEOMETRY CHANGED BY THIS GATE: NONE. Delivered GDS md5 unchanged
+    (2394ebf03abb02cd5b586cea7cd02d17). Rule 2.6 does not apply; DRC was clean anyway.
+
+--------------------------------------------------------------------------------
+WHAT WAS COMPARED
+--------------------------------------------------------------------------------
+  layout side  : layout/shortening/test_vco_fixed_shortened.gds, top cell `routed`,
+                 extracted THROUGH an extraction-only coil view (scratch, never delivered).
+  schematic    : layout/primitives/lvs_compare.sp -> vco_lc.spice, `.subckt vco_lc`,
+                 UNMODIFIED. Correct golden for a placer-built layout: it folds w to w*m,
+                 so XN4 (m=4 in the frozen netlist) appears as w=60 nf=1 m=1 and produces
+                 no spurious width delta.
+  frozen netlist: device_shaping/vco_lc_final_shaped.sp NOT used for the comparison and
+                 NOT modified. Not read into either side.
+  setup        : STOCK $PDK_ROOT/sky130A/libs.tech/netgen/sky130A_setup.tcl.
+                 No copy, no edit, no appended `ignore class`.
+  .sp -> .spice copy made first (netgen rejects a .sp extension).
+  runtime      : magic extraction 1.15 s, netgen 0.02 s, vs a 5-min per-call budget.
+                 0 retries, 0 exceptions, 0 crashes, 0 hangs.
+
+--------------------------------------------------------------------------------
+PIN CORRESPONDENCE  (6/6, by name)
+--------------------------------------------------------------------------------
+  | Layout port (routed) | Schematic port (vco_lc) | Status |
+  |----------------------|-------------------------|--------|
+  | VDD                  | VDD                     | match  |
+  | VSS                  | VSS                     | match  |
+  | voutn                | voutn                   | match  |
+  | voutp                | voutp                   | match  |
+  | Vcont                | Vcont                   | match  |
+  | Iref                 | Iref                    | match  |
+  "Cell pin lists are equivalent." -- the strong line, not "altered to match".
+
+DEVICE / NET SUMMARY
+  | Class                      | Circuit 1 (routed) | Circuit 2 (vco_lc) |
+  |----------------------------|--------------------|--------------------|
+  | sky130_fd_pr__nfet_01v8    | 18 -> 7            | 8 -> 7             |
+  | sky130_fd_pr__cap_mim_m3_1 | 2                  | 2                  |
+  | Number of devices          | 9                  | 9                  |
+  | Number of nets             | 7                  | 7                  |
+  18->7 is netgen merging 11 parallel extracted fingers/dummies
+  ("Class routed (0): Merged 11 parallel devices"). Both sides reduce to the same 7 nfets.
+  "Device classes routed and vco_lc are equivalent."
+
+--------------------------------------------------------------------------------
+MISMATCHES
+--------------------------------------------------------------------------------
+  Attempt 2 (final): NONE. No pin mismatch, no device-class mismatch, no short, no open.
+  No R-vs-X element-prefix case arises: this design extracts no resistor device at all.
+  Checked, not assumed.
+
+  Attempt 1 (recorded because it is the reason attempt 2 exists) -- ONE root cause:
+  | # | Symptom                                                  | Diagnosis | Belongs to |
+  |---|----------------------------------------------------------|-----------|------------|
+  | 1 | 2x magic `Ports "B" and "A" are electrically shorted`    | the coil  | TOOLING    |
+  | 2 | `.subckt routed VDD Vcont Iref VSS` -- 4 ports, not 6    | short propagated into parent, fusing VDD+voutp+voutn | TOOLING |
+  | 3 | XC0/XC1 both extract as `VDD VDD`                        | consequence of #2 | TOOLING |
+  sky130A.tech has no `device` line for an inductor, so a drawn spiral extracts as plain
+  wire and its two ports land on one node. NOT a layout connectivity bug; NO geometry was
+  changed to fix it. This is the SAME tooling gap the previous run hit -- not a regression
+  introduced by route-shortner.
+
+--------------------------------------------------------------------------------
+THE VSS QUESTION -- THE HAND-OFF'S PREDICTED SURPRISE, MEASURED
+--------------------------------------------------------------------------------
+  The hand-off flagged that four VSS bulk landings (XN0-XN3) were released onto their tie
+  rings and one VSS label moved to (229.647, 444.033), calling it "safe by construction but
+  not a measurement". Here is the measurement.
+  Extracted netlist of the SHORTENED layout vs extracted netlist of the PRE-SHORTENING
+  layout (both through the same coil view) differ by EXACTLY ONE LINE:
+      < .subckt routed VDD Vcont voutn voutp VSS Iref
+      > .subckt routed VDD Vcont voutn voutp Iref VSS
+  That is top-cell PORT ORDER only -- same six ports, same set. Every device instance line,
+  every subckt, every net name is byte-identical. Port order follows label position, so the
+  relocated VSS label fully explains it and it carries no connectivity meaning (netgen
+  matches by name; "Cell pin lists are equivalent").
+  All four bulk terminals land on VSS in the extraction (XN0/XN1/XN2 4th terminal, XN3 3rd).
+  CONCLUSION: the tie-ring release changed ZERO connectivity. Claim confirmed by measurement.
+
+--------------------------------------------------------------------------------
+FALSIFICATION CONTROL (run on THIS geometry, not inherited)
+--------------------------------------------------------------------------------
+  vco_lc_wbad.spice = vco_lc.spice with XN2 w=60 -> w=42, one width, nothing else.
+  Same extracted netlist, same stock setup. Result:
+      "Netlists match uniquely with property errors."
+      "Property errors were found."
+      "Final result: Circuits match uniquely."      <-- STILL PRINTED
+  (a) the verdict trap reproduces exactly on this geometry, so the match line alone proves
+      nothing -- which is why MATCH above is asserted on match line AND 0 property errors;
+  (b) w/l ARE genuinely compared through this flow, so the clean match is not vacuous.
+  Scratch inside lvs_attempt_3/. lvs_compare.sp was NOT edited.
+
+--------------------------------------------------------------------------------
+FOR THE ORCHESTRATOR -- UNCHANGED TOOLING GAP, NOT A LAYOUT DEFECT
+--------------------------------------------------------------------------------
+  The coil LVS view is STILL HAND-BUILT (inline gdstk edit; no script in this repo produces
+  it). Magic cannot extract an inductor. The durable fix belongs in the flow -- e.g. a
+  `make_lvs_view.py` beside make_inductor.py -- not in geometry and not in the netlist.
+  Precondition VERIFIED before reusing the recipe rather than assumed: vco_spiral_ind in the
+  shortened GDS is identical to the pre-shortening cell (347 polys; hist {71/20:3, 71/44:340,
+  72/16:2, 72/20:2}; labels A(0,165.22), B(94,153); 74-pt spiral bbox (-98,-44)..(98,153),
+  area 18200.55 um2). route-shortner touched routing, not cell contents.
+
+  Router "DIRTY corridor" warnings voutp@XC0 / VDD@XC1: FALSE ALARMS for a FOURTH
+  consecutive run. DRC reports nothing there and extraction puts both caps on their correct
+  nets -- VDD, voutp, voutn come out as three DISTINCT nets, cap count 2 vs 2. A MiM cap's
+  plates are stacked by construction, so a legal landing on one necessarily sits over the
+  other and the corridor checker cannot tell those apart. Recommend downgrading its severity.
+
+  Mismatches were NOT widespread. Attempt 2 has zero; attempt 1's traced to one root cause,
+  so no budget was spent fixing them individually.
+
+--------------------------------------------------------------------------------
+ITERATION HISTORY
+--------------------------------------------------------------------------------
+  attempt 1  full spiral, stock setup, unmodified netlist  MISMATCH -- 4 ports, coil short
+             artifacts: layout_fixer_work/lvs_regate_attempt1_noview/
+  attempt 2  + extraction-only coil view (ONLY change)     MATCH -- 6/6 pins, 9/9 devices,
+             7/7 nets, 0 property errors
+             artifacts: layout_fixer_work/lvs_attempt_3/
+  DISCLOSURE: this re-gate's first extraction was initially written into
+  layout_fixer_work/lvs_attempt_1/, overwriting the PREVIOUS run's baseline artifacts there
+  before I renamed it to lvs_regate_attempt1_noview/. The previous run's MATCH evidence in
+  lvs_attempt_2/ is INTACT and was used as this re-gate's pre-shortening control.
+================================================================================

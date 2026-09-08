@@ -1,0 +1,85 @@
+=== layout-fixer DRC bookkeeper -- test_vco REGRESSION run ===
+budget : MAX_SUBRETRY=5 (design_constraints.json key layout_fix_iterations, via
+         .claude/reference/design_constraints.py example/test_vco)
+scratch: example/test_vco/layout/layout_fixer_work_regress/
+         (drc_work/ = GDS under test; boundcheck/ = flatten + negative control)
+         pre-existing drc_work_placement/ and drc_work_routed/ NOT touched.
+
+--- attempt 1   2026-09-07T07:19:16Z
+gds    : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/routed.gds   top=routed
+knobs  : baseline (no fix applied; router output as delivered)
+total  : DRC_TOTAL=0  rects=0  rules=0   [CLEAN]
+rule   : (none) -- 'drc listall why' empty in expanded top cell
+delta  : n/a (first attempt)
+bound  : SRC_BBOX=26817 44077 106237 103220 (internal) = 397.10 x 295.72 um
+         FLAT_BBOX identical after 'flatten -dobox -nolabels routed_flat'
+         FLAT_DRC_TOTAL=0 and ZERO CELLCOUNT lines -> the 19 subcell errors do
+         not survive expansion (out-of-context, confirmed not asserted)
+negctl : two met1 rects injected 0.05um apart at (110000,50000)/(110110,50000)
+         internal units -> 'Metal1 spacing < 0.14um (met1.2)' x2, NEG_DRC_TOTAL=2.
+         The 0 is bound-checked from both sides: live check, non-empty cell.
+flags  : 19 out-of-context errors counted in via_stack subcells only
+         (via_stack_2e2571cb x3 each on $-$4, via_stack_918d05dd$2 x3,
+         via_stack_686e5d96$33 x1) -- vanish on flatten.
+         5x GDS-read 'Unknown layer/datatype layer=64 type=44' (glayout pwell
+         glayer, expected per environment.md). 1x CIF 'off lambda grid by 2/5'.
+         No tool retries, no exceptions. Magic wall time ~1.3s per run.
+verdict: DRC GATE PASSED on the baseline. 0 fix iterations consumed of 5.
+         Pre-routing baseline (drc_work_placement) was already 0/0, so there is
+         nothing router-introduced AND nothing inherited. The 29 well/latch-up
+         violations seen in earlier runs of this stack are GONE -- confirmed,
+         not assumed: neither DRC log contains any well/tap/latch-up rule.
+
+=== LVS (Step 2) ===
+--- lvs attempt 1   2026-09-07T07:21:58Z   [MATCH]
+artifacts: layout_fixer_work_regress/lvs_attempt_1/
+golden   : primitives/lvs_compare.sp -> lvs_compare.spice (netgen rejects .sp)
+           XDUMMY1/XDUMMY2 CONFIRMED inside .subckt vco_lc (before .ends) --
+           the dummy-placement hazard did NOT recur; no hand-repair applied.
+extview  : routed_extview.gds -- scratch only. vco_spiral_ind: deleted the single
+           74-pt met5(72,20) spiral (bbox -98,-44..98,153), added met5 rect
+           (90,148)-(98,153). Kept 4-pt A-lead tip, all 3 met4(71,20), all 340
+           via4(71,44) cuts, both labels A(0,165.22)/B(94,153). Signature
+           verified against payload BEFORE editing: exact match.
+           polygons 347 -> 347.
+extract  : port makeall applied. .subckt routed VDD Vcont voutn voutp VSS Iref
+           = SIX ports (the documented correct-extraction criterion). Coil
+           black-box succeeded; no VDD/voutp/voutn fusion.
+result   : "Final result: Circuits match uniquely."
+           property errors: lvs.out=0  netgen.log=0  (both required, both met)
+           devices 9 vs 9 | nets 7 vs 7 | nfet 18->7 vs 8->7 | mimcap 2 vs 2
+           6/6 pins equivalent by name.
+negctl   : (a) golden XN0 w=20->25  => "match uniquely WITH PROPERTY ERRORS",
+               grep count 2  -> w/l comparison is LIVE, guard is live.
+           (b) golden XC1 VDD voutn -> VDD voutp => "Netlists do not match"
+               -> cap topology comparison is LIVE; a real VDD/voutn merge
+               WOULD have been caught. Artifacts in lvs_negctl/.
+risk1    : mimcap top-plate short (2 DIRTY corridor landings, VDD on XC0/XC1
+           top_met) = FALSE ALARM on this build, with evidence: extracted top
+           has XXC0_0 voutp VDD and XXC1_0 voutn VDD as three DISTINCT nets,
+           and net count is 7 on BOTH sides. No fix iterations spent.
+risk2    : XL0/XL1 absent from lvs_compare.sp -- NOT reconciled by 'ignore
+           class'. Mechanism is: vco_spiral_ind holds no devices, so ext2spice
+           omits BOTH the subcircuit AND its instance calls. grep for
+           'spiral|XL0|XL1' in routed_extracted.spice returns nothing. So the
+           two sides agree structurally with no netgen-side treatment at all.
+verdict  : LVS GATE PASSED on attempt 1. 0 fix iterations consumed of 5.
+           NO geometry was changed for LVS -> no DRC re-run required (2.6 n/a).
+
+=== STEP 3 finalize   2026-09-07T07:26:45Z ===
+gds  : test_vco_fixed_regress.gds  top cell STILL 'routed' (file rename != cell
+       rename). md5 identical to routed.gds -- no geometry changed all run.
+       Full 74-pt spiral re-verified PRESENT in the deliverable.
+map  : physical_map.json regenerated via physical_map_from_placement.py
+       (correct script for placer+router provenance). 10/10 devices placed,
+       6/7 nets with routing geometry (Iref = label-only single-macro pin).
+       Byte-identical to the pre-existing map -> was already final, not stale.
+       Backup: layout_fixer_work_regress/physical_map.before_regen.json
+area : overall_bbox() over map devices = (135.72,221.21)-(529.32,516.10)
+       393.60 x 294.89 = 116068.28 um^2. GDS extent 397.10 x 295.72, aspect 1.34.
+tank : voutp 107.6620 um^2 / voutn 107.7057 um^2, delta 0.0437 (0.041%).
+       BEFORE == AFTER (no change made).
+rpts : drc_report_regress.log, lvs_report_regress.log, layout_report_regress.log
+       all in example/test_vco/layout/ (= <design_dir> = <report_dir>).
+FINAL: DRC CLEAN (0/5 iters) + LVS MATCH (0/5 iters). Both gates passed.
+       Not run by scope: PEX, simulation, route-optimizer.

@@ -1,0 +1,230 @@
+{
+  "input_gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/test_vco_fixed.gds",
+  "input_map": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/physical_map.json",
+  "output_gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/shortening/test_vco_fixed_shortened.gds",
+  "output_map": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/shortening/physical_map.json",
+  "drc": "PASS (clean)",
+  "reverted": {
+    "voutn": "reverted: new DRC violation on its rebuilt metal"
+  },
+  "bulk_landings_released": {
+    "VSS": [
+      {
+        "instance": "XN0",
+        "landable_boxes": 32,
+        "region_bbox": [
+          229.55,
+          358.275,
+          254.63,
+          364.995
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XN1",
+        "landable_boxes": 32,
+        "region_bbox": [
+          238.14499999999998,
+          326.01,
+          244.865,
+          351.09
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XN2",
+        "landable_boxes": 34,
+        "region_bbox": [
+          278.11,
+          342.22,
+          285.37,
+          407.305
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XN3",
+        "landable_boxes": 34,
+        "region_bbox": [
+          208.61,
+          372.225,
+          273.695,
+          379.485
+        ],
+        "is_ring": true
+      }
+    ]
+  },
+  "before": {
+    "Iref": {
+      "net": "Iref",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "VDD": {
+      "net": "VDD",
+      "wirelength_um": 423.4323938846823,
+      "vias": 4,
+      "corners": 7,
+      "terminals": 4,
+      "bbox_bound_um": 381.6682425104541,
+      "mst_um": 407.19799526193106,
+      "excess_um": 41.76415137422822,
+      "excess_ratio": 1.1094252723242601,
+      "cost": 431.4323938846823
+    },
+    "VSS": {
+      "net": "VSS",
+      "wirelength_um": 128.72788447625393,
+      "vias": 4,
+      "corners": 10,
+      "terminals": 7,
+      "bbox_bound_um": 74.34055352896405,
+      "mst_um": 107.61275350431384,
+      "excess_um": 54.38733094728988,
+      "excess_ratio": 1.7315970673543595,
+      "cost": 136.72788447625393
+    },
+    "Vcont": {
+      "net": "Vcont",
+      "wirelength_um": 143.58691423892208,
+      "vias": 2,
+      "corners": 7,
+      "terminals": 4,
+      "bbox_bound_um": 112.16998946580418,
+      "mst_um": 112.92498946580417,
+      "excess_um": 31.4169247731179,
+      "excess_ratio": 1.2800831570256639,
+      "cost": 147.58691423892208
+    },
+    "voutn": {
+      "net": "voutn",
+      "wirelength_um": 269.2890289623099,
+      "vias": 5,
+      "corners": 3,
+      "terminals": 5,
+      "bbox_bound_um": 227.93999999999994,
+      "mst_um": 259.56103469120376,
+      "excess_um": 41.349028962309944,
+      "excess_ratio": 1.181403127850794,
+      "cost": 279.2890289623099
+    },
+    "voutp": {
+      "net": "voutp",
+      "wirelength_um": 372.510175514006,
+      "vias": 4,
+      "corners": 13,
+      "terminals": 5,
+      "bbox_bound_um": 238.99500000000003,
+      "mst_um": 281.28079607102694,
+      "excess_um": 133.51517551400596,
+      "excess_ratio": 1.5586525890249,
+      "cost": 380.510175514006
+    },
+    "vtail": {
+      "net": "vtail",
+      "wirelength_um": 48.212536382240415,
+      "vias": 2,
+      "corners": 2,
+      "terminals": 3,
+      "bbox_bound_um": 42.937846492987234,
+      "mst_um": 45.838960095191766,
+      "excess_um": 5.274689889253182,
+      "excess_ratio": 1.122844770291744,
+      "cost": 52.212536382240415
+    }
+  },
+  "after": {
+    "Iref": {
+      "net": "Iref",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "VDD": {
+      "net": "VDD",
+      "wirelength_um": 423.4323938846823,
+      "vias": 4,
+      "corners": 7,
+      "terminals": 4,
+      "bbox_bound_um": 381.6682425104541,
+      "mst_um": 407.19799526193106,
+      "excess_um": 41.76415137422822,
+      "excess_ratio": 1.1094252723242601,
+      "cost": 431.4323938846823
+    },
+    "VSS": {
+      "net": "VSS",
+      "wirelength_um": 93.64288576117426,
+      "vias": 4,
+      "corners": 5,
+      "terminals": 7,
+      "bbox_bound_um": 74.34055352896405,
+      "mst_um": 107.61275350431384,
+      "excess_um": 19.302332232210205,
+      "excess_ratio": 1.259647410678611,
+      "cost": 101.64288576117426
+    },
+    "Vcont": {
+      "net": "Vcont",
+      "wirelength_um": 114.89360414566087,
+      "vias": 2,
+      "corners": 3,
+      "terminals": 4,
+      "bbox_bound_um": 112.16998946580418,
+      "mst_um": 112.92498946580417,
+      "excess_um": 2.723614679856695,
+      "excess_ratio": 1.0242811352022727,
+      "cost": 118.89360414566087
+    },
+    "voutn": {
+      "net": "voutn",
+      "wirelength_um": 269.2890289623099,
+      "vias": 5,
+      "corners": 3,
+      "terminals": 5,
+      "bbox_bound_um": 227.93999999999994,
+      "mst_um": 259.56103469120376,
+      "excess_um": 41.349028962309944,
+      "excess_ratio": 1.181403127850794,
+      "cost": 279.2890289623099
+    },
+    "voutp": {
+      "net": "voutp",
+      "wirelength_um": 271.00007036618246,
+      "vias": 7,
+      "corners": 1,
+      "terminals": 5,
+      "bbox_bound_um": 238.99500000000003,
+      "mst_um": 281.28079607102694,
+      "excess_um": 32.00507036618242,
+      "excess_ratio": 1.1339152298842337,
+      "cost": 285.00007036618246
+    },
+    "vtail": {
+      "net": "vtail",
+      "wirelength_um": 48.212536382240415,
+      "vias": 2,
+      "corners": 2,
+      "terminals": 3,
+      "bbox_bound_um": 42.937846492987234,
+      "mst_um": 45.838960095191766,
+      "excess_um": 5.274689889253182,
+      "excess_ratio": 1.122844770291744,
+      "cost": 52.212536382240415
+    }
+  }
+}

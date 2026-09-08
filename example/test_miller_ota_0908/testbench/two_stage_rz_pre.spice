@@ -1,0 +1,44 @@
+* two_stage_rz_pre testbench
+* INTAKE MODIFIED: .include "two_stage_rz.sp" -> "../netlist/two_stage_rz.sp" (netlist filed under netlist/)
+.lib "/Users/cherrysun/pdk/manual/sky130A/libs.tech/ngspice/sky130.lib.spice" tt
+
+.subckt two_stage_amp Vip Vin VDD VSS vout
+.include "../netlist/two_stage_rz.sp"
+X0 Vip Vin VDD VSS vout two_stage_rz
+.ends
+
+.param vcm=0.9
+.param cload=10.0p
+
+xtwo_stage_amp (Vip Vin VDD VSS vout) two_stage_amp ;
+
+vsrc in 0 dc=0 ac=1.0
+ein1 Vip cm in 0 0.5
+ein2 Vin cm in 0 -0.5
+vcm cm 0 dc=vcm
+
+vdd VDD 0 dc=1.8
+vss 0 VSS dc=0
+CL vout 0 {cload}
+
+.ac dec 10 1 10G
+
+* CORRECTION (schematic-agent #4a) -- REQUIRED BY SPEC KEY: Power
+* target_spec.json sets Power CEILING 0.5813 mW, but the deck as supplied had
+* neither an operating-point analysis nor a save of the supply current, so the
+* key had no number at all (design-sheets-checker 4c: TESTBENCH INCOMPLETE).
+* Added below: `op` after the AC `write`, then a `wrdata` save of i(vdd)
+* (wrdata, not write -- it is the format process_*_results.py's op_power_mw reads).
+* This RECORDS the operating condition the deck already sets (VDD=1.8V,
+* vcm=0.9V, CL=10p, tt corner) -- no new condition is assumed. The AC analysis,
+* its `write` line, and every source/value above are untouched.
+.control
+    run
+    set filetype=ascii
+    write ./simout_rz_pre.out v(vout)
+    op
+    wrdata ./two_stage_rz_pre_op.txt i(vdd)
+    quit
+.endc
+
+.end

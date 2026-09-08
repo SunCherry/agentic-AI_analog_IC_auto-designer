@@ -1,0 +1,80 @@
+{
+  "ok": true,
+  "decomposition": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/circuit_decomposition.yaml",
+  "netlist": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/sizing/vco_lc_final.sp",
+  "confirmed_by_user": false,
+  "severities": [
+    "high"
+  ],
+  "shape_devices": [
+    "XN0",
+    "XN1",
+    "XN2",
+    "XN3"
+  ],
+  "pinned_devices": {
+    "XN4": 1,
+    "XN5": 1
+  },
+  "matched_entries": [
+    {
+      "index": 0,
+      "ref": "['voutp', 'voutn tank nodes -- XN0', 'XN1', 'XN2', 'XN3', 'XC0', 'XC1', 'XL0', 'XL1 all land here']",
+      "severity": "high",
+      "spec_keys": [
+        "OscFreq",
+        "TuningRange"
+      ],
+      "devices": [
+        "XN0",
+        "XN1",
+        "XN2",
+        "XN3"
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "['XN2', 'XN3']",
+      "severity": "high",
+      "spec_keys": [
+        "TuningRange",
+        "OscFreq"
+      ],
+      "devices": [
+        "XN2",
+        "XN3"
+      ]
+    },
+    {
+      "index": 2,
+      "ref": "['XN0', 'XN1']",
+      "severity": "high",
+      "spec_keys": [
+        "OutputPower",
+        "OscFreq"
+      ],
+      "devices": [
+        "XN0",
+        "XN1"
+      ]
+    }
+  ],
+  "entries_without_devices": [
+    {
+      "index": 3,
+      "ref": "['XL0', 'XL1']",
+      "severity": "high",
+      "spec_keys": [
+        "OscFreq",
+        "OutputPower"
+      ],
+      "devices": []
+    }
+  ],
+  "spec_keys": [
+    "OscFreq",
+    "OutputPower",
+    "TuningRange"
+  ],
+  "selection_source": "parasitic_sensitivity severity=high"
+}

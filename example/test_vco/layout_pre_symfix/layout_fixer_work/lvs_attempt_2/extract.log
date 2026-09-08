@@ -1,0 +1,105 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "extract.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "routed".
+Reading "Unnamed_8a89893b".
+Reading "via_stack_18d6ab16$4".
+Reading "via_stack_686e5d96$33".
+Reading "XC0".
+Reading "Unnamed_43f39a32".
+Error while reading cell "Unnamed_43f39a32" (byte position 22412): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "via_stack_918d05dd$2".
+Reading "via_stack_627eccf4$2".
+Reading "via_stack_627eccf4$5".
+Reading "via_stack_18d6ab16$3".
+Reading "via_stack_2e2571cb$2".
+Reading "current_mirror_XN5_XN4".
+Reading "via_stack_f018e2c2".
+Reading "vco_spiral_ind".
+Reading "via_stack_2e2571cb".
+Reading "XN1".
+Reading "Unnamed_6f40f37b".
+Error while reading cell "Unnamed_6f40f37b" (byte position 240944): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "via_stack_627eccf4$7".
+Reading "Unnamed_1dc60c31".
+Error while reading cell "Unnamed_1dc60c31" (byte position 609580): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "Unnamed_c0a30604".
+Error while reading cell "Unnamed_c0a30604" (byte position 753200): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "via_stack_f018e2c2$1".
+Reading "XC1".
+Reading "XN3".
+Reading "Unnamed_4b7a68c3".
+Error while reading cell "Unnamed_4b7a68c3" (byte position 897228): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "Unnamed_dbd01499".
+Reading "via_stack_627eccf4$4".
+Reading "via_stack_918d05dd$3".
+Reading "via_stack_2e2571cb$3".
+Reading "XN0".
+Reading "via_stack_627eccf4$6".
+Reading "via_stack_627eccf4$3".
+Reading "via_stack_18d6ab16$2".
+Reading "via_stack_2e2571cb$1".
+Reading "via_stack_f018e2c2$2".
+Reading "XN2".
+EXT_BBOX: 26622 44451 81452 90998
+Extracting via_stack_2e2571cb$1 into via_stack_2e2571cb$1.ext:
+Extracting Unnamed_dbd01499 into Unnamed_dbd01499.ext:
+Extracting XC0 into XC0.ext:
+Extracting Unnamed_8a89893b into Unnamed_8a89893b.ext:
+Extracting XC1 into XC1.ext:
+Extracting via_stack_2e2571cb into via_stack_2e2571cb.ext:
+Extracting via_stack_2e2571cb$2 into via_stack_2e2571cb$2.ext:
+Extracting via_stack_918d05dd$2 into via_stack_918d05dd$2.ext:
+Extracting via_stack_18d6ab16$4 into via_stack_18d6ab16$4.ext:
+Extracting via_stack_627eccf4$5 into via_stack_627eccf4$5.ext:
+Extracting Unnamed_c0a30604 into Unnamed_c0a30604.ext:
+Unnamed_c0a30604: 2 warnings
+Extracting XN1 into XN1.ext:
+Extracting via_stack_2e2571cb$3 into via_stack_2e2571cb$3.ext:
+Extracting via_stack_18d6ab16$2 into via_stack_18d6ab16$2.ext:
+Extracting Unnamed_4b7a68c3 into Unnamed_4b7a68c3.ext:
+Unnamed_4b7a68c3: 2 warnings
+Extracting XN3 into XN3.ext:
+Extracting Unnamed_6f40f37b into Unnamed_6f40f37b.ext:
+Unnamed_6f40f37b: 2 warnings
+Extracting XN2 into XN2.ext:
+Extracting via_stack_627eccf4$2 into via_stack_627eccf4$2.ext:
+Extracting Unnamed_1dc60c31 into Unnamed_1dc60c31.ext:
+Unnamed_1dc60c31: 2 warnings
+Extracting XN0 into XN0.ext:
+Extracting via_stack_627eccf4$3 into via_stack_627eccf4$3.ext:
+Extracting via_stack_f018e2c2$2 into via_stack_f018e2c2$2.ext:
+Extracting via_stack_f018e2c2$1 into via_stack_f018e2c2$1.ext:
+Extracting via_stack_627eccf4$7 into via_stack_627eccf4$7.ext:
+Extracting via_stack_f018e2c2 into via_stack_f018e2c2.ext:
+Extracting Unnamed_43f39a32 into Unnamed_43f39a32.ext:
+Unnamed_43f39a32: 5 warnings
+Extracting current_mirror_XN5_XN4 into current_mirror_XN5_XN4.ext:
+Extracting via_stack_686e5d96$33 into via_stack_686e5d96$33.ext:
+Extracting via_stack_627eccf4$6 into via_stack_627eccf4$6.ext:
+Extracting via_stack_918d05dd$3 into via_stack_918d05dd$3.ext:
+Extracting via_stack_627eccf4$4 into via_stack_627eccf4$4.ext:
+Extracting via_stack_18d6ab16$3 into via_stack_18d6ab16$3.ext:
+Extracting vco_spiral_ind into vco_spiral_ind.ext:
+Extracting routed into routed.ext:
+Total of 13 warnings.
+exttospice finished.

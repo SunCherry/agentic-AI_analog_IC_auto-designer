@@ -1,0 +1,83 @@
+================================================================================
+LVS REPORT -- test_miller_ota_0908
+================================================================================
+report_dir : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/   (= <design_dir>)
+layout     : layout/test_miller_ota_0908_fixed.gds   top cell `routed`
+extracted  : layout_fixer_work/lvs_attempt_1/routed_extracted.spice
+golden     : layout/primitives/lvs_compare.spice   subckt `two_stage_rz`
+tools      : Magic ext2spice lvs -> netgen -batch lvs, setup sky130A_setup.tcl
+budget     : 5 iterations (design_constraints.json / layout_fix_iterations)
+iterations : 1 of 5 used -- matched on the first attempt, no layout change required
+raw report : layout_fixer_work/lvs_attempt_1/lvs1.out
+
+================================================================================
+VERDICT : **MATCH** -- "Final result: Circuits match uniquely."
+================================================================================
+
+MATCH COUNTS
+| Quantity | Layout (routed) | Schematic (two_stage_rz) | Status |
+|----------|-----------------|--------------------------|--------|
+| Devices  | 13              | 13                       | match  |
+| Nets     | 10              | 10                       | match  |
+| Pins     | 5               | 5                        | match  |
+
+DEVICE CLASS BREAKDOWN (netgen "Subcircuit summary", n->m = after parallel merge)
+| Device class                | Layout   | Schematic | Status |
+|-----------------------------|----------|-----------|--------|
+| sky130_fd_pr__nfet_01v8     | 200 -> 6 | 7 -> 6    | match  |
+| sky130_fd_pr__pfet_01v8     | 28 -> 5  | 5         | match  |
+| sky130_fd_pr__cap_mim_m3_1  | 1        | 1         | match  |
+| sky130_fd_pr__res_generic_po| 1        | 1         | match  |
+  The 200/28 raw counts are the physical fingers/copies glayout draws; netgen merged
+  217 parallel devices in the layout and 1 in the schematic, landing both on the same
+  6 nfet / 5 pfet classes. "Device classes routed and two_stage_rz are equivalent."
+
+PIN CORRESPONDENCE  ("Cell pin lists are equivalent.")
+| Layout port (routed) | Schematic port (two_stage_rz) |
+|----------------------|-------------------------------|
+| Vip                  | Vip                           |
+| Vin                  | Vin                           |
+| vout                 | vout                          |
+| VDD                  | VDD                           |
+| VSS                  | VSS                           |
+  `port makeall` promoted all 5 top pins. Vin and Vip are single-macro pins whose
+  gates both live inside diff_pair_XMN1_XMN2, so they carry a label rather than a
+  route -- they promoted correctly anyway, and no pin was missing.
+
+MISMATCHES
+  None. There is no entry in this section.
+
+THE TWO PREDICTED SHORTS -- both checked explicitly, both NEGATIVE
+  routing_summary.txt flagged two landings as corridor-DIRTY, warning of a possible
+  extraction-level short:
+    - VSS on diff_pair_XMN1_XMN2 (tap_ring)
+    - net8 on XC0 (top_met)
+  Neither materialized. A short merges two nets, so it would show as 9 nets in the
+  layout against 10 in the schematic; extraction reported 10 vs 10 with a UNIQUE
+  match, which cannot happen if either net were shorted to a neighbour. net8 in
+  particular extracted as its own net (m4_n84256_n27128#) joining R0 to XC0 only.
+  No fix was needed, and none was applied. The warnings were conservative: the router
+  reports a corridor crossing another net's metal on SOME layer, which is not the same
+  as conductor-on-conductor contact.
+
+THE R-vs-X RESISTOR QUIRK -- pre-empted, did not fire
+  Checked first, per environment.md, since it has cost iterations before. R0 is
+  spelled with an R prefix on BOTH sides:
+    golden   : R0 net5 net8 sky130_fd_pr__res_generic_po w=2 l=62
+    extracted: R0 a_n200_6200# a_n200_n6280# sky130_fd_pr__res_generic_po w=2 l=62
+  No dummy_N or proxy nets appear anywhere in the report, and R0 matched with both
+  terminals bound. Nothing to report to the orchestrator on this.
+
+WARNINGS (non-blocking, benign)
+  - "Equate pins: cell sky130_fd_pr__{nfet_01v8,pfet_01v8,cap_mim_m3_1} is a
+    placeholder, treated as a black box" x6 -- standard for sky130 primitive models,
+    which have no netlist body to descend into. Not a mismatch.
+  - netgen Tcl namespace notices ("use fully-qualified name ::netgen::format/global").
+    Tooling noise from the setup script, no effect on the comparison.
+  - Magic extraction: 13 warnings, all inside unnamed glayout sub-cells; the
+    extracted netlist is complete (bbox and device counts both verified non-empty).
+
+GEOMETRY CHANGES DURING LVS: none. LVS matched on the first attempt, so no
+LVS-driven geometry edit was made and no DRC re-run was owed. The DRC-clean verdict
+in drc_report.log therefore still describes exactly this GDS.
+================================================================================

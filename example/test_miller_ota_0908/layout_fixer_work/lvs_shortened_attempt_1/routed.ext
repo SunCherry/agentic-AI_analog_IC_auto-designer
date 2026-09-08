@@ -1,0 +1,840 @@
+timestamp 1788854764
+version 8.3
+tech sky130A
+style ngspice()
+scale 1000 1 500000
+resistclasses 4400000 2200000 950000 3050000 120000 197000 114000 191000 120000 197000 114000 191000 48200 319800 2000000 48200 48200 12800 125 125 47 47 29 5
+use XMN5 XMN5_0 1 0 -80361 0 1 -36961
+use via_stack_f018e2c2$2 via_stack_f018e2c2$2_0 1 0 -80478 0 1 -35630
+use XMP4 XMP4_0 0 1 -79767 -1 0 -39802
+use via_stack_18d6ab16$2 via_stack_18d6ab16$2_0 1 0 -84971 0 1 -35630
+use via_stack_f018e2c2 via_stack_f018e2c2_6 1 0 -79334 0 1 -39673
+use via_stack_f018e2c2 via_stack_f018e2c2_5 1 0 -79346 0 1 -40385
+use via_stack_627eccf4$2 via_stack_627eccf4$2_0 1 0 -84971 0 1 -36080
+use XMN4 XMN4_0 1 0 -74697 0 1 -39957
+use diff_pair_XMN1_XMN2 diff_pair_XMN1_XMN2_0 -1 0 -72737 0 -1 -31381
+use via_stack_f018e2c2 via_stack_f018e2c2_4 1 0 -75236 0 1 -36257
+use via_stack_f018e2c2 via_stack_f018e2c2_3 1 0 -75697 0 1 -36257
+use via_stack_f018e2c2 via_stack_f018e2c2_2 1 0 -76218 0 1 -37940
+use via_stack_f018e2c2 via_stack_f018e2c2_1 1 0 -76197 0 1 -38978
+use via_stack_f018e2c2 via_stack_f018e2c2_0 1 0 -70294 0 1 -35411
+use XMN3 XMN3_0 -1 0 -72737 0 -1 -36215
+use via_stack_f018e2c2 via_stack_f018e2c2_7 1 0 -79334 0 1 -33358
+use via_stack_f018e2c2 via_stack_f018e2c2_9 1 0 -77606 0 1 -28012
+use via_stack_f018e2c2 via_stack_f018e2c2_10 1 0 -77606 0 1 -29433
+use via_stack_f018e2c2$3 via_stack_f018e2c2$3_0 1 0 -73140 0 1 -28741
+use via_stack_f018e2c2$4 via_stack_f018e2c2$4_0 1 0 -76284 0 1 -28891
+use via_stack_627eccf4$3 via_stack_627eccf4$3_0 1 0 -80478 0 1 -29341
+use via_stack_686e5d96$68 via_stack_686e5d96$68_0 1 0 -73947 0 1 -28012
+use via_stack_686e5d96$67 via_stack_686e5d96$67_0 1 0 -87519 0 1 -26315
+use via_stack_ea9c5ac0 via_stack_ea9c5ac0_0 1 0 -75086 0 1 -26645
+use via_stack_f018e2c2 via_stack_f018e2c2_8 1 0 -73947 0 1 -26196
+use via_stack_2e2571cb via_stack_2e2571cb_0 1 0 -84222 0 1 -26645
+use R0 R0_0 0 1 -81279 1 0 -26315
+use via_stack_f018e2c2$1 via_stack_f018e2c2$1_0 1 0 -75086 0 1 -26645
+use via_stack_686e5d96$66 via_stack_686e5d96$66_0 1 0 -75039 0 1 -26315
+use current_mirror_XMP1_XMP2 current_mirror_XMP1_XMP2_0 -1 0 -72947 0 -1 -27135
+use XMP3 XMP3_0 0 -1 -78723 -1 0 -31426
+use XC0 XC0_0 0 -1 -84191 1 0 -31115
+port "VSS" 5 -72737 -33860 -72737 -33860 m2
+port "Vip" 3 -76448 -34007 -76448 -34007 m2
+port "Vin" 2 -76562 -31094 -76562 -31094 m2
+port "VDD" 4 -72827 -26196 -72827 -26196 m2
+port "vout" 1 -84971 -36155 -84971 -36155 m1
+node "VSS" 0 0 -72737 -33860 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "Vip" 0 0 -76448 -34007 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "Vin" 0 0 -76562 -31094 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "m4_n84256_n27128#" 0 195.219 -84256 -27128 m4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 32844 1102 0 0 0 0
+node "m3_n84971_n35664#" 1 539.924 -84971 -35664 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 83061 2600 0 0 0 0 0 0
+node "m3_n84222_n26679#" 6 3931.08 -84222 -26679 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 621248 18408 0 0 0 0 0 0
+node "m2_n76239_n38999#" 3 419.759 -76239 -38999 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 44478 2202 0 0 0 0 0 0 0 0
+node "m2_n75697_n36278#" 1 145.008 -75697 -36278 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 19362 1006 0 0 0 0 0 0 0 0
+node "m2_n72758_n35143#" 4 493.475 -72758 -35143 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 51282 2526 0 0 0 0 0 0 0 0
+node "m2_n79367_n40385#" 21 2649.29 -79367 -40385 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 295134 14162 0 0 0 0 0 0 0 0
+node "m2_n84992_n36080#" 1 181.035 -84992 -36080 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 18900 984 0 0 0 0 0 0 0 0
+node "m2_n76331_n29062#" 1 58.4044 -76331 -29062 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 8274 478 0 0 0 0 0 0 0 0
+node "m2_n76156_n28950#" 37 4834.35 -76156 -28950 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 521716 24886 0 0 0 0 0 0 0 0
+node "m2_n72298_n28163#" 12 1622.58 -72298 -28163 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 177994 8346 0 0 0 0 0 0 0 0
+node "m2_n73161_n28741#" 2 286.57 -73161 -28741 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 34061 1552 0 0 0 0 0 0 0 0
+node "m2_n77627_n29433#" 4 543.152 -77627 -29433 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 59682 2926 0 0 0 0 0 0 0 0
+node "m2_n80499_n35630#" 19 2363.68 -80499 -35630 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 264138 12662 0 0 0 0 0 0 0 0
+node "VDD" 3 469.034 -72827 -26196 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 48426 2390 0 0 0 0 0 0 0 0
+node "m1_n79600_n40444#" 1 106.579 -79600 -40444 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 19452 742 0 0 0 0 0 0 0 0 0 0
+node "m1_n79334_n39694#" 0 22.8306 -79334 -39694 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1218 142 0 0 0 0 0 0 0 0 0 0
+node "m1_n71237_n39274#" 2 246.149 -71237 -39274 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 32228 1464 0 0 0 0 0 0 0 0 0 0
+node "m1_n76218_n39019#" 0 30.0946 -76218 -39019 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1722 166 0 0 0 0 0 0 0 0 0 0
+node "m1_n76239_n37940#" 0 29.8463 -76239 -37940 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1722 166 0 0 0 0 0 0 0 0 0 0
+node "m1_n70315_n36999#" 5 760.104 -70315 -36999 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 72114 3518 0 0 0 0 0 0 0 0 0 0
+node "m1_n75257_n36912#" 4 444.192 -75257 -36912 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 53634 2638 0 0 0 0 0 0 0 0 0 0
+node "m1_n76232_n36256#" 2 322.768 -76232 -36256 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 36232 1614 0 0 0 0 0 0 0 0 0 0
+node "vout" 15 2245.35 -84971 -36155 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 218634 10418 0 0 0 0 0 0 0 0 0 0
+node "m1_n80091_n40444#" 59 8067 -80091 -40444 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 839000 39808 0 0 0 0 0 0 0 0 0 0
+node "m1_n79712_n32975#" 2 370.116 -79712 -32975 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 37595 1746 0 0 0 0 0 0 0 0 0 0
+node "m1_n77734_n29919#" 2 192.337 -77734 -29919 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 24906 1270 0 0 0 0 0 0 0 0 0 0
+node "m1_n80478_n29362#" 3 397.776 -80478 -29362 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 46116 2280 0 0 0 0 0 0 0 0 0 0
+node "m1_n77606_n28033#" 16 2131.66 -77606 -28033 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 229509 11034 0 0 0 0 0 0 0 0 0 0
+node "m1_n75107_n26645#" 1 180.102 -75107 -26645 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 19478 912 0 0 0 0 0 0 0 0 0 0
+node "m1_n87548_n26366#" 68 9478.19 -87548 -26366 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 963146 45822 0 0 0 0 0 0 0 0 0 0
+substrate "VSUBS" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cap "m1_n75107_n26645#" "m1_n77606_n28033#" 15.2499
+cap "m1_n80091_n40444#" "m1_n76218_n39019#" 4.85039
+cap "m1_n87548_n26366#" "m3_n84222_n26679#" 95.5344
+cap "m1_n87548_n26366#" "m2_n76156_n28950#" 17.7787
+cap "vout" "m2_n84992_n36080#" 82.9049
+cap "m1_n80091_n40444#" "m2_n79367_n40385#" 74.0013
+cap "m1_n75257_n36912#" "m2_n76156_n28950#" 0.429381
+cap "m1_n87548_n26366#" "m1_n80478_n29362#" 92.428
+cap "m1_n79712_n32975#" "m2_n79367_n40385#" 17.3359
+cap "m1_n75257_n36912#" "m2_n75697_n36278#" 13.2116
+cap "m1_n77606_n28033#" "m2_n76331_n29062#" 0.0532084
+cap "m1_n79712_n32975#" "m2_n80499_n35630#" 0.877435
+cap "m1_n77734_n29919#" "m2_n77627_n29433#" 17.6089
+cap "m1_n87548_n26366#" "m2_n73161_n28741#" 15.1099
+cap "m2_n76156_n28950#" "m2_n75697_n36278#" 26.6782
+cap "m1_n80091_n40444#" "m1_n79600_n40444#" 58.3104
+cap "m2_n77627_n29433#" "m2_n76331_n29062#" 6.41161
+cap "m1_n75107_n26645#" "m3_n84222_n26679#" 8.36183
+cap "m1_n80091_n40444#" "m1_n76232_n36256#" 24.9525
+cap "m1_n87548_n26366#" "m2_n79367_n40385#" 0.0862153
+cap "m1_n80091_n40444#" "m2_n76239_n38999#" 52.1809
+cap "m2_n84992_n36080#" "m3_n84971_n35664#" 16.6055
+cap "m1_n87548_n26366#" "m2_n80499_n35630#" 1.57924
+cap "m1_n87548_n26366#" "m1_n77734_n29919#" 99.7051
+cap "m1_n80091_n40444#" "m1_n71237_n39274#" 64.2129
+cap "m1_n79334_n39694#" "m2_n79367_n40385#" 13.3326
+cap "m1_n76239_n37940#" "m2_n76239_n38999#" 13.8981
+cap "m1_n87548_n26366#" "m2_n76331_n29062#" 18.4139
+cap "m1_n70315_n36999#" "m2_n76156_n28950#" 15.3227
+cap "vout" "m2_n79367_n40385#" 0.103982
+cap "m1_n80478_n29362#" "m2_n80499_n35630#" 15.4286
+cap "m1_n77606_n28033#" "m2_n77627_n29433#" 15.2906
+cap "vout" "m2_n80499_n35630#" 15.3271
+cap "m2_n76156_n28950#" "m2_n76331_n29062#" 33.5738
+cap "m1_n80091_n40444#" "m1_n76239_n37940#" 4.40684
+cap "vout" "m3_n84971_n35664#" 52.1746
+cap "m1_n76232_n36256#" "m2_n76156_n28950#" 0.848964
+cap "m1_n77606_n28033#" "VDD" 15.2651
+cap "m1_n87548_n26366#" "m1_n77606_n28033#" 212.915
+cap "m2_n80499_n35630#" "m2_n79367_n40385#" 97.7625
+cap "m1_n77606_n28033#" "m3_n84222_n26679#" 5.39607
+cap "m1_n80091_n40444#" "m1_n75257_n36912#" 154.518
+cap "m1_n76232_n36256#" "m2_n75697_n36278#" 19.9843
+cap "m1_n77606_n28033#" "m2_n76156_n28950#" 0.19882
+cap "m1_n87548_n26366#" "m2_n77627_n29433#" 59.394
+cap "m1_n87548_n26366#" "m1_n79712_n32975#" 2.78848
+cap "m1_n80091_n40444#" "m2_n76156_n28950#" 34.3296
+cap "m2_n76156_n28950#" "m2_n72758_n35143#" 6.84039
+cap "m2_n77627_n29433#" "m3_n84222_n26679#" 0.159683
+cap "m1_n80091_n40444#" "m1_n79334_n39694#" 6.14282
+cap "m1_n87548_n26366#" "m4_n84256_n27128#" 16.6452
+cap "m2_n73161_n28741#" "m2_n72298_n28163#" 13.9715
+cap "m2_n77627_n29433#" "m2_n76156_n28950#" 0.705171
+cap "m1_n79600_n40444#" "m2_n79367_n40385#" 21.0419
+cap "m1_n76218_n39019#" "m2_n76239_n38999#" 9.10384
+cap "m3_n84222_n26679#" "m4_n84256_n27128#" 23.3109
+cap "m1_n80091_n40444#" "m2_n75697_n36278#" 50.8885
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN4_0/Unnamed_1794b227_0/S" 0.0072892
+cap "XMP4_0/Unnamed_60ff7c9a_0/a_n520_n725#" "XMP4_0/Unnamed_60ff7c9a_0/D" 29.0226
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMP4_0/Unnamed_60ff7c9a_0/D" 22.7425
+cap "XMP4_0/Unnamed_60ff7c9a_0/a_n520_n725#" "XMP4_0/Unnamed_60ff7c9a_0/S" 26.6791
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMN4_0/Unnamed_1794b227_0/G" 2.73991
+cap "XMP4_0/Unnamed_60ff7c9a_0/a_n520_n725#" "XMP4_0/Unnamed_60ff7c9a_0/S" 69.5443
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMN4_0/Unnamed_1794b227_0/S" 1.09156
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN4_0/Unnamed_1794b227_0/G" 7.18618
+cap "XMP4_0/Unnamed_60ff7c9a_0/a_n520_n725#" "XMP4_0/Unnamed_60ff7c9a_0/D" 136.094
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMP4_0/Unnamed_60ff7c9a_0/D" 29.968
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN4_0/Unnamed_1794b227_0/S" 55.9551
+cap "XMN4_0/Unnamed_1794b227_0/G" "XMP4_0/Unnamed_60ff7c9a_0/D" 2.27374e-13
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/G" -6.82121e-12
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/D" -2.52687e-13
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/G" 28.8237
+cap "XMN4_0/Unnamed_1794b227_0/D" "XMN4_0/Unnamed_1794b227_0/S" -4.54747e-13
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/G" 107.112
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMP4_0/Unnamed_60ff7c9a_0/D" 13.7847
+cap "XMN5_0/Unnamed_485c261d_0/B" "XMP4_0/Unnamed_60ff7c9a_0/S" 6.94918
+cap "XMN5_0/Unnamed_485c261d_0/B" "XMP4_0/Unnamed_60ff7c9a_0/D" 6.93455
+cap "XMN5_0/Unnamed_485c261d_0/B" "XMP4_0/Unnamed_60ff7c9a_0/D" 363.866
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMN4_0/Unnamed_1794b227_0/S" 1.03317
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.0458599
+cap "XMN5_0/Unnamed_485c261d_0/B" "XMP4_0/Unnamed_60ff7c9a_0/S" 53.6829
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMP4_0/Unnamed_60ff7c9a_0/D" 49.5561
+cap "XMN5_0/Unnamed_485c261d_0/B" "XMN4_0/Unnamed_1794b227_0/G" 0.153628
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN4_0/Unnamed_1794b227_0/G" 0.953665
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMN4_0/Unnamed_1794b227_0/G" 2.06991
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN4_0/Unnamed_1794b227_0/S" 33.9085
+cap "via_stack_f018e2c2_1/m1_n43_n43#" "XMN4_0/Unnamed_1794b227_0/G" 0.571459
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/S" -4.54747e-13
+cap "via_stack_f018e2c2_1/m1_n43_n43#" "XMN5_0/Unnamed_485c261d_0/G" 445.149
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 3.15312
+cap "XMN4_0/Unnamed_1794b227_0/B" "XMN4_0/Unnamed_1794b227_0/S" 0.883955
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 1.69619
+cap "XMN4_0/Unnamed_1794b227_0/B" "XMN4_0/Unnamed_1794b227_0/D" 4.04639
+cap "XMN4_0/Unnamed_1794b227_0/B" "XMN5_0/Unnamed_485c261d_0/G" 412.013
+cap "XMN4_0/Unnamed_1794b227_0/B" "XMN4_0/Unnamed_1794b227_0/G" 3.86477
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.649357
+cap "XMN4_0/Unnamed_1794b227_0/B" "XMN5_0/Unnamed_485c261d_0/G" 408.077
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/D" -5.91172e-12
+cap "XMN4_0/Unnamed_1794b227_0/G" "m1_n80091_n40444#" 0.614263
+cap "XMN4_0/Unnamed_1794b227_0/S" "m1_n80091_n40444#" 408.576
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/G" -2.27374e-13
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/G" 407.741
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN4_0/Unnamed_1794b227_0/D" 20.7239
+cap "XMN4_0/Unnamed_1794b227_0/G" "XMN4_0/Unnamed_1794b227_0/D" 0.158964
+cap "XMN4_0/Unnamed_1794b227_0/G" "XMN4_0/Unnamed_1794b227_0/S" 125.428
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/B" 0.178662
+cap "XMP4_0/Unnamed_60ff7c9a_0/S" "XMN5_0/Unnamed_485c261d_0/B" 4.71263
+cap "XMP4_0/Unnamed_60ff7c9a_0/B" "XMN5_0/Unnamed_485c261d_0/B" 14.4672
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521318
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN5_0/Unnamed_485c261d_0/B" 1.47095
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMP4_0/Unnamed_60ff7c9a_0/D" 0.925317
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMP4_0/Unnamed_60ff7c9a_0/B" 164.475
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/B" 0.863533
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/S" 0.0254485
+cap "XMP4_0/Unnamed_60ff7c9a_0/D" "XMN5_0/Unnamed_485c261d_0/B" 48.6163
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMP4_0/Unnamed_60ff7c9a_0/B" 95.9867
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMP4_0/Unnamed_60ff7c9a_0/B" 198.473
+cap "XMN5_0/Unnamed_485c261d_0/B" "XMP4_0/Unnamed_60ff7c9a_0/B" 173.329
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.056051
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/G" 64.8467
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.407643
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.361783
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.407643
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.0968153
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/S" 0.278528
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.407643
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.407643
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G" 0.371975
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/D" 1.88738e-14
+cap "XMN4_0/Unnamed_1794b227_0/G" "XMN5_0/Unnamed_485c261d_0/G" 0.407643
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN4_0/Unnamed_1794b227_0/S" 0.00646809
+cap "XMN4_0/Unnamed_1794b227_0/G" "XMN5_0/Unnamed_485c261d_0/G" 0.310828
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN4_0/Unnamed_1794b227_0/D" 0.0467861
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/S" 0.0666264
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/G" 115.314
+cap "XMN4_0/Unnamed_1794b227_0/G" "XMN5_0/Unnamed_485c261d_0/G" 0.056051
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/D" 0.115571
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/G" 41.395
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN3_0/Unnamed_23a0d124_0/D" 2.69415
+cap "XMN4_0/Unnamed_1794b227_0/S" "m1_n80091_n40444#" 25.035
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN3_0/Unnamed_23a0d124_0/D" -1.13687e-13
+cap "XMN4_0/Unnamed_1794b227_0/S" "m1_n80091_n40444#" 25.035
+cap "XMN4_0/Unnamed_1794b227_0/S" "XMN3_0/Unnamed_23a0d124_0/D" 1.74341
+cap "m1_n80091_n40444#" "XMN4_0/Unnamed_1794b227_0/S" 7.52552
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "XMN5_0/Unnamed_485c261d_0/D" 555.535
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/D" 5.12108
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/D" 15.8101
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.703593
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 393.527
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "XMN5_0/Unnamed_485c261d_0/G" 0.0893303
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XMN5_0/Unnamed_485c261d_0/G" 0.614263
+cap "XMN5_0/Unnamed_485c261d_0/B" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 9.61015
+cap "XMN5_0/Unnamed_485c261d_0/B" "via_stack_f018e2c2$2_0/m1_n43_n43#" 383.916
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "via_stack_f018e2c2$2_0/m1_n43_n43#" 17.0756
+cap "m2_n79367_n40385#" "XMN5_0/Unnamed_485c261d_0/D" 0.229769
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0170415
+cap "m2_n79367_n40385#" "via_stack_f018e2c2$2_0/m1_n43_n43#" 0.743415
+cap "XMN5_0/Unnamed_485c261d_0/G" "via_stack_f018e2c2$2_0/m1_n43_n43#" 0.428358
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XMN5_0/Unnamed_485c261d_0/D" 0.208972
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "via_stack_f018e2c2$2_0/m1_n43_n43#" 3.1224
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XMN5_0/Unnamed_485c261d_0/S" 1.22158
+cap "XMN5_0/Unnamed_485c261d_0/B" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 1.75728
+cap "XMN5_0/Unnamed_485c261d_0/B" "via_stack_f018e2c2$2_0/m1_n43_n43#" 116.187
+cap "m2_n79367_n40385#" "XMN5_0/Unnamed_485c261d_0/G" 116.273
+cap "m2_n79367_n40385#" "via_stack_f018e2c2$2_0/m1_n43_n43#" 0.658873
+cap "m2_n79367_n40385#" "XMN5_0/Unnamed_485c261d_0/B" 168.376
+cap "m2_n79367_n40385#" "XMN5_0/Unnamed_485c261d_0/S" 234.217
+cap "m2_n79367_n40385#" "XMN5_0/Unnamed_485c261d_0/D" 162.771
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/S" -8.88178e-13
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/S" 1.63709e-11
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/D" 27.8304
+cap "XMN5_0/Unnamed_485c261d_0/S" "m2_n76156_n28950#" 2.91324
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/D" 0.0951648
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/G" 129.72
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/G" 27.9979
+cap "Vip" "XMN5_0/Unnamed_485c261d_0/S" 0.000768823
+cap "m2_n76156_n28950#" "XMN5_0/Unnamed_485c261d_0/S" 1.03648
+cap "m2_n76156_n28950#" "XMN3_0/Unnamed_23a0d124_0/D" 0.0980482
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN3_0/Unnamed_23a0d124_0/D" 2.75413
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "XMN3_0/Unnamed_23a0d124_0/S" 0.00153765
+cap "XMN3_0/Unnamed_23a0d124_0/S" "XMN3_0/Unnamed_23a0d124_0/G" 2.27374e-13
+cap "m2_n76156_n28950#" "XMN3_0/Unnamed_23a0d124_0/D" 0.0980482
+cap "m2_n76156_n28950#" "XMN3_0/Unnamed_23a0d124_0/S" 0.902821
+cap "XMN3_0/Unnamed_23a0d124_0/D" "XMN3_0/Unnamed_23a0d124_0/S" 5.43565e-13
+cap "XMN3_0/Unnamed_23a0d124_0/S" "XMN3_0/Unnamed_23a0d124_0/D" 36.0607
+cap "XMN3_0/Unnamed_23a0d124_0/S" "XMN3_0/Unnamed_23a0d124_0/B" -1.87809
+cap "XMN3_0/Unnamed_23a0d124_0/D" "XMN3_0/Unnamed_23a0d124_0/G" 1.16161
+cap "XMN3_0/Unnamed_23a0d124_0/S" "XMN3_0/Unnamed_23a0d124_0/D" 35.2865
+cap "XMN3_0/Unnamed_23a0d124_0/a_n2478_n1191#" "XMN3_0/Unnamed_23a0d124_0/D" 339.032
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "XMN3_0/Unnamed_23a0d124_0/a_n2478_n1191#" 0.000768823
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMN5_0/Unnamed_485c261d_0/D" 0.985535
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.955054
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 4.90165
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 11.3382
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/S" 1.82601
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMN5_0/Unnamed_485c261d_0/S" 1.50535
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 2.82979
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/D" 0.0247637
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMN5_0/Unnamed_485c261d_0/D" 10.4701
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/D" 0.0273704
+cap "XMN5_0/Unnamed_485c261d_0/S" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 2.52856
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 8.11148
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN5_0/Unnamed_485c261d_0/D" 1.91602
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/G" "XMN5_0/Unnamed_485c261d_0/D" 0.0312804
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/D" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 7.17913
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/D" "XMN5_0/Unnamed_485c261d_0/G" 0.0521341
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 11.1059
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/B" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 8.11148
+cap "XMN5_0/Unnamed_485c261d_0/D" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 3.03759
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 3.41295
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/S" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 1.91602
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0208536
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0377972
+cap "XMN5_0/Unnamed_485c261d_0/B" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 11.1059
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 4.14154
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/S" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 2.52856
+cap "XMN5_0/Unnamed_485c261d_0/D" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 2.27453
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/B" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 1.48324
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0521341
+cap "XMN5_0/Unnamed_485c261d_0/D" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 0.512074
+cap "XMN5_0/Unnamed_485c261d_0/S" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.354632
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0143369
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 0.905764
+cap "XMN5_0/Unnamed_485c261d_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.0143369
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 110.517
+cap "XMN5_0/Unnamed_485c261d_0/B" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 1.80868
+cap "XMN5_0/Unnamed_485c261d_0/S" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 0.412197
+cap "XMN5_0/Unnamed_485c261d_0/D" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.443629
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 0.404646
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 7.14911
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "m2_n76156_n28950#" 0.310393
+cap "XMN5_0/Unnamed_485c261d_0/S" "XMN3_0/Unnamed_23a0d124_0/G" 4.24477
+cap "XMN5_0/Unnamed_485c261d_0/S" "m2_n76156_n28950#" 10.4226
+cap "XMN3_0/Unnamed_23a0d124_0/G" "Vip" 2.7223
+cap "Vip" "m2_n76156_n28950#" 0.36152
+cap "XMN3_0/Unnamed_23a0d124_0/G" "m2_n76156_n28950#" 2.87354
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "m2_n76156_n28950#" 0.557833
+cap "VSS" "m2_n76156_n28950#" 268.807
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "XMN3_0/Unnamed_23a0d124_0/G" 0.0236688
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.574227
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "m2_n76156_n28950#" 1.00485
+cap "XMN3_0/Unnamed_23a0d124_0/G" "Vip" 0.250621
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.104238
+cap "Vip" "m2_n76156_n28950#" 1.79628
+cap "XMN3_0/Unnamed_23a0d124_0/D" "m2_n76156_n28950#" 10.0052
+cap "VSS" "Vip" 29.0246
+cap "XMN3_0/Unnamed_23a0d124_0/G" "m2_n76156_n28950#" 379.035
+cap "XMN3_0/Unnamed_23a0d124_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.10846
+cap "VSS" "XMN3_0/Unnamed_23a0d124_0/G" 6.23424
+cap "XMN3_0/Unnamed_23a0d124_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.201914
+cap "VSS" "m2_n76156_n28950#" 304.476
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "m2_n76156_n28950#" 0.583189
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 29.1414
+cap "VSS" "XMN3_0/Unnamed_23a0d124_0/G" -2.49041
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "m2_n76156_n28950#" 0.67925
+cap "XMN3_0/Unnamed_23a0d124_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.11791
+cap "XMN3_0/Unnamed_23a0d124_0/D" "m2_n76156_n28950#" 10.3184
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.626053
+cap "XMN3_0/Unnamed_23a0d124_0/G" "m2_n76156_n28950#" 379.826
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "XMN3_0/Unnamed_23a0d124_0/D" 1.00485
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 29.0995
+cap "XMN3_0/Unnamed_23a0d124_0/D" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 1.70395
+cap "XMN3_0/Unnamed_23a0d124_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.387647
+cap "VSS" "XMN3_0/Unnamed_23a0d124_0/D" 180.044
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.104238
+cap "XMN3_0/Unnamed_23a0d124_0/D" "XMN3_0/Unnamed_23a0d124_0/S" 27.4514
+cap "XMN3_0/Unnamed_23a0d124_0/G" "XMN3_0/Unnamed_23a0d124_0/D" 410.151
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.706795
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "XMN3_0/Unnamed_23a0d124_0/G" 0.0236688
+cap "XMN3_0/Unnamed_23a0d124_0/D" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.649717
+cap "XMN3_0/Unnamed_23a0d124_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.238476
+cap "VSS" "XMN3_0/Unnamed_23a0d124_0/G" -0.100079
+cap "XMN3_0/Unnamed_23a0d124_0/D" "XMN3_0/Unnamed_23a0d124_0/G" 2.72872
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "XMN3_0/Unnamed_23a0d124_0/B" 15.7568
+cap "XMN3_0/Unnamed_23a0d124_0/D" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.509519
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "XMN3_0/Unnamed_23a0d124_0/B" 0.289821
+cap "XMN3_0/Unnamed_23a0d124_0/D" "XMN3_0/Unnamed_23a0d124_0/B" 260.189
+cap "XMN3_0/Unnamed_23a0d124_0/D" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.331828
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "XMP3_0/Unnamed_4641b33a_0/S" 15.7632
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XMP3_0/Unnamed_4641b33a_0/D" 27.4986
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMP3_0/Unnamed_4641b33a_0/G" 0.836198
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 1.7995
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 8.28283
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMP3_0/Unnamed_4641b33a_0/D" 1.88591
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "XMP3_0/Unnamed_4641b33a_0/D" 1.52755
+cap "XMP3_0/Unnamed_4641b33a_0/S" "via_stack_f018e2c2$2_0/m1_n43_n43#" 12.0787
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 28.7266
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "via_stack_f018e2c2$2_0/m1_n43_n43#" 16.7551
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 270.387
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "XMP3_0/Unnamed_4641b33a_0/D" -0.508552
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMP3_0/Unnamed_4641b33a_0/S" 16.3977
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 16.1214
+cap "XMP3_0/Unnamed_4641b33a_0/G" "via_stack_f018e2c2$2_0/m1_n43_n43#" 0.782937
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "via_stack_f018e2c2$2_0/m1_n43_n43#" 7.59407
+cap "via_stack_f018e2c2$2_0/m1_n43_n43#" "XMP3_0/Unnamed_4641b33a_0/D" 0.914605
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XMP3_0/Unnamed_4641b33a_0/G" 1.01909
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/S" 3.07351
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XMP3_0/Unnamed_4641b33a_0/S" 10.0896
+cap "XMP3_0/Unnamed_4641b33a_0/S" "via_stack_f018e2c2$2_0/m1_n43_n43#" 0.7248
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "XMP3_0/Unnamed_4641b33a_0/S" 31.7589
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "XMP3_0/Unnamed_4641b33a_0/G" 1.79247
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 0.558494
+cap "Vip" "XMP3_0/Unnamed_4641b33a_0/G" 0.654985
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 229.39
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "XMP3_0/Unnamed_4641b33a_0/G" 0.86445
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "XMP3_0/Unnamed_4641b33a_0/G" 1.00779
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/B" 31.5648
+cap "m2_n76156_n28950#" "XMP3_0/Unnamed_4641b33a_0/G" -0.0294945
+cap "Vip" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 0.448884
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XMP3_0/Unnamed_4641b33a_0/G" -0.179817
+cap "XMP3_0/Unnamed_4641b33a_0/G" "m2_n76156_n28950#" -0.292648
+cap "Vip" "m2_n76156_n28950#" 140.744
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" -26.8475
+cap "XMP3_0/Unnamed_4641b33a_0/B" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 5.0476
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "m2_n76156_n28950#" 63.0743
+cap "XMP3_0/Unnamed_4641b33a_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 1.80888
+cap "Vip" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" -1.6908
+cap "Vip" "XMN3_0/Unnamed_23a0d124_0/G" 2.7223
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" -4.00356
+cap "XMP3_0/Unnamed_4641b33a_0/D" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.112243
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "m2_n76156_n28950#" 234.568
+cap "XMP3_0/Unnamed_4641b33a_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 1.56752
+cap "Vip" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" -14.9688
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "XMP3_0/Unnamed_4641b33a_0/B" 0.263374
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "m2_n76156_n28950#" 96.201
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" 0.476155
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "Vip" -4.53297
+cap "XMN5_0/Unnamed_485c261d_0/a_n4530_n1191#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 1.98631
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "m2_n76156_n28950#" 77.5325
+cap "XMP3_0/Unnamed_4641b33a_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.610505
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.115158
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "m2_n76156_n28950#" 1.00485
+cap "XMN3_0/Unnamed_23a0d124_0/G" "Vip" 0.0589812
+cap "Vip" "m2_n76156_n28950#" 2.47229
+cap "VSS" "Vip" 28.4019
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 36.3127
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 28.3349
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "via_stack_f018e2c2_0/m1_n43_n43#" 1.00485
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "via_stack_f018e2c2_0/m1_n43_n43#" 1.14345
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.115158
+cap "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.130185
+cap "XMN3_0/Unnamed_23a0d124_0/B" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 15.3818
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "via_stack_f018e2c2_0/m1_n43_n43#" 0.122991
+cap "XMN3_0/Unnamed_23a0d124_0/B" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 2.84217e-14
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 7.88927
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 12.847
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 36.812
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 27.6469
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "XMP3_0/Unnamed_4641b33a_0/S" 36.1987
+cap "XMP3_0/Unnamed_4641b33a_0/D" "m2_n80499_n35630#" 3.95175
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 11.8419
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 71.2458
+cap "XMP3_0/Unnamed_4641b33a_0/G" "m2_n80499_n35630#" 12.0288
+cap "XMP3_0/Unnamed_4641b33a_0/S" "m2_n80499_n35630#" 28.4809
+cap "m2_n80499_n35630#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 16.7551
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m2_n80499_n35630#" 270.387
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "m2_n80499_n35630#" 12.4723
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XMP3_0/Unnamed_4641b33a_0/S" 1.81899e-12
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 10.106
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/S" 5.68434e-14
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XMP3_0/Unnamed_4641b33a_0/S" 3.1477e-12
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/S" -7.38964e-13
+cap "XMP3_0/Unnamed_4641b33a_0/G" "m2_n76156_n28950#" -0.0222502
+cap "Vin" "XMP3_0/Unnamed_4641b33a_0/G" 2.49142
+cap "XMP3_0/Unnamed_4641b33a_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 0.604471
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "Vip" 1.3038
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/B" 3.67944
+cap "Vin" "XMP3_0/Unnamed_4641b33a_0/B" 1.81319
+cap "XMP3_0/Unnamed_4641b33a_0/G" "Vip" 3.8671
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" 393.762
+cap "Vin" "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" 1.86905
+cap "XMP3_0/Unnamed_4641b33a_0/G" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.86573
+cap "XMP3_0/Unnamed_4641b33a_0/G" "m2_n76156_n28950#" -0.503971
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" -63.1014
+cap "XMP3_0/Unnamed_4641b33a_0/S" "Vin" 0.0729617
+cap "XMP3_0/Unnamed_4641b33a_0/B" "Vin" 14.7178
+cap "XMP3_0/Unnamed_4641b33a_0/S" "Vin" 0.0729617
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XMP3_0/Unnamed_4641b33a_0/G" 0.613996
+cap "XMP3_0/Unnamed_4641b33a_0/D" "Vin" 0.0729617
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "m2_n76156_n28950#" 11.2052
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "Vin" 2.06442
+cap "XMP3_0/Unnamed_4641b33a_0/S" "Vin" 0.112243
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" -6.97282
+cap "Vip" "m2_n76156_n28950#" 110.106
+cap "XMP3_0/Unnamed_4641b33a_0/G" "Vin" 6.79386
+cap "Vip" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" -40.6396
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "Vip" -2.84217e-14
+cap "XMP3_0/Unnamed_4641b33a_0/D" "Vin" 0.0729617
+cap "XMP3_0/Unnamed_4641b33a_0/S" "Vin" 0.0729617
+cap "XMP3_0/Unnamed_4641b33a_0/S" "Vin" 0.0729617
+cap "XMP3_0/Unnamed_4641b33a_0/G" "Vip" 2.17222
+cap "XMP3_0/Unnamed_4641b33a_0/B" "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" 0.0243907
+cap "XMP3_0/Unnamed_4641b33a_0/D" "Vin" 0.0729617
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "m2_n76156_n28950#" 432.918
+cap "XMP3_0/Unnamed_4641b33a_0/D" "Vin" 0.0729617
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "m2_n76156_n28950#" 129.394
+cap "XMP3_0/Unnamed_4641b33a_0/B" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 33.6466
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 71.2458
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 29.4464
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 28.3667
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/G" 0.00771224
+cap "XMP3_0/Unnamed_4641b33a_0/B" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 34.4064
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 11.8419
+cap "XMP3_0/Unnamed_4641b33a_0/B" "XMP3_0/Unnamed_4641b33a_0/D" 25.9762
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 13.6832
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XMP3_0/Unnamed_4641b33a_0/D" 12.4723
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/D" 12.8117
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 279.507
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/B" -5.68434e-14
+cap "XMP3_0/Unnamed_4641b33a_0/D" "XMP3_0/Unnamed_4641b33a_0/B" 4.54747e-13
+cap "XMP3_0/Unnamed_4641b33a_0/B" "XMP3_0/Unnamed_4641b33a_0/G" -7.38964e-13
+cap "XMP3_0/Unnamed_4641b33a_0/G" "m1_n87548_n26366#" 0.0454333
+cap "XMP3_0/Unnamed_4641b33a_0/G" "via_stack_f018e2c2$4_0/m1_n43_n43#" 4.06693
+cap "via_stack_f018e2c2$4_0/m1_n43_n43#" "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" 393.418
+cap "XMP3_0/Unnamed_4641b33a_0/G" "Vin" 0.170044
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "Vin" 0.441806
+cap "XMP3_0/Unnamed_4641b33a_0/G" "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" 0.36321
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "via_stack_f018e2c2$4_0/m1_n43_n43#" 0.58222
+cap "via_stack_f018e2c2$4_0/m1_n43_n43#" "Vin" 2.7581
+cap "XMP3_0/Unnamed_4641b33a_0/G" "via_stack_f018e2c2$4_0/m1_n43_n43#" 0.627412
+cap "XMP3_0/Unnamed_4641b33a_0/B" "Vin" 2.8102
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 4.29183
+cap "Vin" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 69.6204
+cap "XMP3_0/Unnamed_4641b33a_0/B" "via_stack_f018e2c2$4_0/m1_n43_n43#" 6.28534
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "via_stack_f018e2c2$4_0/m1_n43_n43#" -0.503971
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 66.982
+cap "XMP3_0/Unnamed_4641b33a_0/D" "Vin" 0.112243
+cap "Vin" "via_stack_f018e2c2$4_0/m1_n43_n43#" 2.84324
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "Vin" 0.436249
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "via_stack_f018e2c2$4_0/m1_n43_n43#" 1.67517
+cap "XMP3_0/Unnamed_4641b33a_0/S" "Vin" 0.0766782
+cap "Vin" "XMP3_0/Unnamed_4641b33a_0/G" 0.955396
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/D" 4.25313
+cap "XMP3_0/Unnamed_4641b33a_0/B" "XMP3_0/Unnamed_4641b33a_0/D" 31.3922
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMP3_0/Unnamed_4641b33a_0/S" 0.326977
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "m1_n87548_n26366#" 0.856051
+cap "m1_n87548_n26366#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 9.03401
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XMP3_0/Unnamed_4641b33a_0/D" 38.0241
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "XMP3_0/Unnamed_4641b33a_0/S" 0.312903
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMP3_0/Unnamed_4641b33a_0/B" 10.6918
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "XMP3_0/Unnamed_4641b33a_0/D" 15.3116
+cap "m1_n87548_n26366#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 49.6447
+cap "XMP3_0/Unnamed_4641b33a_0/B" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 11.2177
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "XMP3_0/Unnamed_4641b33a_0/D" 151.457
+cap "XMP3_0/Unnamed_4641b33a_0/G" "m1_n87548_n26366#" 0.108294
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 7.44102
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/S" 2.34352
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 23.4578
+cap "XMP3_0/Unnamed_4641b33a_0/S" "XMP3_0/Unnamed_4641b33a_0/D" 0.275854
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/B" 1.66235
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/B" 39.2651
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m1_n87548_n26366#" 0.761361
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" 38.8235
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/G" 0.744604
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/S" 84.018
+cap "m1_n87548_n26366#" "XMP3_0/Unnamed_4641b33a_0/D" 0.397115
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "XMP3_0/Unnamed_4641b33a_0/B" -0.352586
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XMP3_0/Unnamed_4641b33a_0/B" 218.245
+cap "via_stack_f018e2c2$4_0/m1_n43_n43#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 1.84873
+cap "via_stack_f018e2c2$4_0/m1_n43_n43#" "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" 149.281
+cap "via_stack_f018e2c2$4_0/m1_n43_n43#" "XMP3_0/Unnamed_4641b33a_0/G" 3.52284
+cap "via_stack_f018e2c2$4_0/m1_n43_n43#" "XMP3_0/Unnamed_4641b33a_0/B" 10.1426
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "XMP3_0/Unnamed_4641b33a_0/B" 0.988377
+cap "XMP3_0/Unnamed_4641b33a_0/B" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" -0.352586
+cap "XMP3_0/Unnamed_4641b33a_0/B" "Vin" 0.0407669
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "via_stack_f018e2c2$4_0/m1_n43_n43#" 32.6019
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "via_stack_f018e2c2$4_0/m1_n43_n43#" 77.6367
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 4.08303
+cap "Vin" "via_stack_f018e2c2$4_0/m1_n43_n43#" 0.151249
+cap "XMP3_0/Unnamed_4641b33a_0/a_n1881_n1252#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 47.4669
+cap "XMP3_0/Unnamed_4641b33a_0/B" "via_stack_f018e2c2$4_0/m1_n43_n43#" 10.5659
+cap "Vin" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 6.00942
+cap "via_stack_686e5d96$68_0/li_n17_n17#" "Vin" 0.350767
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 18.7291
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "Vin" 0.556261
+cap "via_stack_686e5d96$68_0/li_n17_n17#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.0511242
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 84.8818
+cap "via_stack_686e5d96$68_0/li_n17_n17#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 4.50721
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "via_stack_686e5d96$68_0/li_n17_n17#" 4.03405
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.903563
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 0.549479
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 17.6743
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 0.0921074
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_64_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.0351737
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.207933
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 6.59732
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 7.51793
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 134.007
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_64_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 0.115888
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 0.550501
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" 19.9931
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.0351737
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" 10.164
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 2.09467
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0918945
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0257213
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.113418
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.113418
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 1.92757
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.113418
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 15.0268
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 13.4133
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.113418
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 1.94262
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" 14.4618
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.113418
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.018903
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.113418
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.113418
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" 1.85305
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.0232513
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.0232513
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.0232513
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.0232513
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 1.85345
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" 0.0232513
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" 1.4685
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "R0_0/Unnamed_09165038_0/a_n200_n6280#" 8.56209
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "R0_0/Unnamed_09165038_0/a_n200_n6280#" 9.0491
+cap "R0_0/Unnamed_09165038_0/a_n200_n6280#" "via_stack_2e2571cb_0/m3_n38_n38#" 6.89525
+cap "R0_0/Unnamed_09165038_0/a_n200_n6280#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 7.84958
+cap "via_stack_2e2571cb_0/m3_n38_n38#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 27.9616
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m1_n87548_n26366#" 7.84958
+cap "via_stack_2e2571cb_0/m3_n38_n38#" "m1_n87548_n26366#" 4.92518
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m1_n87548_n26366#" 7.84958
+cap "m1_n87548_n26366#" "via_stack_2e2571cb_0/m3_n38_n38#" 6.89525
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "via_stack_2e2571cb_0/m3_n38_n38#" 58.3333
+cap "m3_n84222_n26679#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 3.30292
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m3_n84222_n26679#" 58.3333
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "m1_n87548_n26366#" 6.89525
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m1_n87548_n26366#" 7.84958
+cap "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "m1_n87548_n26366#" 9.92264
+cap "m3_n84222_n26679#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 10.6667
+cap "m1_n87548_n26366#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 135.128
+cap "m3_n84222_n26679#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" 0.537904
+cap "via_stack_f018e2c2_10/m1_n43_n43#" "via_stack_f018e2c2$4_0/m1_n43_n43#" 0.740768
+cap "via_stack_f018e2c2_10/m1_n43_n43#" "via_stack_686e5d96$66_0/li_n17_n17#" 0.0565603
+cap "via_stack_686e5d96$66_0/li_n17_n17#" "via_stack_f018e2c2_8/m1_n43_n43#" 0.0518951
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 5.58894
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.121131
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "via_stack_686e5d96$66_0/li_n17_n17#" 1.58377
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" 2.72104
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.100674
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 1.91855
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.872224
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.0604188
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 0.150034
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.0786326
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 0.163597
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 7.681
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.0551591
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" 18.2775
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 14.6607
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" 0.0848335
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 1.2888
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.100967
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.171564
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 2.53197
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" 2.58671
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 0.0144239
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.585115
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" 12.6449
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 6.20183
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" -0.640244
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.138561
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 14.2351
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 100.991
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 4.88091
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.686582
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" 6.76047
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" 0.517563
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.686582
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 2.85178
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" 0.686582
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" 2.9709
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.104826
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.686582
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" 1.98951
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 0.622389
+cap "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" 2.00812
+cap "R0_0/Unnamed_09165038_0/a_n200_n6280#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 31.9566
+cap "R0_0/Unnamed_09165038_0/a_n200_n6280#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 38.9229
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m1_n87548_n26366#" 38.9229
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "via_stack_2e2571cb_0/m3_n38_n38#" 26.7227
+cap "via_stack_2e2571cb_0/m3_n38_n38#" "m1_n87548_n26366#" 13.8727
+cap "m1_n87548_n26366#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 38.9229
+cap "via_stack_2e2571cb_0/m3_n38_n38#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 58.3333
+cap "m1_n87548_n26366#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 38.9229
+cap "m3_n84222_n26679#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 58.3333
+cap "m3_n84222_n26679#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" 10.6667
+cap "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "m1_n87548_n26366#" 7.11733
+cap "via_stack_f018e2c2_9/m1_n43_n43#" "via_stack_686e5d96$66_0/li_n17_n17#" 0.0779071
+cap "via_stack_686e5d96$66_0/li_n17_n17#" "via_stack_f018e2c2_8/m1_n43_n43#" 0.00366526
+cap "via_stack_686e5d96$66_0/li_n17_n17#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" 0.0320528
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 8.92319
+cap "via_stack_686e5d96$66_0/li_n17_n17#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 1.2167
+cap "via_stack_686e5d96$66_0/li_n17_n17#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" 24.6828
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" 29.7699
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" 3.99222
+cap "via_stack_686e5d96$66_0/li_n17_n17#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" 3.06904
+cap "via_stack_686e5d96$66_0/li_n17_n17#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" 0.364165
+cap "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" -9.09495e-13
+merge "via_stack_f018e2c2_8/VSUBS" "via_stack_686e5d96$66_0/VSUBS" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "via_stack_686e5d96$66_0/VSUBS" "via_stack_f018e2c2$1_0/VSUBS"
+merge "via_stack_f018e2c2$1_0/VSUBS" "via_stack_ea9c5ac0_0/VSUBS"
+merge "via_stack_ea9c5ac0_0/VSUBS" "via_stack_2e2571cb_0/VSUBS"
+merge "via_stack_2e2571cb_0/VSUBS" "R0_0/VSUBS"
+merge "R0_0/VSUBS" "via_stack_686e5d96$67_0/VSUBS"
+merge "via_stack_686e5d96$67_0/VSUBS" "current_mirror_XMP1_XMP2_0/VSUBS"
+merge "current_mirror_XMP1_XMP2_0/VSUBS" "via_stack_686e5d96$68_0/VSUBS"
+merge "via_stack_686e5d96$68_0/VSUBS" "via_stack_f018e2c2_9/VSUBS"
+merge "via_stack_f018e2c2_9/VSUBS" "via_stack_f018e2c2$3_0/VSUBS"
+merge "via_stack_f018e2c2$3_0/VSUBS" "via_stack_f018e2c2$4_0/VSUBS"
+merge "via_stack_f018e2c2$4_0/VSUBS" "via_stack_f018e2c2_10/VSUBS"
+merge "via_stack_f018e2c2_10/VSUBS" "via_stack_627eccf4$3_0/VSUBS"
+merge "via_stack_627eccf4$3_0/VSUBS" "XMP3_0/VSUBS"
+merge "XMP3_0/VSUBS" "via_stack_f018e2c2_7/VSUBS"
+merge "via_stack_f018e2c2_7/VSUBS" "diff_pair_XMN1_XMN2_0/VSUBS"
+merge "diff_pair_XMN1_XMN2_0/VSUBS" "XC0_0/VSUBS"
+merge "XC0_0/VSUBS" "via_stack_f018e2c2_0/VSUBS"
+merge "via_stack_f018e2c2_0/VSUBS" "via_stack_f018e2c2_3/VSUBS"
+merge "via_stack_f018e2c2_3/VSUBS" "via_stack_f018e2c2_4/VSUBS"
+merge "via_stack_f018e2c2_4/VSUBS" "via_stack_f018e2c2$2_0/VSUBS"
+merge "via_stack_f018e2c2$2_0/VSUBS" "via_stack_627eccf4$2_0/VSUBS"
+merge "via_stack_627eccf4$2_0/VSUBS" "via_stack_18d6ab16$2_0/VSUBS"
+merge "via_stack_18d6ab16$2_0/VSUBS" "XMN3_0/VSUBS"
+merge "XMN3_0/VSUBS" "via_stack_f018e2c2_2/VSUBS"
+merge "via_stack_f018e2c2_2/VSUBS" "via_stack_f018e2c2_1/VSUBS"
+merge "via_stack_f018e2c2_1/VSUBS" "XMN4_0/VSUBS"
+merge "XMN4_0/VSUBS" "via_stack_f018e2c2_5/VSUBS"
+merge "via_stack_f018e2c2_5/VSUBS" "via_stack_f018e2c2_6/VSUBS"
+merge "via_stack_f018e2c2_6/VSUBS" "XMP4_0/VSUBS"
+merge "XMP4_0/VSUBS" "XMN5_0/VSUBS"
+merge "XMN5_0/VSUBS" "VSUBS"
+merge "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n738_n360#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_64_n360#" -6544.27 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1156 -136 -34912 -2966 -70662 -4086 0 0 0 0 0 0 0 0
+merge "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_64_n360#" "via_stack_f018e2c2_8/m1_n43_n43#"
+merge "via_stack_f018e2c2_8/m1_n43_n43#" "VDD"
+merge "VDD" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#"
+merge "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/w_n1538_n938#" "via_stack_686e5d96$68_0/li_n17_n17#"
+merge "via_stack_686e5d96$68_0/li_n17_n17#" "via_stack_f018e2c2_9/m1_n43_n43#"
+merge "via_stack_f018e2c2_9/m1_n43_n43#" "m1_n77606_n28033#"
+merge "m1_n77606_n28033#" "via_stack_f018e2c2_10/m1_n43_n43#"
+merge "via_stack_f018e2c2_10/m1_n43_n43#" "m2_n77627_n29433#"
+merge "m2_n77627_n29433#" "XMP3_0/Unnamed_4641b33a_0/S"
+merge "XMP3_0/Unnamed_4641b33a_0/S" "m1_n77734_n29919#"
+merge "m1_n77734_n29919#" "XMP3_0/Unnamed_4641b33a_0/B"
+merge "XMP3_0/Unnamed_4641b33a_0/B" "via_stack_f018e2c2_7/m1_n43_n43#"
+merge "via_stack_f018e2c2_7/m1_n43_n43#" "m1_n79712_n32975#"
+merge "m1_n79712_n32975#" "via_stack_f018e2c2_5/m1_n43_n43#"
+merge "via_stack_f018e2c2_5/m1_n43_n43#" "XMP4_0/Unnamed_60ff7c9a_0/S"
+merge "XMP4_0/Unnamed_60ff7c9a_0/S" "m1_n79600_n40444#"
+merge "m1_n79600_n40444#" "via_stack_f018e2c2_6/m1_n43_n43#"
+merge "via_stack_f018e2c2_6/m1_n43_n43#" "m2_n79367_n40385#"
+merge "m2_n79367_n40385#" "XMP4_0/Unnamed_60ff7c9a_0/B"
+merge "XMP4_0/Unnamed_60ff7c9a_0/B" "m1_n79334_n39694#"
+merge "via_stack_f018e2c2_3/m1_n43_n43#" "VSS" -5314.81 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -42242 -4462 -15600 -1252 0 0 0 0 0 0 0 0
+merge "VSS" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#"
+merge "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n3614_n2372#" "m2_n72758_n35143#"
+merge "m2_n72758_n35143#" "via_stack_f018e2c2_4/m1_n43_n43#"
+merge "via_stack_f018e2c2_4/m1_n43_n43#" "m2_n75697_n36278#"
+merge "m2_n75697_n36278#" "XMN3_0/Unnamed_23a0d124_0/B"
+merge "XMN3_0/Unnamed_23a0d124_0/B" "XMN3_0/Unnamed_23a0d124_0/S"
+merge "XMN3_0/Unnamed_23a0d124_0/S" "m1_n75257_n36912#"
+merge "m1_n75257_n36912#" "XMN5_0/Unnamed_485c261d_0/S"
+merge "XMN5_0/Unnamed_485c261d_0/S" "via_stack_f018e2c2_2/m1_n43_n43#"
+merge "via_stack_f018e2c2_2/m1_n43_n43#" "m1_n76232_n36256#"
+merge "m1_n76232_n36256#" "XMN5_0/Unnamed_485c261d_0/B"
+merge "XMN5_0/Unnamed_485c261d_0/B" "m1_n76239_n37940#"
+merge "m1_n76239_n37940#" "XMN4_0/Unnamed_1794b227_0/S"
+merge "XMN4_0/Unnamed_1794b227_0/S" "via_stack_f018e2c2_1/m1_n43_n43#"
+merge "via_stack_f018e2c2_1/m1_n43_n43#" "m1_n71237_n39274#"
+merge "m1_n71237_n39274#" "m2_n76239_n38999#"
+merge "m2_n76239_n38999#" "XMN4_0/Unnamed_1794b227_0/B"
+merge "XMN4_0/Unnamed_1794b227_0/B" "m1_n76218_n39019#"
+merge "R0_0/Unnamed_09165038_0/a_n200_n6280#" "via_stack_686e5d96$67_0/li_n17_n17#" -5914.77 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1156 -136 -402784 -19516 -5038 -608 0 0 0 0 0 0 0 0
+merge "via_stack_686e5d96$67_0/li_n17_n17#" "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#"
+merge "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_222_n360#" "via_stack_f018e2c2$3_0/m1_n43_n43#"
+merge "via_stack_f018e2c2$3_0/m1_n43_n43#" "m2_n73161_n28741#"
+merge "m2_n73161_n28741#" "via_stack_f018e2c2$4_0/m1_n43_n43#"
+merge "via_stack_f018e2c2$4_0/m1_n43_n43#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#"
+merge "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_n1853#" "m2_n76331_n29062#"
+merge "m2_n76331_n29062#" "XMP3_0/Unnamed_4641b33a_0/G"
+merge "XMP3_0/Unnamed_4641b33a_0/G" "m1_n87548_n26366#"
+merge "XMP3_0/Unnamed_4641b33a_0/D" "via_stack_627eccf4$3_0/m1_n43_n43#" -2336.78 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -8967 -846 -65394 -3450 -12498 -642 0 0 0 0 0 0
+merge "via_stack_627eccf4$3_0/m1_n43_n43#" "m1_n80478_n29362#"
+merge "m1_n80478_n29362#" "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#"
+merge "XC0_0/Unnamed_fd2fdf59_0/m3_n4068_n200#" "via_stack_f018e2c2$2_0/m1_n43_n43#"
+merge "via_stack_f018e2c2$2_0/m1_n43_n43#" "m2_n80499_n35630#"
+merge "m2_n80499_n35630#" "via_stack_627eccf4$2_0/m1_n43_n43#"
+merge "via_stack_627eccf4$2_0/m1_n43_n43#" "XMN5_0/Unnamed_485c261d_0/D"
+merge "XMN5_0/Unnamed_485c261d_0/D" "vout"
+merge "vout" "via_stack_18d6ab16$2_0/m2_n58_n58#"
+merge "via_stack_18d6ab16$2_0/m2_n58_n58#" "m3_n84971_n35664#"
+merge "m3_n84971_n35664#" "m2_n84992_n36080#"
+merge "via_stack_686e5d96$66_0/li_n17_n17#" "R0_0/Unnamed_09165038_0/a_n200_6200#" -2486.43 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1156 -136 -5170 -402 -4356 -264 -298384 -9048 -5916 -446 0 0 0 0
+merge "R0_0/Unnamed_09165038_0/a_n200_6200#" "via_stack_f018e2c2$1_0/m1_n43_n43#"
+merge "via_stack_f018e2c2$1_0/m1_n43_n43#" "m1_n75107_n26645#"
+merge "m1_n75107_n26645#" "via_stack_ea9c5ac0_0/m2_n58_n58#"
+merge "via_stack_ea9c5ac0_0/m2_n58_n58#" "via_stack_2e2571cb_0/m3_n38_n38#"
+merge "via_stack_2e2571cb_0/m3_n38_n38#" "m3_n84222_n26679#"
+merge "m3_n84222_n26679#" "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#"
+merge "XC0_0/Unnamed_fd2fdf59_0/c1_n3600_n3600#" "m4_n84256_n27128#"
+merge "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2926_n1853#" "via_stack_f018e2c2_0/m1_n43_n43#" -4623.19 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -5628 -436 -320308 -15444 0 0 0 0 0 0 0 0
+merge "via_stack_f018e2c2_0/m1_n43_n43#" "m2_n76156_n28950#"
+merge "m2_n76156_n28950#" "XMN3_0/Unnamed_23a0d124_0/D"
+merge "XMN3_0/Unnamed_23a0d124_0/D" "m1_n70315_n36999#"
+merge "current_mirror_XMP1_XMP2_0/Unnamed_aeefb555_0/a_n660_n556#" "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" -304.337 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2394 -312 0 0 0 0 0 0 0 0
+merge "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2788_397#" "m2_n72298_n28163#"
+merge "XMN3_0/Unnamed_23a0d124_0/G" "XMN5_0/Unnamed_485c261d_0/G" -3126.86 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -69753 -3838 0 0 0 0 0 0 0 0 0 0
+merge "XMN5_0/Unnamed_485c261d_0/G" "XMN4_0/Unnamed_1794b227_0/G"
+merge "XMN4_0/Unnamed_1794b227_0/G" "XMN4_0/Unnamed_1794b227_0/D"
+merge "XMN4_0/Unnamed_1794b227_0/D" "XMP4_0/Unnamed_60ff7c9a_0/D"
+merge "XMP4_0/Unnamed_60ff7c9a_0/D" "XMP4_0/Unnamed_60ff7c9a_0/G"
+merge "XMP4_0/Unnamed_60ff7c9a_0/G" "m1_n80091_n40444#"
+merge "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_201#" "Vin" -55.894 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "diff_pair_XMN1_XMN2_0/Unnamed_fb441e19_0/a_n2848_n1903#" "Vip" -127.925 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0

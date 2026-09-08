@@ -1,0 +1,106 @@
+================================================================================
+DRC REPORT -- RE-GATE after route-shortner
+design      : test_vco (vco_lc, LC VCO with two spiral inductors)
+report_dir  : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+GDS checked : shortening/test_vco_fixed_shortened.gds   TOP CELL = routed
+              (delivered copy: test_vco_fixed_shortened.gds, sha256-identical)
+tool        : Magic 8.3 via .claude/skills/router/script/run_drc.py
+PDK         : sky130A (PDK_ROOT=$HOME/pdk/manual), magicrc from pdk_config.py
+budget      : MAX_SUBRETRY = 5 (design_constraints.json:layout_fix_iterations)
+consumed    : 0 fix iterations -- clean on the baseline run
+
+FINAL STATUS: **PASS (DRC-clean)**   DRC_TOTAL = 0, violation rects = 0, rules = 0
+
+WHY THIS GATE WAS RE-OPENED
+--------------------------------------------------------------------------------
+route-shortner rebuilt three nets (VSS, Vcont, voutp) on a layout that had already
+passed DRC+LVS. Geometry changed, so the previous verdict was void. This report
+re-derives the verdict on the new geometry; nothing below is inherited from the
+pre-shortening run except where explicitly labelled as a comparison.
+
+ERRORS BY RULE CATEGORY
+--------------------------------------------------------------------------------
+| Category   | Rule | Count | Fixable? |
+|------------|------|-------|----------|
+| spacing    | --   | 0     | n/a      |
+| width      | --   | 0     | n/a      |
+| enclosure  | --   | 0     | n/a      |
+| other      | --   | 0     | n/a      |
+No rule fired. `drc listall why` returned 0 distinct rules and 0 instances in the
+expanded top cell; drc_violations.json is `{}`.
+
+NETS RANKED BY VIOLATION COUNT  (nets first: this is a router/shortener hand-off,
+so any violation would be net geometry, not a device's fault)
+--------------------------------------------------------------------------------
+| Rank | Net   | Violation count | Rule categories | Rebuilt by shortener? |
+|------|-------|-----------------|-----------------|-----------------------|
+| --   | VSS   | 0               | --              | yes                   |
+| --   | Vcont | 0               | --              | yes                   |
+| --   | voutp | 0               | --              | yes                   |
+| --   | voutn | 0               | --              | attempted, REVERTED   |
+| --   | VDD   | 0               | --              | no (excluded)         |
+| --   | vtail | 0               | --              | no (no gain)          |
+| --   | Iref  | 0               | --              | no (macro-internal)   |
+All three rebuilt nets are clean. Nothing to attribute to the shortening.
+
+DEVICES RANKED BY VIOLATION COUNT
+--------------------------------------------------------------------------------
+All 10 devices (XN0..XN5, XC0, XC1, XL0, XL1): 0 violations each.
+
+SPACING VIOLATIONS (PAIRWISE)
+--------------------------------------------------------------------------------
+| Rule | Between | Location (um) | Fix applied/suggested |
+|------|---------|---------------|-----------------------|
+| (none) |       |               |                       |
+
+MODIFICATIONS MADE
+--------------------------------------------------------------------------------
+NONE. No geometry was edited by layout-fixer in this re-gate, in either step. The
+delivered GDS is byte-identical (sha256 46d05b0f...7743) to route-shortner's output.
+
+WARNINGS (non-blocking -- no errors were found, so these stand alone)
+--------------------------------------------------------------------------------
+1. 5x "Unknown layer/datatype in boundary, layer=64 type=44" on GDS read.
+   Expected: glayout's internal pwell glayer, unmapped in sky130A.tech, correctly
+   dropped by Magic (environment.md). Not a DRC issue.
+2. 16 out-of-context errors counted inside via_stack SUBCELLS:
+     via_stack_2e2571cb x3, $1 x3, $2 x3, via_stack_918d05dd$2 x3, $3 x3,
+     via_stack_686e5d96$33 x1
+   (was 19 pre-shortening; the drop tracks the GDS going 37 -> 28 cells as the
+   shortener pruned now-unused via_stack instances.)
+   DISPROVEN AS REAL ON THIS GEOMETRY, not assumed from the earlier run:
+     flatten -dobox -nolabels routed_flat -> FLAT_DRC_TOTAL = 0, zero FLATCELLCOUNT,
+     zero FLATRULE, and FLAT_BBOX == SRC_BBOX = 26373 14883 105500 94011 internal
+     = (131.865, 74.415) .. (527.500, 470.055) um -- non-empty, so not the
+     empty-cell false pass environment.md warns about.
+     Work dir: layout_fixer_work/drc_flat_shortened/
+3. 0x "off lambda grid" snap warnings -- DRC ran on the GDS as written.
+
+PROOF THE ZERO IS A REAL ZERO (negative control, run on THIS file)
+--------------------------------------------------------------------------------
+Injected two met1 (68/20) rectangles 0.05 um apart at (200,200) into a scratch copy
+of the delivered GDS and re-ran the identical harness:
+  -> "Metal1 spacing < 0.14um (met1.2)" x2, at (201.05,200.0)..(201.14,201.0) and
+     (200.91,200.0)..(201.0,201.0)
+The checker is live on this exact layout and top cell, so DRC_TOTAL=0 is a genuine
+clean result rather than a silently dead check.
+
+BBOX DELTA vs PRE-SHORTENING BASELINE
+--------------------------------------------------------------------------------
+baseline  test_vco_fixed.gds            : (131.865, 74.415) .. (527.500, 470.280) um
+delivered test_vco_fixed_shortened.gds  : (131.865, 74.415) .. (527.500, 470.055) um
+The 0.225 um loss of height is consistent with the shortener removing the topmost
+wire segment; no other extent changed.
+
+CATEGORIZATION (inherited vs introduced)
+--------------------------------------------------------------------------------
+Not applicable: zero violations, so there is nothing to attribute and no lever to
+reach for. drc_work_placement was deliberately NOT re-run -- it is only an
+attribution aid for violations that exist.
+
+TOOL BUDGET
+--------------------------------------------------------------------------------
+Magic wall time ~40 s hierarchical + ~60 s flattened (budget 5 min per run, from
+the role file's baseline for a design of this size). 0 tool retries, 0 exceptions,
+0 hangs.
+================================================================================

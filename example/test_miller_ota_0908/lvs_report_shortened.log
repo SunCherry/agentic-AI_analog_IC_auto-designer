@@ -1,0 +1,129 @@
+==============================================================================
+LVS REPORT -- PASS 2 RE-GATE (post route-optimizer)
+==============================================================================
+report_dir  : designs/test_miller_ota_0908/        (<design_dir>, as specified)
+filename    : lvs_report_shortened.log -- DELIBERATELY distinct from pass 1's
+              lvs_report.log, the pre-shortening fallback's evidence, untouched.
+layout      : designs/test_miller_ota_0908/layout/shortening/
+              test_miller_ota_0908_fixed_shortened.gds     top cell = routed
+golden      : designs/test_miller_ota_0908/layout/primitives/lvs_compare.spice
+              subckt two_stage_rz   (NOT the frozen .sp -- see "Which netlist" below)
+pdk / setup : sky130A; /Users/cherrysun/pdk/manual/sky130A/libs.tech/netgen/sky130A_setup.tcl
+budget      : layout_fix_iterations = 5 (design_constraints.py). CONSUMED: 0 fix cycles.
+artifacts   : designs/test_miller_ota_0908/layout_fixer_work/lvs_shortened_attempt_1/
+              {extract.tcl, extract.log, routed_extracted.spice, lvs_compare.spice,
+               lvs1.out, netgen1.log}
+
+------------------------------------------------------------------------------
+VERDICT: MATCH -- "Final result: Circuits match uniquely."
+------------------------------------------------------------------------------
+  devices : 13 layout / 13 schematic
+  nets    : 10 layout / 10 schematic
+  pins    :  5 layout /  5 schematic   ("Cell pin lists are equivalent")
+  LVS iterations used: 1 of 5 (matched on the first attempt; no fix cycles)
+
+  Device class census (layout -> after parallel merge | schematic):
+    sky130_fd_pr__nfet_01v8      200 -> 6   |  7 -> 6
+    sky130_fd_pr__pfet_01v8       28 -> 5   |       5
+    sky130_fd_pr__cap_mim_m3_1          1   |       1
+    sky130_fd_pr__res_generic_po        1   |       1
+  217 parallel devices merged layout-side, 1 schematic-side. Census identical to pass 1.
+
+  THIS COMPARISON HAD NEVER BEEN RUN ON THIS GEOMETRY. route-optimizer's self-gate
+  was DRC-only, and the orchestrator's verify_shortening.py ran a layout-vs-LAYOUT
+  check (shortened vs pre-shortening). This is the first layout-vs-SCHEMATIC LVS on
+  the shortened metal.
+
+------------------------------------------------------------------------------
+WHICH NETLIST, AND WHY NOT THE GOLDEN .sp
+------------------------------------------------------------------------------
+Compared against primitives/lvs_compare.spice, the geometry-equivalent VIEW of the
+frozen golden netlist, exactly as in pass 1. It folds MOS w to w*m and normalizes
+nf/m to 1 because the sky130 netgen setup deletes nf/mult while Magic merges a
+folded device back to total width -- against the golden .sp every nf>1 device would
+report a width delta of exactly nf, burying any real mismatch. It also declares the
+three tie-off dummies (XDUMMY1/2/3) that glayout draws and Magic legitimately
+extracts. The file was present as required; no silent fallback occurred.
+The golden .sp remains frozen, authoritative and UNMODIFIED.
+
+------------------------------------------------------------------------------
+PIN CORRESPONDENCE
+------------------------------------------------------------------------------
+| Layout port (routed) | Schematic port (two_stage_rz) | Status |
+|----------------------|-------------------------------|--------|
+| Vip                  | Vip                           | equivalent |
+| Vin                  | Vin                           | equivalent |
+| vout                 | vout                          | equivalent |
+| VDD                  | VDD                           | equivalent |
+| VSS                  | VSS                           | equivalent |
+netgen: "Cell pin lists are equivalent."  5/5, no unmatched pin on either side.
+
+------------------------------------------------------------------------------
+MISMATCHES
+------------------------------------------------------------------------------
+NONE. No pin mismatch, no device count/class mismatch, no net fragment mismatch,
+no short, no open. Nothing was changed in the layout, because nothing needed to be.
+
+netgen1.log carries ZERO "mismatch"/"differ"/"failed" lines. The only property
+notes are informational and emitted by design by the sky130 setup:
+  "No property <sa|sb|sd|nf|mult|perim|nrs|value|topography> found for device ..."
+plus "Creating placeholder cell definition" for the three black-boxed PDK device
+models (nfet_01v8, pfet_01v8, cap_mim_m3_1), whose pin lists netgen confirms
+equivalent on both sides. None of these is a mismatch.
+
+------------------------------------------------------------------------------
+R-vs-X ELEMENT-PREFIX QUIRK (environment.md) -- CHECKED FIRST, DID NOT FIRE
+------------------------------------------------------------------------------
+Pre-empted rather than rediscovered. Element-prefix census of the extracted netlist:
+1 R + 247 X. The single R is the poly resistor:
+  R0 a_n200_6200# a_n200_n6280# sky130_fd_pr__res_generic_po w=2 l=62
+R-prefixed on BOTH sides, and lvs1.out contains zero dummy_/proxy nets. 0 iterations
+lost to it, matching pass 1's finding.
+
+------------------------------------------------------------------------------
+THE BULK TIE-RING RELAXATION ON VSS/VDD -- DID IT CAUSE LVS TROUBLE?
+------------------------------------------------------------------------------
+NO. This was the flagged risk (VSS 131.27 -> 28.36 um, 7 -> 4 vias; VDD 131.88 ->
+85.07 um, 8 -> 7 vias), so it was checked directly rather than inferred from the
+overall verdict:
+
+  - VSS extracts as ONE net and VDD extracts as ONE net.
+  - Net count is 10 vs 10. A tie ring SPLIT by a released landing would have shown
+    as 11+ layout nets; a ring MERGE/short would have shown as 9 and blocked the
+    unique match. Neither occurred.
+  - Mechanically this is expected: a tie ring is a single electrical node, so moving
+    a landing from one point on the ring to another point on the SAME ring changes
+    metal but not connectivity -- invisible to LVS by construction. Confirmed, not assumed.
+  - The two extraction shorts the router had predicted (VSS on diff_pair_XMN1_XMN2's
+    tap_ring, net8 on XC0's top_met) again did NOT occur; both extracted as distinct nets.
+
+------------------------------------------------------------------------------
+EXTRACTION SANITY (no PEX numbers trusted from an empty cell)
+------------------------------------------------------------------------------
+  SRC_BBOX during extraction: -87819 -41174 -68869 -26115
+    x0.005 = (-439.095, -205.870) .. (-344.345, -130.575) um
+  This is the SHORTENED bbox and DIFFERS from pass 1's (-41342 / -26003), proving
+  extraction ran on the shortened geometry and not accidentally on the old file --
+  and that it ran on real geometry, not a silently-created empty cell.
+  13 devices extracted, matching the schematic count.
+
+------------------------------------------------------------------------------
+ONE ITEM TO HAND FORWARD (not a mismatch, not a layout fix)
+------------------------------------------------------------------------------
+PORT ORDER CHANGED vs pass 1. The extracted netlists differ on exactly ONE line out
+of 303 -- the top .subckt declaration:
+    pass 1 : .subckt routed vout VDD VSS Vin Vip
+    pass 2 : .subckt routed vout Vin Vip VDD VSS
+All 247 device lines are byte-identical. The cause is the optimizer relocating the
+VDD and VSS met3 (69/20) net labels, which reorders Magic's port emission.
+
+  Impact on LVS : NONE. netgen matches pins by name and reports them equivalent.
+  Impact on PEX : REAL, and it belongs to verify-agent, not to the layout. Per
+    environment.md's PEX note, a post-layout testbench that instantiates the PEX
+    subckt POSITIONALLY must read the port order off the PEX file's own .subckt
+    line -- it is neither pass 1's order nor the golden netlist's
+    (Vip Vin VDD VSS vout). Flagged so it is not rediscovered as a bogus
+    "post-layout gain is wrong" result.
+  This is a tooling/ordering note for the orchestrator, NOT a netlist-side fix, and
+  emphatically not something to fix by editing the frozen netlist.
+==============================================================================

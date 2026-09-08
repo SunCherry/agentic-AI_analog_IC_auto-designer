@@ -1,0 +1,181 @@
+================================================================================
+shaping_report.log -- vco_lc  (cross-coupled NMOS LC VCO, sky130A)
+VERDICT: nf NEVER MEASURED -- the finger-count sweep was REFUSED, by design.
+         Every device ships with nf=1, the count the golden netlist carried.
+HAND-WRITTEN. Step 2's --report-out could not run (it is the step that was
+refused), so this file was not machine-generated; there is no per-Nf table to
+paste because no Nf was ever simulated.
+================================================================================
+
+--- WHY THERE IS NO SWEEP -----------------------------------------------------
+sky130A HAS NO PARASITIC COEFFICIENT TABLE in this repo.
+`.claude/skills/parasitic-estimation/script/estimate_parasitics.py` sets
+`PDK_TABLES = {}`, and its module docstring says this is deliberate:
+
+    "DELIBERATELY NOT RESTORED -- `PDK_TABLES` ... Those are measured process
+     numbers; inventing them would produce plausible, wrong nf decisions. It is
+     left EMPTY on purpose so `sweep_fingers.check_nf()` takes its own
+     already-written 'no parasitic coefficient table for pdk=...' branch and the
+     caller reports the nf as never measured, rather than silently shaping
+     against fabricated physics."
+
+Confirmed by running the sweep exactly as SKILL.md specifies rather than by
+reading the source alone:
+
+    sweep_fingers.py: error: argument --pdk: invalid choice: 'sky130A'
+                      (choose from )
+
+The empty `choices=sorted(PDK_TABLES)` means NO PDK is currently selectable, so
+this is not a sky130A-specific gap -- device-shaper's Step 2 cannot run for any
+process until a table is added. NO RULE OF THUMB WAS SUBSTITUTED. There is no
+sweep, no spread, no rel_drop and no selected Nf in this file because none was
+measured, and an unmeasured nf must not be presented as a chosen one.
+
+CONSEQUENCE, stated plainly for layout: nf=1 on all six MOS devices is a
+DEFAULT CARRIED THROUGH, not a decision. Two of them are wide by any standard --
+XN2 and XN3 at w=60 um -- and a 60 um single-finger device has high gate
+resistance and a large drain junction sitting directly on the tank node. Folding
+them would very likely help. Nobody has measured by how much, or at what Nf the
+curve turns, and this skill exists precisely because that curve is not monotonic
+and cannot be guessed.
+
+--- STEP 1 -- DEVICE SELECTION (RAN, and worked) ------------------------------
+select_shape_devices.py read circuit_decomposition.yaml's parasitic_sensitivity
+section and selected 4 devices from the `severity: high` entries:
+
+    SWEPT (would have been):  XN0, XN1, XN2, XN3
+    PINNED at netlist nf:     XN4=nf1, XN5=nf1
+    specs at risk:            OscFreq, OutputPower, TuningRange
+    CLAMPED:                  none (nothing ran)
+
+It correctly refused to turn prose into devices: the top-ranked entry's `ref` is
+the tank-node description "['voutp', 'voutn tank nodes -- XN0', 'XN1', ...]" and
+only the real MOS instance names inside it were taken. XC0/XC1 (MiM caps) were
+excluded as non-MOS.
+
+NOTE FROM STEP 1 -- A HIGH-SEVERITY ENTRY WITH NO MOS DEVICE TO FOLD:
+    ['XL0', 'XL1']  severity high  threatens OscFreq, OutputPower
+  The two spiral inductors. They are `vco_spiral_ind` subckt instances holding
+  only L/R/C -- no MOS, no w/l, tie group TG5 status not_tunable. THIS SKILL HAD
+  NO LEVER FOR THEM AT ALL, and they are the largest parasitic exposure in the
+  design: two ~196 x 213 um coils whose mutual coupling, real substrate
+  capacitance and true Q are not in the lumped pi-model. The netlist's own
+  header warns the model is optimistic at ~0.75x f_SR. Only an EM-extracted
+  coil model answers this; no finger count can.
+
+WARNING FROM STEP 1: circuit_decomposition.yaml carries `confirmed_by_user:
+false`. The severity ranking that chose these devices is therefore PROVISIONAL
+-- schematic-agent had no interactive channel to close it. See its report.
+
+--- STEP 2 -- THE SWEEP: NOT RUN (see above) ----------------------------------
+    per-Nf table       none
+    selected Nf        none
+    spread / rel_drop  none
+    ideal vs annotated none -- nothing was annotated
+The "ideal" numbers are known and unchanged (they are sizing's converged
+result); there is simply no "annotated" column to compare them against.
+
+--- STEP 3 -- SHAPED NETLIST --------------------------------------------------
+    device_shaping/vco_lc_final_shaped.sp
+BYTE-IDENTICAL to sizing/vco_lc_final.sp (verified with diff). It exists so the
+hand-off path is where layout expects it, NOT because anything was shaped.
+Every MOS carries nf=1.
+Re-verified end to end anyway: run through the deck it measures
+    OscFreq 3.56407 GHz | TuningRange 703.98 MHz | OutputPower 12.6558 dBm | Power 2.73107 mW
+all four keys MET -- identical to sizing_report.log, as it must be.
+
+--- STEP 4 -- DEVICE-EXTENT LEVELING (RAN, geometric, no table needed) --------
+    extent = w/nf ; mean over 6 MOS devices = 31.667 um ; threshold 3.0 x mean = 95.000 um
+
+    device        w    nf   extent   ->   nf   extent
+    XN2        60.000   1   60.000        1   60.000
+    XN3        60.000   1   60.000        1   60.000
+    XN0        20.000   1   20.000        1   20.000
+    XN1        20.000   1   20.000        1   20.000
+    XN4        15.000   1   15.000        1   15.000
+    XN5        15.000   1   15.000        1   15.000
+
+    NO DEVICE EXCEEDS THE THRESHOLD -- nothing folded, nothing written.
+    5 tie groups were loaded and enforced; none needed to act.
+This is the normal outcome, not a skipped step. No device is a sliver: the
+widest extent (60 um) is 1.9x the mean, well under 3x. So there are no
+"never swept but folded (geometric, cost unmeasured)" devices in this design --
+the distinction SKILL.md asks for is empty here, and every nf in the hand-off
+came from the golden netlist and from nowhere else.
+
+--- STEP 5 -- FOLD m INTO nf FOR STANDALONE PRIMITIVES: RUN DRY, NOT APPLIED --
+*** NOT APPLIED BECAUSE THE SCRIPT MISCLASSIFIED THIS DESIGN. ***
+fold_multipliers.py --dry-run reported:
+
+    6 MOS device(s): 1 folded, 0 in a composed block (skipped), 5 already m=1
+    XN4  standalone   w 15 nf 1 m 4   ->   w 60 nf 4 m 1
+
+XN4 IS NOT STANDALONE. It is the output leg of the current_mirror whose
+reference is XN5, and its `m=4` IS the 4:1 mirror ratio -- setup_sizing.py put
+it there on purpose, and it is the design's only lever on the Power spec.
+SKILL.md Step 5 says exactly this case must be skipped.
+
+ROOT CAUSE, confirmed by calling the parser directly rather than inferring it:
+`blocked_devices()` parses all three patterns correctly --
+
+    cross_coupled_pair  refs=['XN0','XN1']   -> counted as MOS: []
+    current_mirror      refs=['XN5','XN4']   -> counted as MOS: []
+    capacitor_bank      refs=['XC0','XC1']   -> counted as MOS: []
+    blocked = {}   (empty: nothing protected)
+
+-- and then discards every device at this line:
+
+    mos = [r for r in refs if r.upper().startswith(("XM", "M"))]
+
+The filter only accepts instance names beginning `XM` or `M`. This design's MOS
+instances are named XN0..XN5, which is perfectly legal SPICE (`X` + any name).
+So `mos` is empty for every pattern, `len(mos) >= BLOCK_MIN_DEVICES` is never
+true, and every device falls through to "standalone".
+
+The `seen_patterns_key` guard the function's own docstring describes -- added
+after an earlier bug that "silently parsed ZERO patterns and reported every
+matched pair as standalone, which would have folded a differential pair and two
+current mirrors apart" -- DOES NOT COVER THIS. It fires only when no pattern
+entry parses at all. Here three parsed perfectly and the damage happened one
+line later, so the guard stayed silent and the identical failure recurred.
+
+WHAT APPLYING IT WOULD HAVE COST: the rewrite is SPICE-neutral (total width
+w*m = 60 um and finger extent w/nf = 15 um are both preserved, so ngspice
+measures the same circuit), which is exactly what makes it dangerous -- no
+simulation would ever reveal it. What is destroyed is the m-encoded mirror
+ratio that a layout generator reads to build the leg-to-reference relationship.
+XN0/XN1 and XN2/XN3 were equally unprotected and were spared only because they
+happen to carry m=1.
+
+    device_shaping/multiplier_fold.json holds the dry-run record.
+    NO _primitives.sp WAS WRITTEN.
+
+--- PERFORMANCE DROP ANALYSIS -------------------------------------------------
+NONE CAN BE GIVEN, and this is the honest entry rather than a placeholder.
+The analysis SKILL.md asks for here compares annotated against ideal per spec.
+No netlist was ever annotated (no PDK table), so there is no drop to rank, no
+rel_drop to quote and no spec to flag. Writing anything else here would be
+inventing the numbers this skill's own design refuses to invent.
+
+What IS known, from the circuit read rather than from measurement, is which
+parasitics the missing sweep would have been measuring -- carried forward so
+layout inherits it:
+  1. XN2/XN3 (w=60, gate on the tank). Gate resistance in series with the
+     varactor's own capacitance is a Q-degrading loss AND caps how much of the
+     device is electrically active at 3.5 GHz. At nf=1 the gate is one 60 um
+     finger -- the worst case. Threatens TuningRange and OutputPower.
+  2. XN0/XN1 (w=20, l=0.15). Cgd sits directly across the tank with NO Miller
+     reduction (the cross-coupling makes it worse, not better), and Rg degrades
+     the effective -gm. Threatens OutputPower and start-up margin.
+  3. Drain junction area on voutp/voutn. Folding reduces it; nf=1 maximizes it.
+     Adds directly to C_tank, so it lowers OscFreq and dilutes TuningRange.
+None of these is quantified, and none should be treated as if it were.
+
+--- THE HAND-OFF --------------------------------------------------------------
+    device_shaping/vco_lc_final_shaped.sp   THE FROZEN NETLIST for layout
+                                            (== sizing/vco_lc_final.sp)
+    nf on every MOS: 1, FROM THE GOLDEN NETLIST, NEVER MEASURED.
+    m: XN4=4 (the mirror ratio -- MUST be preserved), all others 1.
+    W/L: unchanged from sizing. Total width unchanged. Nothing in this stage
+    altered a single electrical parameter.
+================================================================================

@@ -1,0 +1,175 @@
+================================================================================
+book_keeper.log -- vco_lc (cross-coupled NMOS LC VCO, sky130A)
+BUDGET N = 15 iterations, from example/test_vco/design_constraints.json
+           (schematic_sizing_iterations; caller did NOT override -- first pass)
+TARGET IN FORCE : sizing/harder_target_spec.json (aim) scored ALONGSIDE
+                  spec/target_spec.json (the requirement) on every iteration.
+MEASUREMENT     : sizing/run_sizing_vco_lc.py -> the filed deck run verbatim
+                  against vco_lc_tuning.sp -> vco_lc_pre_results.txt ->
+                  process_vco_lc_results.py. Every number below is ngspice's.
+OP-POINT DATA   : NONE, ALL ITERATIONS. generate_op_probe.py is the only
+                  producer and it cannot splice this .control-native oscillator
+                  deck (3 hard failures, see run_sizing_vco_lc.py's docstring).
+                  Reasoning therefore uses spec deltas + the analytic tank model
+                  in spec_analysis.log, which reconciles with measurement:
+                  C_node = 856 fF back-solved from f0 vs ~856 fF summed
+                  device-by-device from the netlist.
+TUNABLES        : N0_W/N0_L (XN0,XN1) . N2_W/N2_L (XN2,XN3) . N5_W/N5_L
+                  (XN4,XN5) . N4_M (XN4 branch) . C0_W/C0_L . C1_W/C1_L
+                  XL0/XL1 + all of vco_spiral_ind: NOT TUNED (no w/l exists)
+================================================================================
+
+--- ITER 0 -- baseline re-measure through the tuning netlist -------------------
+Changed   nothing tunable. BUT setup_sizing.py's mirror-family normalization had
+          already rewritten XN4 from `w=60 nf=1 m=1` to `w=15 nf=1 m=4`
+          (shared N5_W=15 with the reference, ratio moved into the branch M).
+          Total width 60 um and the topology are preserved. This is the one `m`
+          edit the skill permits, and it RESOLVED circuit_decomposition.yaml's
+          TG2 ratio_conflict -- the 4:1 now lives in m, where it is tunable.
+Specs     OscFreq 2.72238 GHz | TuningRange 227.41 MHz | OutputPower 8.04522 dBm | Power 2.72244 mW
+Target    real: 3 MISS (OscFreq, TuningRange, OutputPower), 1 MET (Power). harder: same.
+Op-point  none available.
+Reasoning Ran BEFORE changing anything, to test whether the m-refactor moved the
+          operating point. The skill warns it does; this measures how much
+          instead of assuming.
+Result    IT DID, and materially. Against the golden baseline (2.72465 / 226.43 /
+          8.66583 / 2.87729):
+            Power       2.877 -> 2.722 mW   (-5.4%)  margin over the 3.0 ceiling
+                                                     widens 4.1% -> 9.3%
+            OutputPower 8.666 -> 8.045 dBm  (-0.62 dB)
+            OscFreq/TuningRange essentially unchanged (< 0.1%)
+          Four 15 um copies land on a different model bin than one 60 um device
+          and draw ~5% less current. NET FAVOURABLE: it gives back headroom on
+          the binding key (Power) and costs amplitude, which iter 1 was about to
+          gain a great deal of anyway.
+Next      This, not the golden baseline, is the true starting point. Attack the
+          primary knob.
+
+--- ITER 1 -- shrink the MiM plates (the primary knob) --------------------------
+Changed   C0_W 16 -> 9.5, C0_L 16 -> 9.5, C1_W 16 -> 9.5, C1_L 16 -> 9.5
+          (set together by hand: setup_sizing.py did NOT group XC0 with XC1
+          although circuit_decomposition.yaml's TG3 requires them tied. The
+          runner's ENFORCED_TIES re-imposes it and refuses+rolls back a
+          desynchronised write.)
+Specs     OscFreq 2.72238 -> 3.54445 GHz  (+0.82207)
+          TuningRange 227.41 -> 451.31 MHz  (+223.90)
+          OutputPower 8.04522 -> 12.6614 dBm  (+4.616)
+          Power 2.72244 -> 2.73174 mW  (+0.0093)
+Target    real: OscFreq MET, OutputPower MET, Power MET, TuningRange MISS (451 vs 600).
+Op-point  none available.
+Reasoning spec_analysis.log's C budget: C_node must fall from ~856 fF to ~519 fF
+          for 3.5 GHz, and the MiM pair alone holds ~524 fF of it. Solving
+          2.0*a^2 + 0.19*4a = 187 fF gives a = 9.55 um; used 9.5.
+          PREDICTED: f0 ~3.5 GHz; TuningRange up (the varactor's FRACTION of
+          C_tank rises even though the varactor itself is untouched);
+          OutputPower up ~+2.2 dB (R_p,coil = (w0*L)^2/Rs scales as w0^2, x1.65
+          for 2.72 -> 3.5 GHz, at zero extra current); Power flat.
+Result    Every direction predicted correctly. f0 landed at 3.544 vs 3.5
+          predicted -- the tank model is good to ~1.3%. TWO PREDICTIONS BEAT:
+          OutputPower gained +4.62 dB against +2.17 predicted, so the free lunch
+          is larger than modelled (the non-coil tank losses fall with frequency
+          too, rather than staying fixed as the conservative model assumed).
+          TuningRange nearly doubled from a knob that never touched the varactor
+          -- spec_analysis.log's central claim, that OscFreq and TuningRange are
+          ALIGNED on this knob rather than opposed, is confirmed by measurement.
+Next      Only TuningRange short, by 149 MHz. Spend the secondary knob and pay
+          for it with the primary one.
+
+--- ITER 2 -- widen the varactor, shrink the MiM to hold f0 (CONVERGED) --------
+Changed   N2_W 40 -> 60  (XN2, XN3 together via the TG4 group)
+          C0_W/C0_L/C1_W/C1_L 9.5 -> 7.5
+Specs     OscFreq 3.54445 -> 3.56407 GHz  (+0.01962)
+          TuningRange 451.31 -> 703.98 MHz  (+252.67)
+          OutputPower 12.6614 -> 12.6558 dBm  (-0.0056)
+          Power 2.73174 -> 2.73107 mW  (-0.0007)
+Target    real:   ALL FOUR MET.
+          harder: ALL FOUR MET  -> CONVERGED (stop condition 1).
+Op-point  none available.
+Reasoning Two knobs against two keys. Holding f0 at 3.5 GHz fixes C_node at
+          ~519 fF; of that the coil takes 146 fF and the core ~6, so
+          MiM = 367 - C_var. At varactor w=60 (C_var ~249 fF) that is MiM ~118
+          fF -> plate ~7.5 um. Predicted TuningRange from
+          TR/f0 = (1/2)*dC_var/C_tank with dC_var scaled 60/40 from iter 1's
+          measured 129 fF: ~652 MHz.
+          Step 2a fold check run first (dry): every width inside the PDK max
+          (N0_W 20, N2_W 40->60, N5_W 15 vs wmax 100), nothing to fold.
+Result    TuningRange 704 MHz vs 652 predicted -- BEAT the prediction by 8%,
+          because the varactor's dC scales slightly faster than its width.
+          OutputPower did NOT drop: 12.6614 -> 12.6558 dBm, i.e. -0.006 dB
+          across a 50% varactor widening. THIS IS AN IMPORTANT NEGATIVE RESULT:
+          spec_analysis.log's tension T3 (varactor width degrades tank Q and so
+          amplitude) is REAL IN PRINCIPLE BUT NEGLIGIBLE HERE. It also means
+          there is no Q lever available to buy amplitude back later.
+Next      Converged. Budget remains (11 of 15). The remaining question is not a
+          spec but the agent's objective: lowest power among passing netlists.
+
+--- ITER 3 -- power-minimization probe: mirror ratio 4:1 -> 3:1 -----------------
+Changed   N4_M 4 -> 3   (XN4's branch multiplier; the ONLY device knob on Power)
+Specs     OscFreq 3.56407 -> 3.55507 GHz  (-0.00900)
+          TuningRange 703.98 -> 759.54 MHz  (+55.56)
+          OutputPower 12.6558 -> 10.3123 dBm  (-2.344)
+          Power 2.73107 -> 2.18784 mW  (-0.54323, -19.9%)
+Target    real:   ALL FOUR MET.
+          harder: OutputPower MISS (10.312 vs 11.0). Other three MET.
+Op-point  none available.
+Reasoning Not required by any spec -- all four keys already passed at iter 2.
+          Run because schematic-agent's objective is the LOWEST-POWER netlist
+          that meets every key, and Power's only device knob is this integer
+          mirror ratio. PREDICTED: amplitude falls with I_tail in the
+          current-limited regime, A1 ~ (4/pi)*I*R_tank, so 4->3 costs
+          20*log10(4/3) = 2.50 dB, landing OutputPower at ~10.16 dBm.
+Result    Measured -2.344 dB against -2.50 predicted: amplitude IS essentially
+          proportional to I_tail, confirming the circuit runs current-limited
+          and NOT headroom-clipped. Power fell 19.9%. TuningRange rose 56 MHz
+          (a smaller swing loads the varactor over a more favourable arc).
+          BUT OutputPower margin over the REAL floor collapses from 2.66 dB to
+          0.31 dB, and the harder bar is missed.
+Next      Is there a netlist between these two? NO, and this is settled rather
+          than assumed: (a) M is an integer count of parallel devices, so
+          {3, 4} are adjacent -- nothing lies between; (b) N5_W scales the
+          reference AND the leg together, so it moves Vdsat/headroom, not the
+          4:1 ratio, and is not a current knob; (c) the Q lever that could have
+          bought amplitude back was measured dead at iter 2 (-0.006 dB across a
+          50% varactor change). So the choice is exactly these two netlists.
+          DECISION: revert to M=4 and ship the CONVERGED one. The harder bar is
+          this project's encoded allowance for parasitics that do not exist
+          yet, and circuit_decomposition.yaml ranks the tank nodes `severity:
+          high` with a mechanism that attacks OutputPower directly (added
+          layout C lowers f0, R_p falls as w0^2, amplitude falls with it).
+          0.31 dB will not survive that. M=3 is REPORTED TO THE USER as a
+          measured 19.9%-lower-power alternative, not silently discarded --
+          spending margin is the user's call, not the sizer's.
+
+--- ITER 4 -- restore the converged point (FINAL, full record) ------------------
+Changed   N4_M 3 -> 4
+FULL PARAMETER SET (the netlist that produced the numbers below):
+    N0_W = 20.0     N0_L = 0.15     (XN0, XN1  cross-coupled pair, TG1)
+    N2_W = 60.0     N2_L = 0.5      (XN2, XN3  MOS varactors, TG4)
+    N5_W = 15.0     N5_L = 0.5      (XN4, XN5  tail mirror, shared W/L)
+    N4_M = 4                        (XN4 branch multiplier = the 4:1 ratio)
+    C0_W = 7.5      C0_L = 7.5      (XC0 MiM plate, um)
+    C1_W = 7.5      C1_L = 7.5      (XC1 MiM plate, um -- tied to C0 by hand)
+    XL0, XL1 = vco_spiral_ind, UNCHANGED (L 3.986n, R 9.225, C 146.35f x2)
+ACHIEVED, against BOTH bars:
+    key           real bar        harder bar      measured        real  harder
+    OscFreq       [3.4, 3.6] GHz  [3.42, 3.58]    3.56407 GHz     MET   MET
+    TuningRange   >= 600 MHz      >= 660 MHz      703.98 MHz      MET   MET
+    OutputPower   >= 10 dBm       >= 11 dBm       12.6558 dBm     MET   MET
+    Power         <= 3.0 mW       <= 3.3 mW       2.73107 mW      MET   MET
+    context: f_lo 3.36621 GHz, f_hi 4.07019 GHz, Vamp_fund 1.35766 V
+Op-point  none available (see the header).
+Reasoning Restore iter 2 exactly and re-measure, so the shipped netlist's numbers
+          are a fresh measurement rather than a value copied from an earlier
+          entry that a later probe had moved past.
+Result    Reproduced iter 2 to every printed digit. VERDICT: CONVERGED.
+Next      Step 3 promotion. Budget used 5 of 15; 10 unspent, which is the correct
+          outcome -- the budget is a ceiling, not a quota.
+
+================================================================================
+FLOW NOTE, for the record: not one iteration used
+.claude/skills/schematic-sizing/script/run_sizing_iteration.py. Its op-probe
+splice cannot be produced on a .control-native oscillator deck, so the generated
+runner (kept as run_sizing_vco_lc.py.generated-dead) raises before it measures.
+Scripts that DID work unchanged: setup_sizing.py, compute_harder_target.py,
+fold_wide_devices.py, edit_netlist.py, finalize_netlist.py.
+================================================================================

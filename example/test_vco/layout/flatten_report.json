@@ -1,0 +1,48 @@
+{
+  "original": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/device_shaping/vco_lc_final_shaped.sp",
+  "flatten": {
+    "mode": "flattened",
+    "expanded_instances": [
+      {
+        "instance": "XL0",
+        "subckt": "vco_spiral_ind",
+        "devices": []
+      },
+      {
+        "instance": "XL1",
+        "subckt": "vco_spiral_ind",
+        "devices": []
+      }
+    ],
+    "nested_unexpanded": [],
+    "top_subckt": "vco_lc",
+    "path": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/vco_lc_final_shaped_flat.sp"
+  },
+  "erc": {
+    "exit_code": 0,
+    "counts": {
+      "error": 0,
+      "warning": 0,
+      "info": 0
+    },
+    "findings": []
+  },
+  "equivalence": {
+    "status": "mismatch",
+    "report": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/equivalence/netgen_equivalence.out",
+    "command": "/Users/cherrysun/.local/bin/netgen -batch lvs /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/equivalence/flattened.spice vco_lc /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/equivalence/original.spice vco_spiral_ind /Users/cherrysun/pdk/manual/sky130A/libs.tech/netgen/sky130A_setup.tcl /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/equivalence/netgen_equivalence.out",
+    "top_flat": "vco_lc",
+    "top_original": "vco_spiral_ind",
+    "netgen_exit": 0,
+    "tail": "\nCircuit was modified by parallel/series device merging.\nNew circuit summary:\n\nContents of circuit 1:  Circuit: 'vco_lc'\nCircuit vco_lc contains 8 device instances.\n  Class: sky130_fd_pr__cap_mim_m3_1 instances:   2\n  Class: sky130_fd_pr__nfet_01v8 instances:   6\nCircuit contains 7 nets.\nContents of circuit 2:  Circuit: 'vco_spiral_ind'\nCircuit vco_spiral_ind contains 3 device instances.\n  Class: r                     instances:   1\n  Class: l                     instances:   1\n  Class: c                     instances:   1\nCircuit contains 3 nets.\n\nCircuit 1 contains 8 devices, Circuit 2 contains 3 devices. *** MISMATCH ***\nCircuit 1 contains 7 nets,    Circuit 2 contains 3 nets. *** MISMATCH ***\n\n\nFinal result: \nNetlists do not match.\nPort matching may fail to disambiguate symmetries.\nLogging to file \"/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/equivalence/netgen_equivalence.out\" disabled\nLVS Done."
+  },
+  "size_original": [
+    10,
+    7
+  ],
+  "size_flat": [
+    8,
+    7
+  ],
+  "verdict": "FAIL -- do not run Step 2"
+}

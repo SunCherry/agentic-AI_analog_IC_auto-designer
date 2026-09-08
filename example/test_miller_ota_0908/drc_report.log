@@ -1,0 +1,136 @@
+================================================================================
+DRC REPORT -- test_miller_ota_0908
+================================================================================
+report_dir  : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/   (= <design_dir>)
+tool        : Magic 8.3 (drc(full), euclidean on), PDK sky130A, PDK_ROOT=$HOME/pdk/manual
+runner      : .claude/skills/router/script/run_drc.py  (validated Tcl, not hand-rolled)
+top cell    : routed          <-- NOT the filename; the file was renamed, the cell was not
+budget      : layout_fix_iterations = 5 per gate
+              source: designs/test_miller_ota_0908/design_constraints.json via
+              `python .claude/reference/design_constraints.py designs/test_miller_ota_0908 --key layout_fix_iterations`
+fix cycles  : 1 of 5 used (the baseline run does not count against the budget)
+
+FINAL VERDICT : CLEAN -- 0 violations
+  DRC_TOTAL = 0, 0 violation rectangles, 0 rules from `drc listall why`
+  file: layout/test_miller_ota_0908_fixed.gds  (top cell `routed`)
+  guard against the empty-cell false pass: bbox (-439.095,-206.710)..(-344.345,-130.015),
+  38125 polygons, 48 cells. The 0 is a real clean, not a DRC of an empty cell.
+
+Errors and warnings are both non-empty in the BASELINE; errors are reported first.
+The final GDS has zero errors; only the expected warnings below remain.
+
+--------------------------------------------------------------------------------
+1. BASELINE (attempt 1) -- routed.gds
+--------------------------------------------------------------------------------
+DRC_TOTAL = 2 error areas across 3 violation rectangles, 1 rule.
+
+ERRORS BY RULE CATEGORY
+| Category | Rule                              | Count | Fixable? |
+|----------|-----------------------------------|-------|----------|
+| spacing  | Metal2 spacing < 0.14um (met2.2)  |   3   | yes -- fixed (routing-fixable, quantized near-miss) |
+| width    | (none)                            |   0   | -- |
+| enclosure| (none)                            |   0   | -- |
+| other    | (none)                            |   0   | -- |
+
+Magic "Metal2" == GDS layer 69 == glayout **met3**, the vertical routing layer
+(router/Magic layer names are offset by one).
+
+CATEGORIZATION -- inherited or introduced?
+  Same DRC re-run on the pre-routing layout `layout/placement_visualization.gds`
+  (top cell `placement_visualization`, work-dir layout_fixer_work/drc_work_placement):
+  DRC_TOTAL = 0, 0 rules.  => 100% ROUTER-INTRODUCED, 0% inherited from placement.
+  Independently reproduced here; not taken from the hand-off on trust.
+
+NETS RANKED BY VIOLATION COUNT   (leading with NETS: this is a router hand-off and
+every violation is router-generated net geometry, not a device defect)
+| Rank | Net | Violation count | Rule categories involved |
+|------|-----|-----------------|--------------------------|
+|  1   | VSS |        3        | spacing (met2.2)         |
+|      | all other nets | 0    | --                       |
+
+DEVICES RANKED BY VIOLATION COUNT   (secondary -- no device geometry is at fault)
+| Rank | Device | Violation count | Rule categories involved |
+|------|--------|-----------------|--------------------------|
+|  1   | XMN5 (adjacent only -- its VSS port is the fixed anchor, its own geometry is clean) | 3 | spacing |
+|      | all other devices | 0 | -- |
+
+SPACING VIOLATIONS, PAIRWISE
+| Rule | Between | Location (um) | Fix applied/suggested |
+|------|---------|---------------|-----------------------|
+| met2.2 | VSS port-landing stub <-> VSS met3<->met2 via pad (SAME net) | (-401.630,-191.135)..(-401.570,-191.120) | re-routed at track-multiplier 1.04; gap re-quantized, violation gone |
+| met2.2 | VSS port-landing stub <-> VSS met3<->met2 via pad (SAME net) | (-401.770,-190.995)..(-401.570,-190.980) | same fix |
+| met2.2 | VSS port-landing stub <-> VSS met3<->met2 via pad (SAME net) | (-401.770,-190.995)..(-401.630,-190.980) | same fix |
+
+  Attribution source: routes.json (EXACT -- geometry matched to net by coordinate),
+  not label proximity. Cross-checked against the GDS layer-69 polygons directly.
+
+ROOT CAUSE (mechanism, measured -- not inferred)
+  XMN5's VSS port sits at y = -190.8923, which is fractional grid row 40.545 at the
+  baseline pitch 0.72um (origin y0 = -220.0849). The router landed on row 41 and
+  dropped the met3->met2 via one row DOWN at row 40 (y = -191.2849):
+     landing-stub bottom edge = port - 0.105          = -190.9973
+     via met3 pad top edge    = -191.2849 + 0.165     = -191.1199
+     gap                      = 0.1227um  <  0.14um   -> met2.2 FAIL
+  The 0.21um connecting wire spans only x[-401.572,-401.362], leaving
+  x[-401.630,-401.572] open as a 0.058 x 0.123um notch. It is a SAME-NET notch
+  between two pieces of VSS -- electrically harmless, but a hard DRC failure.
+
+KEEPOUT CHECK (done FIRST, before any knob)
+  Only XC0 declares a keepout in primitives/manifest.json (keepout_um = 1.2).
+  XC0 occupies x[-439.09,-402.81] y[-175.91,-135.37]; the violation is ~15um away.
+  No keepout was breached, so this is not a placement-contract violation.
+
+CLASSIFICATION: routing-fixable (quantized near-miss), NOT router-defect.
+  The port is fixed by the macro, but the VIA ROW is a routing decision, and moving
+  the grid moves it. Confirmed by the fix succeeding.
+
+--------------------------------------------------------------------------------
+2. WHY ONLY ONE KNOB COULD WORK -- measured, and worth carrying forward
+--------------------------------------------------------------------------------
+route_nets.py's CongestionMap.penalty() short-circuits on a net's own metal
+("Its own metal is free -- a net rejoining its own tree is the normal case"), so
+shared_cell_penalty, via_pad_penalty and proximity_* are STRUCTURALLY BLIND to a
+same-net notch. Verified empirically at baseline pitch -- every one of these left
+the violation at exactly 1 gap region, unchanged:
+    --via-cost 5 | --via-cost 20 | --via-pad-penalty 200 | --proximity-radius 3
+    --proximity-weight 2.0 | --wrong-direction-penalty 3.0 | --over-macro-cost 0.8
+    --ripup-iters 12 | --shared-cell-penalty 1000
+Only --track-multiplier (re-quantization) moved the geometry. Screened sweep:
+    tm 1.02 clean | 1.04 clean | 1.05 clean | 1.06 clean | 1.08 DIRTY(1)
+    tm 1.10 clean | 1.12 clean | 1.15 DIRTY(2) | 1.20 clean | 1.25 DIRTY(1)
+    tm 1.30 DIRTY(1) | 1.50 DIRTY(2)
+Screening used a dilate/erode geometric spacing check that exactly reproduced
+Magic's single baseline violation before being trusted; Magic remained the authority
+and was run on the chosen candidate.
+
+--------------------------------------------------------------------------------
+3. FIX (attempt 2) -- routed_tm1.04.gds
+--------------------------------------------------------------------------------
+knob delta : --track-multiplier 1.0 -> 1.04  (pitch 0.7200 -> 0.7488um). Sole change.
+             All other knobs at their baseline values.
+result     : DRC_TOTAL = 0, 0 rects, 0 rules.  CLEAN.  delta 3 -> 0 rects (better).
+modification note: the one violation was fixed by regenerating the routing, never by
+             editing a wire polygon or the GDS.
+
+HONEST CHARACTERIZATION: this is a re-quantization WORKAROUND. It moves the via to a
+grid row where the gap is legal rather than teaching the router why the gap was there.
+The underlying source-level gap remains: route_nets.py cannot see a same-net
+spacing conflict at all. A durable fix belongs in route_nets.py -- either make
+via_pad_cells() honour min-spacing against the net's OWN landing stub, or snap the
+first via off a port-landing node to a row at least (pad/2 + stub/2 + min_space) away.
+Flagged to the orchestrator as a source fix, not re-attempted here.
+
+--------------------------------------------------------------------------------
+WARNINGS (non-blocking, present in every run including the clean one)
+--------------------------------------------------------------------------------
+- "Unknown layer/datatype in boundary, layer=64 type=44" x4 -- glayout's internal
+  pwell glayer, unrecognized by sky130A.tech, correctly dropped by Magic. Expected.
+- Out-of-context subcell counts from `drc listall count`, IDENTICAL before and after
+  the fix: via_stack_2e2571cb=3, via_stack_686e5d96$66/$67/$68/$69=1 each (7 total).
+  `drc listall why` reports 0 rules in the expanded top cell, so per run_drc.py's
+  documented reading rule these are out-of-context, not violations of the assembled
+  layout: the geometry completing those via stacks lives in the parent cell.
+- No CIF/lambda-grid snapping warnings were emitted.
+
+Durable per-attempt history: layout_fixer_work/bookkeeper.log
+================================================================================

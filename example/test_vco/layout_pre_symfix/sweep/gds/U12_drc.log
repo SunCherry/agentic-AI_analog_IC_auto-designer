@@ -1,0 +1,9 @@
+=== Magic DRC: U12_routed.gds (top cell 'routed') ===
+  DRC errors (per-cell, from `drc listall count`): 19
+    (note: `drc list count total` reported 0 for the top cell 'routed' alone -- the per-cell numbers above see more)
+  Errors by cell: via_stack_2e2571cb=3, via_stack_2e2571cb$1=3, via_stack_2e2571cb$2=3, via_stack_2e2571cb$3=3, via_stack_686e5d96$33=1, via_stack_918d05dd$2=3, via_stack_918d05dd$3=3
+  Cross-check: 0 distinct violated rule(s), 0 instance(s) from `drc listall why`
+  NOTE: 19 error(s) are counted in subcells but `drc listall why` reports none in the expanded top cell -- these are out-of-context subcell errors (geometry completing them lives in the parent), not violations of the assembled layout. Verify by flattening if in doubt.
+  no violations -- empty report written to /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U12/drc_violations.json
+  full Magic log: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U12/drc.log
+  DRC check: PASS (clean)

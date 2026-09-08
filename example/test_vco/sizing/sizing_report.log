@@ -1,0 +1,129 @@
+================================================================================
+sizing_report.log -- vco_lc  (cross-coupled NMOS LC VCO, sky130A)
+VERDICT: CONVERGED
+Converged at ITER 2, re-measured and shipped as ITER 4. 5 of 15 iterations used.
+Every number below is IDEAL-SCHEMATIC -- this skill annotated no parasitics.
+================================================================================
+
+Metric        Unit  Real target     Harder target   Achieved   Real?  Harder?  Margin over REAL
+------------  ----  --------------  --------------  ---------  -----  -------  ---------------------------
+OscFreq       GHz   [3.4, 3.6]      [3.42, 3.58]    3.56407    MET    MET      +0.164 above the 3.4 floor,
+                                                                               -0.036 below the 3.6 ceiling
+TuningRange   MHz   >= 600          >= 660          703.98     MET    MET      +103.98  (+17.3%)
+OutputPower   dBm   >= 10           >= 11           12.6558    MET    MET      +2.656 dB
+Power         mW    <= 3.0          <= 3.3          2.73107    MET    MET      +0.269 mW of headroom (9.0%)
+
+context: f_lo 3.36621 GHz | f_hi 4.07019 GHz | Vamp_fund 1.35766 V
+Every key clears BOTH bars -> CONVERGED, the intended outcome. No key fell short
+of either target, so there is no shortfall section.
+
+MARGIN THE HARDER TARGET ADDED: 10%. It moved OscFreq's window inward to
+[3.42, 3.58], TuningRange to 660 MHz and OutputPower to 11 dBm. NOTE FOR THE
+CALLER, because it is a real gap in the two-bar scheme: for a CEILING key the
+harder bar is LOOSER than the real one (Power <= 3.3 vs <= 3.0 mW), so
+"every harder key met" is NOT a superset of "every real key met". Both were
+scored independently on every iteration for exactly this reason.
+
+--- WHERE THE MARGIN IS THIN --------------------------------------------------
+OscFreq sits 0.036 GHz (1.0%) below its upper bound and only 0.016 below the
+harder upper bound -- the tightest number in the table. THIS IS DELIBERATE, NOT
+DRIFT. Layout parasitics on the tank nodes can only ADD capacitance, and f0
+falls as 1/sqrt(C), so f0 can only move DOWN from here. Sitting high in the
+window is the whole available buffer: it gives 0.164 GHz (4.6% in f, i.e. ~9.5%
+in C_node, roughly 48 fF per node) of room before the real 3.4 GHz floor is hit.
+Centring at 3.5 GHz would have halved that buffer for no gain.
+
+--- FINAL SIZED DEVICES -------------------------------------------------------
+  device   role                            l      w    nf   m   total w
+  XN0      cross-coupled -gm pair (TG1)  0.15     20    1   1     20 um
+  XN1      cross-coupled -gm pair (TG1)  0.15     20    1   1     20 um
+  XN2      MOS varactor (TG4)             0.5     60    1   1     60 um
+  XN3      MOS varactor (TG4)             0.5     60    1   1     60 um
+  XN4      tail current source            0.5     15    1   4     60 um
+  XN5      mirror reference               0.5     15    1   1     15 um
+  XC0      MiM tank cap (TG3)             7.5    7.5    -   1     7.5 x 7.5 um plate
+  XC1      MiM tank cap (TG3)             7.5    7.5    -   1     7.5 x 7.5 um plate
+  XL0/XL1  vco_spiral_ind   UNCHANGED AND UNTUNABLE -- L 3.9860n, R 9.2250,
+           Cpa/Cpb 146.35f each. No w/l exists in that block (tie group TG5,
+           status not_tunable). It was never touched.
+WHAT MOVED FROM THE GOLDEN NETLIST: only XN2/XN3 w (40 -> 60), XC0/XC1 w and l
+(16 -> 7.5), and XN4's m (1 -> 4 with w 60 -> 15, total width unchanged at 60 um
+-- setup_sizing.py's mirror-family normalization, the one `m` edit the skill
+permits, applied before the loop started). XN0/XN1/XN5 were never changed.
+
+WHERE nf CAME FROM: the golden netlist, carried through untouched (nf=1 on every
+MOS). SIZING MEASURED NO FINGER COUNT and passed no --nf. Choosing nf is
+device-shaper's job.
+
+--- THE HAND-OFF --------------------------------------------------------------
+  sizing/vco_lc_final.sp        THE FROZEN NETLIST. Self-contained: the
+                                vco_spiral_ind .subckt is defined inside it, so
+                                there are no .include lines and no companion
+                                sub-circuit files to ship with it.
+  sizing/vco_lc_tb_final.spice  the deck that REPRODUCES the numbers above --
+                                the filed testbench verbatim with its .include
+                                re-pointed at vco_lc_final.sp. Run it from
+                                sizing/. The FILED deck still includes the
+                                UNSIZED netlist/vco_lc.sp and will silently
+                                measure the wrong circuit (it reports
+                                2.72 GHz / 226 MHz / 8.67 dBm / 2.88 mW).
+  sizing/book_keeper.log        per-iteration record, 5 entries
+  sizing/vco_lc_tuning.sp       the loop's state (== final, pre-rounding)
+  sizing/structure_groups.json  the tie groups the loop wrote through
+  sizing/debug/iter_<0..4>/     per-iteration results + scores + netlist copy
+  sizing/run/                   the last iteration's working directory
+Verified: vco_lc_tb_final.spice run standalone from sizing/ reproduces
+3.56407 GHz / 703.98 MHz / 12.6558 dBm / 2.73107 mW, exit 0, all four keys MET.
+
+--- NO FIGURE -----------------------------------------------------------------
+generate_plot_script.py was NOT run. spec_analysis.log calls for no
+response-shaped figure and there is none to draw: an oscillator has no frequency
+response, and the plot generator is built around an .ac raw file this design does
+not produce. The settled differential waveform is available as
+sizing/simout_vco_lc_pre.out if a time-domain figure is wanted later.
+
+--- NO OP-POINT DATA, ALL FIVE ITERATIONS -------------------------------------
+Stated plainly rather than left to read as "nothing to see": generate_op_probe.py
+is the only producer of per-device gm/gds/id/vds/vgs/vdsat/cgg, and it cannot
+splice this deck (three independent failures, detailed in run_sizing_vco_lc.py's
+docstring and in book_keeper.log's header). Every decision in the loop was made
+from spec deltas plus the analytic tank model in spec_analysis.log. That model
+was not taken on trust -- it reconciles with measurement (C_node = 856 fF
+back-solved from the baseline f0 vs ~856 fF summed device-by-device) and it
+predicted iter 1's frequency to 1.3% and iter 2's TuningRange to 8%.
+
+--- WHAT A FURTHER RUN WOULD NEED ---------------------------------------------
+NOTHING, for the spec as written. Every key clears both bars, the loop converged
+in 3 real moves, and 10 of 15 iterations went unspent. DO NOT RE-INVOKE THIS
+SKILL for this spec: more iterations cannot improve a converged result, and the
+next thing that can change any of these numbers is a layout, not a width.
+
+ONE DECISION IS LEFT WITH THE CALLER, and it is a genuine trade, measured rather
+than argued (book_keeper.log ITER 3):
+
+    netlist            Power       OutputPower   all REAL keys   all HARDER keys
+    N4_M = 4 (SHIPPED) 2.73107 mW  12.6558 dBm   MET             MET
+    N4_M = 3           2.18784 mW  10.3123 dBm   MET             MISS (OutputPower)
+
+  M=3 is a 19.9% power saving that still meets the entire real spec. It was NOT
+  shipped because it leaves 0.31 dB of OutputPower margin, and
+  circuit_decomposition.yaml ranks the tank nodes `severity: high` with a
+  mechanism that attacks exactly that key (layout C lowers f0, R_p falls as
+  w0^2, amplitude falls with it). There is no netlist in between and no way to
+  buy the amplitude back, both established by measurement rather than assumed:
+  M is an integer count of parallel devices so 3 and 4 are adjacent; N5_W scales
+  reference and leg together so it moves headroom, not the ratio; and the tank-Q
+  lever is dead (iter 1 -> iter 2 changed OutputPower by -0.006 dB across a 50%
+  varactor widening).
+  If the user would rather have the 0.54 mW than the 2.3 dB, the change is a
+  single `--set N4_M=3` re-run -- one iteration.
+
+IF THE SPEC ITSELF CHANGED, the levers and their signs are known and measured:
+  OscFreq up      -> XC0/XC1 w,l down   (also raises TuningRange and OutputPower)
+  TuningRange up  -> XN2/XN3 w up, then XC0/XC1 w,l down to put f0 back
+  OutputPower up  -> N4_M up (costs Power proportionally; the ONLY lever)
+  Power down      -> N4_M down (costs OutputPower ~20*log10 of the ratio)
+Two further things are fixed and would need a topology or model change, not
+sizing: the coil (3.986 nH / 9.225 ohm, frozen) and Iref (300 uA, a TESTBENCH
+source, not a device parameter).
+================================================================================

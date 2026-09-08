@@ -1,0 +1,144 @@
+==============================================================================
+LAYOUT REPORT -- PASS 2 RE-GATE (post route-optimizer)   SHIPPING LAYOUT
+==============================================================================
+design      : test_miller_ota_0908   (netlist top subckt: two_stage_rz)
+ships       : designs/test_miller_ota_0908/layout/shortening/
+              test_miller_ota_0908_fixed_shortened.gds
+top cell    : routed   -- the file was renamed, the CELL was not. Every downstream
+              tool must be given --top routed; without it Magic creates and checks an
+              EMPTY cell and returns a false PASS.
+map         : designs/test_miller_ota_0908/layout/shortening/physical_map.json
+pdk         : sky130A
+provenance  : placer -> router -> layout-fixer(pass 1) -> route-optimizer -> layout-fixer(pass 2, this)
+budget      : layout_fix_iterations = 5 per gate, from design_constraints.py.
+              Consumed: 0 DRC fix cycles, 0 LVS fix cycles.
+
+------------------------------------------------------------------------------
+GATE STATUS
+------------------------------------------------------------------------------
+  DRC : PASS -- 0 violations.  Fix iterations: 0 (clean on first pass).
+        detail -> designs/test_miller_ota_0908/drc_report_shortened.log
+  LVS : MATCH -- 13/13 devices, 10/10 nets, 5/5 pins.  Iterations: 1 (matched first attempt).
+        detail -> designs/test_miller_ota_0908/lvs_report_shortened.log
+  Both gates re-run from scratch on this geometry. The pass-1 verdict was treated as
+  void per CLAUDE.md, and route-optimizer's self-gate was not taken on trust.
+
+------------------------------------------------------------------------------
+DEVICE COUNT BY KIND   (from physical_map.json)
+------------------------------------------------------------------------------
+  nfet  : 5    (XMN1 XMN2 XMN3 XMN4 XMN5)
+  pfet  : 4    (XMP1 XMP2 XMP3 XMP4)
+  cap   : 1    (XC0)
+  res   : 1    (R0)
+  bjt   : 0
+  other : 0
+  TOTAL : 11 placed device instances.
+  (LVS counts 13 schematic devices: the 11 above plus the 2 extra dummy/tie-off
+   devices declared in lvs_compare.spice -- 3 dummies, of which the merge folds some;
+   both sides agree at 13/13.)
+
+------------------------------------------------------------------------------
+TOTAL PLACEMENT AREA
+------------------------------------------------------------------------------
+  bounding box over physical_map.json "devices", via
+  .claude/reference/generate_grid.py overall_bbox()  (not re-derived):
+    (-439.0945, -205.8722) .. (-344.3426, -130.5737) um
+    width x height : 94.752 x 75.298 um
+    AREA           : 7134.667 um^2
+  Unchanged from pass 1: route-optimizer moved no device.
+
+------------------------------------------------------------------------------
+DISTINCT GDS LAYERS ACTUALLY DRAWN   (read from the GDS, not the PDK layer list)
+------------------------------------------------------------------------------
+  21 layer/datatype pairs, 38084 flat polygons in cell 'routed':
+    (64,20) (64,44) (65,20) (66,13) (66,20) (66,44) (67,20) (67,44)
+    (68,16) (68,20) (68,44) (69,16) (69,20) (69,44) (70,20) (70,44)
+    (71,20) (89,44) (93,44) (94,20) (95,20)
+  Identical layer SET to the pre-shortening layout (which had 38125 polygons in 48
+  cells); the shortened layout uses 34 cells -- fewer via_stack instances, tracking
+  the 27 -> 23 via reduction.
+
+  Layer-name reminder (router glayer vs Magic process layer are offset by one):
+  glayout met2->met1, met3->met2, met4->met3, met5->met4, and glayout met1 is li1.
+
+------------------------------------------------------------------------------
+WHAT CHANGED IN THIS ROUND, AND WHAT THIS AGENT CHANGED
+------------------------------------------------------------------------------
+  route-optimizer (upstream of this gate) changed:
+    total wirelength 703.86 -> 545.75 um  (-158.10, -22.5%)
+    vias             27 -> 23
+    corners          55 -> 44
+    nets rebuilt     VDD (131.88->85.07, 8->7 via), VSS (131.27->28.36, 7->4 via),
+                     net3 (79.54->71.15)
+    vout             rebuilt then SELF-REVERTED (its rebuild drew a DRC violation)
+    net4/net5/net7/net8  excluded, byte-identical to the pass-1 layout
+    labels relocated VDD (-387.040,-157.185)->(-364.137,-130.978) on (69,20)
+                     VSS (-363.450,-174.785)->(-363.685,-169.300) on (69,20)
+    placement        UNTOUCHED -- 0 of 11 devices moved (verified by diffing
+                     x0/y0/x1/y1/rotation_deg/mirror between the two maps)
+
+  layout-fixer (this agent) changed:
+    NOTHING. No geometry edit, no re-route, no knob change, no netlist edit. Both
+    gates passed on arrival; the correct action was to certify, not to touch.
+
+------------------------------------------------------------------------------
+PER-ITERATION HISTORY (append-only; both phases, this pass)
+------------------------------------------------------------------------------
+  DRC attempt 1 (baseline = the geometry as handed over)
+      DRC_TOTAL=0, rects=0, rules=0  -> CLEAN
+      bbox/poly guard passed (34 cells, 38084 polys) => not an empty-cell false pass
+      flags: 6 out-of-context via_stack subcell counts; 4x layer-64/44 read warnings
+      runtime 1.6 s.  DRC GATE CLOSED, 0 of 5 fix cycles used.
+
+  LVS attempt 1 (no geometry change since DRC, so no DRC re-run owed)
+      extract SRC_BBOX = shortened bbox (differs from pass 1's) => right file, real cell
+      netgen: "Final result: Circuits match uniquely."  13/13 dev, 10/10 net, 5/5 pin
+      R-vs-X quirk checked first: did not fire (1 R + 247 X, R0 R-prefixed both sides)
+      VSS/VDD tie-ring relaxation: no split, no short, both still single nets
+      runtime: extraction 2.4 s + netgen 0.05 s.  LVS GATE CLOSED, 0 of 5 fix cycles used.
+
+  Full durable history incl. pass 1:
+    designs/test_miller_ota_0908/layout_fixer_work/bookkeeper.log
+
+------------------------------------------------------------------------------
+physical_map.json PROVENANCE -- WHY THE BRIDGE SCRIPT WAS *NOT* RE-RUN
+------------------------------------------------------------------------------
+  Shipping route-optimizer's own shortening/physical_map.json, which was built FROM
+  THE FINAL geometry.
+
+  physical_map_from_placement.py was deliberately NOT re-run. That bridge reads the
+  canonical layout/routes.json, which still holds the PRE-shortening routing, so it
+  would have emitted a map describing wiring that no longer exists -- the stale-map
+  failure mode, which is worse than a missing map because nothing downstream can
+  detect it. There is no post-shortening routes.json to promote: route-optimizer
+  emits an updated physical_map.json directly, not a routes.json.
+
+  NON-DEGENERACY ASSERTED (independently, not trusted):
+    devices with real positions : 11 / 11
+    devices with rotation_deg   : 11 / 11
+    devices with primitive_cell : 11 / 11
+    nets traced                 : 10 / 10, all "source": "router"  (0 "unmatched")
+    vias recorded               : 23  (matches the GDS/summary)
+    Vin and Vip carry 0 segments by design -- they are 0-terminal external pins that
+    land directly on device gates with no routed metal, identical to pass 1.
+
+  MAP-vs-GDS METAL CHECK (this agent's own boolean test, not verify_shortening.py):
+    153 map segments, total area 125.16 um^2, checked by gdstk boolean against the
+    shipped GDS metal on the SAME layer:
+      uncovered = 0.608 um^2 = 0.486%.  The residual is a 2 nm (0.002 um) sliver
+      along segment edges -- the documented lambda-grid snap, not missing metal.
+    CONTROL: the identical map against the PRE-shortening GDS is 29.01% uncovered.
+    A 0.49% vs 29% split proves the shipped map describes the shipped geometry.
+
+------------------------------------------------------------------------------
+CARRIED FORWARD TO verify-agent
+------------------------------------------------------------------------------
+  1. Use --top routed. The filename says "shortened"; the cell is 'routed'.
+  2. The PEX .subckt PORT ORDER is 'vout Vin Vip VDD VSS' -- NOT pass 1's
+     'vout VDD VSS Vin Vip' and NOT the golden netlist's 'Vip Vin VDD VSS vout'.
+     The VDD/VSS label relocation reordered Magic's port emission. Read the order off
+     the PEX file's own .subckt line before instantiating it positionally.
+  3. Known structural limits, unchanged and NOT deepened by this round: net7 is the
+     bias spine (0 vias, still a chain -- a router limit); net8 is highest-severity
+     (R0 sized to 1/gm2) with only ~1.14 um of measured excess.
+==============================================================================

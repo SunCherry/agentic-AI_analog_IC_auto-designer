@@ -1,0 +1,155 @@
+========================================================================
+LAYOUT REPORT -- test_vco (LC VCO)
+========================================================================
+agent      : layout-fixer   (DRC gate + LVS gate; PEX/simulation NOT run -- verify-agent's step)
+report_dir : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+GDS        : test_vco_fixed.gds        TOP CELL = `routed`
+             *** The top cell is `routed`, NOT `test_vco_fixed`. Renaming the file
+             did not rename the cell. Pass --top routed to every downstream tool;
+             without it Magic creates an empty cell and DRC/PEX a false PASS. ***
+             sha256-identical to routed.gds -- no geometry was changed by this agent.
+PDK        : sky130A   (pdk_config.py; PDK_ROOT=$HOME/pdk/manual)
+
+------------------------------------------------------------------------
+DEVICE COUNT BY KIND   (from physical_map.json)
+------------------------------------------------------------------------
+| kind  | count | instances                                  |
+|-------|-------|--------------------------------------------|
+| nfet  |   6   | XN0 XN1 XN2 XN3 XN4 XN5 (XN4+XN5 share the |
+|       |       | macro current_mirror_XN5_XN4)              |
+| pfet  |   0   | --                                         |
+| cap   |   2   | XC0 XC1 (sky130_fd_pr__cap_mim_m3_1)       |
+| res   |   0   | --                                         |
+| bjt   |   0   | --                                         |
+| ind   |   2   | XL0 XL1 (vco_spiral_ind -- NOT a glayout    |
+|       |       | primitive; see LVS report section C1)      |
+| other |   0   | --                                         |
+| TOTAL |  10   |                                            |
+Plus 2 glayout tie-off dummies (XDUMMY1 w=80, XDUMMY2 w=255) drawn inside the
+generated cells; they are real silicon, extracted by Magic, declared in
+lvs_compare.sp, and are not separate physical_map entries.
+
+------------------------------------------------------------------------
+TOTAL PLACEMENT AREA
+------------------------------------------------------------------------
+Bounding box over physical_map.json `devices`, via
+.claude/reference/generate_grid.py's overall_bbox() (not re-derived):
+    (133.892, 74.416) .. (527.498, 468.022) um
+    393.606 x 393.606 um   ->   AREA = 154925.85 um^2
+Aspect 1.00:1. For reference the GDS top-cell bbox is slightly larger,
+(131.865, 74.415) .. (527.500, 470.280) um = 395.635 x 395.865 um, because it
+includes routing that overhangs the device boxes.
+The two spiral inductors dominate: each is 213.22 x 196.00 um, i.e. ~2 x 41791
+um^2 of the 154926 um^2 total (~54%).
+
+------------------------------------------------------------------------
+DISTINCT GDS LAYERS ACTUALLY DRAWN  (read from the GDS, not the PDK list)
+------------------------------------------------------------------------
+22 distinct layer/datatype pairs in the flattened top cell:
+  64/44 x10      65/20 x2505    66/20 x63      66/44 x5760
+  67/20 x7330    67/44 x1554    68/16 x12      68/20 x1788
+  68/44 x20      69/16 x4       69/20 x65      69/44 x2
+  70/20 x22      70/44 x134     71/20 x174     71/44 x680
+  72/16 x4       72/20 x4       89/44 x2       93/44 x18
+  94/20 x9       95/20 x22
+Label layers: 68/5 x13, 69/5 x6, 71/5 x8, 72/16 x4, 236/0 x10
+  (236/0 = INSTANCE_LABEL_LAYER, extraction-inert.)
+64/44 is glayout's internal pwell glayer; sky130A.tech does not map it and
+Magic drops it with a warning on every read.
+
+*** ROUTER-vs-MAGIC LAYER OFFSET, CONFIRMED ON THIS DESIGN ***
+The top cell's own routed polygons are on 68/20, 69/20, 70/20, 71/20 only --
+there is NO 72/20 in the routing. So the router's glayer names are shifted one
+step from the process layers:
+    router met2 -> met1 (68/20)      router met4 -> met3 (70/20)
+    router met3 -> met2 (69/20)      router met5 -> met4 (71/20)
+routing_summary.txt's "met5, 413.11 um, 0.450 width" is physically met4.
+Real met5 (72/20) appears ONLY inside the inductor cells (the spirals) --
+which is why met5.2's 1.6 um spacing is a coil-to-coil placement concern and
+never a routing concern on this design.
+
+------------------------------------------------------------------------
+DRC -- FINAL STATUS
+------------------------------------------------------------------------
+STATUS          : PASS (CLEAN).  DRC_TOTAL=0, 0 violation rectangles, 0 rules.
+FIX ITERATIONS  : 0  (clean on the first/baseline run; 5/5 of the sub-budget unused)
+BUDGET          : MAX_SUBRETRY = 5, from design_constraints.json key
+                  layout_fix_iterations via .claude/reference/design_constraints.py
+DETAIL          : drc_report.log
+Guarded against the empty-cell false pass (bbox check + flatten) and against a
+dead checker (negative control found an injected met1.2 violation).
+
+------------------------------------------------------------------------
+LVS -- FINAL STATUS
+------------------------------------------------------------------------
+STATUS          : MATCH.  "Netlists match uniquely" / "Circuits match uniquely".
+                  9 devices vs 9, 7 nets vs 7, 6/6 pins equivalent, no property errors.
+ITERATIONS      : 4 attempts (2 reached netgen); 4/5 of the sub-budget consumed.
+COMPARED AGAINST: primitives/lvs_compare.sp .subckt vco_lc (placer-built
+                  comparison netlist, as instructed). The golden netlist was
+                  never used for comparison and never modified.
+DETAIL          : lvs_report.log
+CAVEAT          : the match required a hand-built extraction-only view of the
+                  inductor cell. Magic cannot extract an inductor, and neither
+                  `ignore class` nor `property LEFview true` is sufficient.
+                  Not reproducible unattended. See lvs_report.log section C1/F.
+
+------------------------------------------------------------------------
+PER-ITERATION HISTORY (append-only; both phases)
+------------------------------------------------------------------------
+PHASE 1 -- DRC
+[D-base] routed.gds top=routed, router's knobs as handed off (track_multiplier=1.0,
+         via_cost=10.0, via_pad_penalty=40.0, proximity_radius=2,
+         proximity_weight=0.5, ripup_iters=5).
+         DRC_TOTAL=0, no RULE: lines.  -> CLEAN. No fix attempted, none needed.
+[D-cat]  placement_visualization.gds top=placement_visualization, separate
+         work-dir. DRC_TOTAL=0, and 0 subcell errors.
+         -> nothing inherited, nothing router-introduced that is real.
+[D-flat] flatten -dobox -nolabels routed_flat, re-DRC.
+         SRC_BBOX == FLAT_BBOX == 26373 14883 105500 94056 (non-empty),
+         FLAT_DRC_TOTAL=0, and all 19 via_stack subcell counts vanish.
+         -> the 19 are out-of-context, not violations. Question closed.
+[D-neg]  negative control: injected 0.05 um met1 gap through the same harness
+         -> "Metal1 spacing < 0.14um (met1.2)" x2.
+         -> the zero above is a real zero.
+No geometry change in this phase.
+
+PHASE 2 -- LVS
+[L1] extract routed.gds + ignore class vco_spiral_ind on both circuits.
+     MISMATCH: Magic fused coil ports A/B (equiv "B" "A"), collapsing
+     VDD+voutp+voutn; 4 ports instead of 6; "Top level cell failed pin matching".
+[L2] knob: property LEFview true on the coil before extract all.
+     FAILED SILENTLY -- accepted with no error, coil still extracted, still
+     shorted. Only visible effect: ext2spice now emitted the coil as
+     `Xvco_spiral_ind_0 VDD VDD vco_spiral_ind`, i.e. the short made visible.
+[L3] knob: deleted `equiv "B" "A"` from vco_spiral_ind.ext, added a real node
+     "A", re-ran `ext2spice` alone (it reads .ext from disk without
+     re-extracting -- a useful technique in itself).
+     PARTIAL: voutn recovered (5 ports), voutp still fused, because the PARENT's
+     hierarchical merges had already been written against the merged canonical
+     node. Splitting a child cannot undo the parent's assignment.
+[L4] knob: extraction-only GDS view. Deleted exactly one polygon -- the met5
+     (72/20) spiral of cell vco_spiral_ind -- and re-added a 90,148-98,153 um
+     met5 patch under port B. Kept both met4 landings, all 340 via4, both labels.
+     MATCH, uniquely, with properties compared.
+[L-neg] falsification: XN2 w=60 -> 42 in the schematic copy
+     -> "Property errors were found". So w/l are genuinely compared.
+No geometry change in this phase either: the L4 view is a separate file
+(layout_fixer_work/lvs_attempt_4/routed_lvsview.gds) and is NOT delivered.
+
+------------------------------------------------------------------------
+FINDINGS HANDED UP (not fixed here -- all are source fixes outside this gate)
+------------------------------------------------------------------------
+1. Magic cannot extract an inductor -> the LVS gate for any circuit with a
+   drawn spiral needs a scripted black-box view. Highest priority.
+2. route_nets.py's corridor-clean check false-positives on stacked-plate
+   macros: it predicted extraction shorts on XC0/XC1 that do not exist
+   (both caps verified correctly wired, per plate and per layer).
+3. The placer uses one global min_metal_spacing_um (0.14 um, glayout met2)
+   and does not know met5's 1.6 um. Not triggered on this seed (coil gap
+   1.6065 um) but latent on others.
+4. generate_primitives.py::write_lvs_compare_netlist emits the tie-off dummy
+   block before the LAST `.ends`, which in a multi-.subckt netlist is the last
+   subckt, not the top one -- already hand-repaired upstream, per the header
+   comment in lvs_compare.sp. Worth fixing at source.
+========================================================================

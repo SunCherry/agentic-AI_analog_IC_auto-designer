@@ -1,0 +1,50 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_work_placement/drc.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "placement_visualization".
+Reading "Unnamed_a58330e8".
+Reading "XN0".
+Reading "current_mirror_XN5_XN4".
+Reading "XC1".
+Reading "XN3".
+Reading "vco_spiral_ind".
+Reading "XN1".
+Reading "Unnamed_fe6ee434".
+Reading "Unnamed_9bb2e723".
+Reading "XC0".
+Reading "Unnamed_b1a60056".
+Reading "Unnamed_70e20656".
+Reading "Unnamed_a319e946".
+Reading "Unnamed_c05d91ed".
+Reading "XN2".
+DRC style is now "drc(full)"
+Loading DRC CIF style.
+DRC_TOTAL: 0
+No errors found.
+
+CIF file read warning: CIF style sky130(): units rescaled by factor of 5 / 1
+CIF file read warning: Input off lambda grid by 2/5; snapped to grid.
+Error while reading cell "Unnamed_fe6ee434" (byte position 33112): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_9bb2e723" (byte position 402268): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_70e20656" (byte position 605188): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_a319e946" (byte position 748808): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_c05d91ed" (byte position 892428): Unknown layer/datatype in boundary, layer=64 type=44

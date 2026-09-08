@@ -1,0 +1,142 @@
+========================================================================
+DRC REPORT -- test_vco (LC VCO)
+========================================================================
+agent        : layout-fixer (Step 1 gate)
+report_dir   : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout   (== <design_dir>)
+GDS checked  : routed.gds          top cell = routed   (filename stem != top cell; --top passed on every run)
+delivered as : test_vco_fixed.gds  top cell = routed   (byte-identical copy; renaming a .gds does NOT rename the cell)
+PDK          : sky130A   PDK_ROOT=$HOME/pdk/manual   magicrc=sky130A.magicrc  (via .claude/reference/pdk_config.py)
+tool         : Magic 8.3 rev 610, via .claude/skills/router/script/run_drc.py (validated Tcl, not hand-rolled)
+budget       : MAX_SUBRETRY = 5  (design_constraints.json key layout_fix_iterations,
+               read with .claude/reference/design_constraints.py -- NOT a number I picked)
+durable log  : layout_fixer_work/bookkeeper.log
+
+VERDICT: **PASS -- DRC CLEAN**   errors 0, warnings 3 categories (all non-blocking)
+FIX ITERATIONS USED: 0  (clean on the baseline run; budget untouched, 5/5 remaining)
+
+ERRORS FIRST, THEN WARNINGS -- both sections are non-empty, but only warnings.
+
+------------------------------------------------------------------------
+1. ERRORS BY RULE CATEGORY
+------------------------------------------------------------------------
+| Category   | Rule | Count | Fixable? |
+|------------|------|-------|----------|
+| spacing    | --   |   0   |   n/a    |
+| width      | --   |   0   |   n/a    |
+| enclosure  | --   |   0   |   n/a    |
+| other      | --   |   0   |   n/a    |
+| TOTAL      |      |   0   |          |
+
+`drc list count total` = 0 AND `drc listall why` returned zero RULE: lines --
+both conditions required by the gate, both met. drc_violations.json is the
+empty document {"drc_total": 0, "violations": {}}.
+
+------------------------------------------------------------------------
+2. THE 19 SUBCELL ERRORS -- INVESTIGATED, NOT REAL
+------------------------------------------------------------------------
+`drc listall count` (the per-cell hierarchical count) reports 19 errors that
+`drc listall why` does not see in the expanded top cell:
+
+    via_stack_2e2571cb      x3      via_stack_2e2571cb$1    x3
+    via_stack_2e2571cb$2    x3      via_stack_2e2571cb$3    x3
+    via_stack_918d05dd$2    x3      via_stack_918d05dd$3    x3
+    via_stack_686e5d96$33   x1                      TOTAL  19
+
+layout-agent reported these and asked me to decide whether they are real in
+context. They are NOT, and I did not take that on trust -- I flattened and
+re-checked:
+
+    flatten -dobox -nolabels routed_flat ; load routed_flat ; drc check
+    SRC_BBOX  = 26373 14883 105500 94056  (internal units)
+    FLAT_BBOX = 26373 14883 105500 94056  -- equal and non-empty, so this is
+                not environment.md's "empty-cell false pass"
+    FLAT_DRC_TOTAL = 0
+    FLATCELLCOUNT lines = 0     <-- all 19 disappear once flattened
+
+Diagnosis: classic out-of-context subcell errors. A via_stack cell drawn alone
+is missing the parent's enclosing metal; assembled, the parent completes it.
+Class = none (not a violation). Evidence: layout_fixer_work/drc_flat/flat.log.
+
+------------------------------------------------------------------------
+3. INHERITED vs ROUTER-INTRODUCED (categorization run)
+------------------------------------------------------------------------
+Same DRC re-run on the PRE-ROUTING baseline:
+  placement_visualization.gds  top=placement_visualization
+  work-dir layout_fixer_work/drc_work_placement   (separate dir, so neither run
+  clobbers the other's log)
+  -> DRC_TOTAL = 0, zero rules, and zero subcell errors of any kind.
+
+Both sets empty in the expanded top cell => there is nothing to categorize as
+placement-fixable / routing-fixable / router-defect / intrinsic. The only
+delta between placement and routed is the 19 via_stack subcell counts, which
+are router-introduced (the router creates the via_stack cells) and are shown
+above to be out-of-context, not violations.
+
+------------------------------------------------------------------------
+4. DEVICES / NETS RANKED BY VIOLATION COUNT
+------------------------------------------------------------------------
+Not built out: every count is zero, so both tables would be empty. Ranking
+order for this design, had there been violations, would have been NETS FIRST
+(this is a router hand-off, so any new violation would be net geometry, and a
+device table would read as an accusation against a blameless device).
+
+| Rank | Net | Violation count | Rule categories |   -> (empty, 0 violations)
+| Rank | Device | Violation count | Rule categories | -> (empty, 0 violations)
+
+Pairwise spacing table: empty for the same reason.
+
+------------------------------------------------------------------------
+5. SPECIFIC RISKS FLAGGED BY layout-agent -- RESOLVED
+------------------------------------------------------------------------
+* met5.2 coil-to-coil spacing (1.6 um rule vs the placer's global 0.14 um
+  min_metal_spacing_um). NOT PRESENT in this seed. layout-agent forced a
+  1.6065 um coil gap and that holds. Had it fired it would have been
+  class=placement (the placer's clearance model, not the router).
+  This remains a latent generator bug: the placer still uses one global
+  min_metal_spacing_um and does not know met5's 1.6 um rule, so another seed
+  can reproduce it. Reported to the orchestrator, not fixed here (it is a
+  placer source fix, out of my scope).
+* "DIRTY landing" predictions (voutp on XC0, VDD on XC1): these are
+  connectivity predictions, not DRC. Settled in lvs_report.log -- one was a
+  false alarm, and see that report for the real story.
+
+------------------------------------------------------------------------
+6. MODIFICATIONS APPLIED
+------------------------------------------------------------------------
+NONE. No geometry was changed at any point by this agent, in either gate.
+test_vco_fixed.gds is byte-identical to routed.gds (sha256 verified).
+No re-route was needed, so routes.json / placement_pos.json remain canonical
+and physical_map.json was regenerated from exactly this geometry.
+
+------------------------------------------------------------------------
+7. WARNINGS (non-blocking)
+------------------------------------------------------------------------
+* 5 x "Unknown layer/datatype in boundary, layer=64 type=44" on GDS read
+  (cells Unnamed_4ab843b8/b74db7d7/b8d8d2c8/e30dc562/c2c574c1). Expected:
+  glayout's internal pwell glayer, which sky130A.tech does not map. Magic
+  drops it. Counted, not transcribed.
+* 0 x "off lambda grid ... snapped to grid". Nothing was snapped, so no
+  spacing result here is an artefact of Magic's internal grid.
+* 19 out-of-context via_stack subcell counts -- section 2.
+* Magic "RLIMIT_NOFILE above 1024" startup notice -- environment, not layout.
+
+------------------------------------------------------------------------
+8. TRUST CHECK ON THE ZERO (why this PASS is not a false pass)
+------------------------------------------------------------------------
+A DRC of 0 is worthless if the checker is dead, so it was falsified:
+  injected a cell with a 0.05 um met1 gap and a 0.05 um met1 sliver, ran the
+  SAME run_drc.py harness -> reported "Metal1 spacing < 0.14um (met1.2)" x2
+  with coordinates. The harness reports real violations, so the 0 above is a
+  real 0. (It did NOT flag the 0.05 um-wide sliver as a width error, which is
+  worth knowing: this harness is demonstrated sensitive to spacing, only
+  assumed sensitive to width.)
+Plus the bbox guard in section 2, which rules out all three empty-cell false
+passes documented in .claude/reference/environment.md.
+
+------------------------------------------------------------------------
+9. TOOL-COMPLETION BUDGET
+------------------------------------------------------------------------
+Budget used: 5 min wall per Magic call (baseline for a ~10-device design at
+this polygon count). Actual: 1.2 s (routed), 1.1 s (placement), 1.1 s (flat).
+Exceptions: none. Non-zero exits: none. Tool retries used: 0 of 3.
+========================================================================

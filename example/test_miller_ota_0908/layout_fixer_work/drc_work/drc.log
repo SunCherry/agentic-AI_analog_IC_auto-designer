@@ -1,0 +1,69 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout_fixer_work/drc_work/drc.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "routed".
+Reading "R0".
+Reading "via_stack_686e5d96$67".
+Reading "XC0".
+Reading "Unnamed_fb441e19".
+Reading "XMN3".
+Reading "XMP4".
+Reading "XMP3".
+Reading "Unnamed_23a0d124".
+Reading "via_stack_ea9c5ac0".
+Reading "via_stack_627eccf4$2".
+Reading "via_stack_f018e2c2".
+Reading "via_stack_2e2571cb".
+Reading "via_stack_f018e2c2$3".
+Reading "diff_pair_XMN1_XMN2".
+Reading "Unnamed_fd2fdf59".
+Reading "current_mirror_XMP1_XMP2".
+Reading "Unnamed_aeefb555".
+Reading "Unnamed_09165038".
+Reading "via_stack_f018e2c2$1".
+Reading "XMN4".
+Reading "Unnamed_485c261d".
+Reading "via_stack_686e5d96$66".
+Reading "via_stack_f018e2c2$4".
+Reading "Unnamed_4641b33a".
+Reading "via_stack_f22233e3$1".
+Reading "via_stack_627eccf4$3".
+Reading "via_stack_f22233e3".
+Reading "via_stack_18d6ab16$2".
+Reading "Unnamed_60ff7c9a".
+Reading "via_stack_686e5d96$68".
+Reading "via_stack_f018e2c2$2".
+Reading "Unnamed_1794b227".
+Reading "XMN5".
+DRC style is now "drc(full)"
+Loading DRC CIF style.
+DRC_TOTAL: 0
+CELLCOUNT: via_stack_686e5d96$67 1
+CELLCOUNT: via_stack_2e2571cb 3
+CELLCOUNT: via_stack_686e5d96$66 1
+CELLCOUNT: via_stack_686e5d96$68 1
+No errors found.
+
+Error while reading cell "Unnamed_fb441e19" (byte position 13794): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_23a0d124" (byte position 791158): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_485c261d" (byte position 1325690): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_1794b227" (byte position 2040968): Unknown layer/datatype in boundary, layer=64 type=44

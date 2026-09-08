@@ -1,0 +1,855 @@
+{
+  "design": "two_stage_rz_final_shaped_flat",
+  "netlist": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/two_stage_rz_final_shaped_flat.sp",
+  "macros": [
+    {
+      "name": "current_mirror_XMP1_XMP2",
+      "kind": "current_mirror",
+      "devices": [
+        "XMP1",
+        "XMP2"
+      ],
+      "generation": "auto",
+      "constraints": {
+        "centroid_match": true
+      },
+      "reference_device": "XMP1",
+      "glayout_call": "current_mirror(pdk, mirror_ratio=[1], device='pfet', width=3.6, length=0.4, fingers=4, substrate_tap=True, dummy=True)  # cells/blocks/current_mirror.py",
+      "subckt_instance": null,
+      "w": 13.28,
+      "h": 9.46,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/modules/current_mirror_XMP1_XMP2.gds",
+      "ports": {
+        "net4": [
+          {
+            "x": -2.3,
+            "y": 4.73,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "drain_ref"
+          },
+          {
+            "x": -2.3,
+            "y": 4.73,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "drain_ref"
+          }
+        ],
+        "VDD": [
+          {
+            "x": 0.39,
+            "y": -4.73,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "source_ref"
+          },
+          {
+            "x": 4.4,
+            "y": -4.73,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "source_out1"
+          },
+          {
+            "x": -6.05,
+            "y": -4.345,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 6.05,
+            "y": 0.0,
+            "layer": "met1",
+            "width": 8.28,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -6.46,
+            "y": 0.0,
+            "layer": "met1",
+            "width": 8.28,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -6.05,
+            "y": 4.345,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -6.255,
+            "y": 4.14,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 0.0,
+            "y": 4.55,
+            "layer": "met1",
+            "width": 12.1,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 0.0,
+            "y": -4.14,
+            "layer": "met1",
+            "width": 12.1,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 6.255,
+            "y": 4.14,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 6.05,
+            "y": 4.345,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 6.46,
+            "y": 0.0,
+            "layer": "met1",
+            "width": 8.28,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -6.05,
+            "y": 0.0,
+            "layer": "met1",
+            "width": 8.28,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 6.05,
+            "y": -4.345,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 6.255,
+            "y": -4.14,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 0.0,
+            "y": 4.14,
+            "layer": "met1",
+            "width": 12.1,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 0.0,
+            "y": -4.55,
+            "layer": "met1",
+            "width": 12.1,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -6.255,
+            "y": -4.14,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          }
+        ],
+        "net5": [
+          {
+            "x": 1.71,
+            "y": 4.73,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "drain_out1"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        -1.05,
+        0.04
+      ]
+    },
+    {
+      "name": "diff_pair_XMN1_XMN2",
+      "kind": "differential_pair",
+      "devices": [
+        "XMN1",
+        "XMN2"
+      ],
+      "generation": "auto",
+      "constraints": {
+        "symmetry": true,
+        "self_symmetric": true
+      },
+      "glayout_call": "diff_pair(pdk, width=7.27273, fingers=22, length=0.3, n_or_p_fet=True, dummy=True)  # cells/blocks/diff_pair.py",
+      "subckt_instance": null,
+      "w": 38.68,
+      "h": 25.39,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/modules/diff_pair_XMN1_XMN2.gds",
+      "ports": {
+        "Vin": [
+          {
+            "x": 19.125,
+            "y": -1.87,
+            "layer": "met3",
+            "width": 0.33,
+            "pin": "gate_a"
+          },
+          {
+            "x": -18.555,
+            "y": 0.47,
+            "layer": "met3",
+            "width": 0.33,
+            "pin": "gate_a"
+          }
+        ],
+        "Vip": [
+          {
+            "x": 18.555,
+            "y": 12.695,
+            "layer": "met3",
+            "width": 0.33,
+            "pin": "gate_b"
+          },
+          {
+            "x": -19.125,
+            "y": 12.695,
+            "layer": "met3",
+            "width": 0.33,
+            "pin": "gate_b"
+          }
+        ],
+        "net4": [
+          {
+            "x": -17.865,
+            "y": -12.695,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "drain_a"
+          }
+        ],
+        "net5": [
+          {
+            "x": 17.865,
+            "y": -12.125,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "drain_b"
+          }
+        ],
+        "net3": [
+          {
+            "x": 16.875,
+            "y": -12.695,
+            "layer": "met3",
+            "width": 0.29,
+            "pin": "source_tail"
+          }
+        ],
+        "VSS": [
+          {
+            "x": -17.66,
+            "y": -12.09,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -18.07,
+            "y": -0.435,
+            "layer": "met1",
+            "width": 22.9,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -17.66,
+            "y": 11.22,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -17.865,
+            "y": 11.015,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 0.0,
+            "y": 11.425,
+            "layer": "met1",
+            "width": 35.32,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 0.0,
+            "y": -11.885,
+            "layer": "met1",
+            "width": 35.32,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 17.865,
+            "y": 11.015,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 17.66,
+            "y": 11.22,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 18.07,
+            "y": -0.435,
+            "layer": "met1",
+            "width": 22.9,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 17.66,
+            "y": -12.09,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 17.865,
+            "y": -11.885,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          },
+          {
+            "x": 0.0,
+            "y": -12.295,
+            "layer": "met1",
+            "width": 35.32,
+            "pin": "tap_ring"
+          },
+          {
+            "x": -17.865,
+            "y": -11.885,
+            "layer": "met1",
+            "width": 0.41,
+            "pin": "tap_ring"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        0.0,
+        0.435
+      ]
+    },
+    {
+      "name": "R0",
+      "kind": "single_res",
+      "devices": [
+        "R0"
+      ],
+      "generation": "auto",
+      "constraints": {},
+      "glayout_call": null,
+      "topology_hint": "rc_compensation_network",
+      "w": 2.0,
+      "h": 62.8,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/R0.gds",
+      "ports": {
+        "net5": [
+          {
+            "x": 0.0,
+            "y": -31.2,
+            "layer": "met1",
+            "width": 0.33,
+            "pin": "p"
+          }
+        ],
+        "net8": [
+          {
+            "x": 0.0,
+            "y": 31.2,
+            "layer": "met1",
+            "width": 0.33,
+            "pin": "n"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "XC0",
+      "kind": "single_cap",
+      "devices": [
+        "XC0"
+      ],
+      "generation": "auto",
+      "constraints": {},
+      "glayout_call": null,
+      "topology_hint": "rc_compensation_network",
+      "w": 40.54,
+      "h": 36.28,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/XC0.gds",
+      "ports": {
+        "net8": [
+          {
+            "x": 20.27,
+            "y": 0.0,
+            "layer": "met5",
+            "width": 2.0,
+            "pin": "top_met"
+          }
+        ],
+        "vout": [
+          {
+            "x": -20.27,
+            "y": 0.0,
+            "layer": "met4",
+            "width": 2.0,
+            "pin": "bottom_met"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        -0.07,
+        0.0
+      ],
+      "keepout_um": 1.2
+    },
+    {
+      "name": "XMN4",
+      "kind": "single_nfet",
+      "devices": [
+        "XMN4"
+      ],
+      "generation": "auto",
+      "constraints": {},
+      "glayout_call": null,
+      "topology_hint": "current_mirror",
+      "w": 38.62,
+      "h": 12.17,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/XMN4.gds",
+      "ports": {
+        "net7": [
+          {
+            "x": 19.31,
+            "y": -3.765,
+            "layer": "met2",
+            "width": 0.33,
+            "pin": "gate"
+          },
+          {
+            "x": -19.31,
+            "y": 3.81,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "drain"
+          }
+        ],
+        "VSS": [
+          {
+            "x": 19.31,
+            "y": 3.38,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "source"
+          },
+          {
+            "x": 0.0,
+            "y": -6.085,
+            "layer": "met3",
+            "width": 0.32999999999999996,
+            "pin": "bulk"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "XMP3",
+      "kind": "single_pfet",
+      "devices": [
+        "XMP3"
+      ],
+      "generation": "auto",
+      "constraints": {},
+      "glayout_call": null,
+      "topology_hint": "common_source_stage",
+      "w": 19.07,
+      "h": 12.78,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/XMP3.gds",
+      "ports": {
+        "net5": [
+          {
+            "x": 9.535,
+            "y": -4.155,
+            "layer": "met2",
+            "width": 0.33,
+            "pin": "gate"
+          }
+        ],
+        "vout": [
+          {
+            "x": -9.535,
+            "y": 4.195,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "drain"
+          }
+        ],
+        "VDD": [
+          {
+            "x": 9.535,
+            "y": 3.765,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "source"
+          },
+          {
+            "x": 0.0,
+            "y": -6.39,
+            "layer": "met3",
+            "width": 0.32999999999999996,
+            "pin": "bulk"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "XMN3",
+      "kind": "single_nfet",
+      "devices": [
+        "XMN3"
+      ],
+      "generation": "auto",
+      "constraints": {},
+      "glayout_call": null,
+      "topology_hint": "current_mirror",
+      "w": 25.04,
+      "h": 12.17,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/XMN3.gds",
+      "ports": {
+        "net7": [
+          {
+            "x": 12.52,
+            "y": -3.765,
+            "layer": "met2",
+            "width": 0.33,
+            "pin": "gate"
+          }
+        ],
+        "net3": [
+          {
+            "x": -12.52,
+            "y": 3.81,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "drain"
+          }
+        ],
+        "VSS": [
+          {
+            "x": 12.52,
+            "y": 3.38,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "source"
+          },
+          {
+            "x": 0.0,
+            "y": -6.085,
+            "layer": "met3",
+            "width": 0.32999999999999996,
+            "pin": "bulk"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "XMN5",
+      "kind": "single_nfet",
+      "devices": [
+        "XMN5"
+      ],
+      "generation": "auto",
+      "constraints": {},
+      "glayout_call": null,
+      "topology_hint": "current_mirror",
+      "w": 45.56,
+      "h": 12.17,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/XMN5.gds",
+      "ports": {
+        "net7": [
+          {
+            "x": 22.78,
+            "y": -3.765,
+            "layer": "met2",
+            "width": 0.33,
+            "pin": "gate"
+          }
+        ],
+        "vout": [
+          {
+            "x": -22.78,
+            "y": 3.81,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "drain"
+          }
+        ],
+        "VSS": [
+          {
+            "x": 22.78,
+            "y": 3.38,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "source"
+          },
+          {
+            "x": 0.0,
+            "y": -6.085,
+            "layer": "met3",
+            "width": 0.32999999999999996,
+            "pin": "bulk"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "XMP4",
+      "kind": "single_pfet",
+      "devices": [
+        "XMP4"
+      ],
+      "generation": "auto",
+      "constraints": {},
+      "glayout_call": null,
+      "topology_hint": "self_biased_reference",
+      "w": 5.46,
+      "h": 7.51,
+      "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/XMP4.gds",
+      "ports": {
+        "net7": [
+          {
+            "x": 2.73,
+            "y": -1.515,
+            "layer": "met2",
+            "width": 0.33,
+            "pin": "gate"
+          },
+          {
+            "x": -2.73,
+            "y": 1.56,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "drain"
+          }
+        ],
+        "VDD": [
+          {
+            "x": 2.73,
+            "y": 1.13,
+            "layer": "met2",
+            "width": 0.29,
+            "pin": "source"
+          },
+          {
+            "x": 0.0,
+            "y": -3.755,
+            "layer": "met3",
+            "width": 0.32999999999999996,
+            "pin": "bulk"
+          }
+        ]
+      },
+      "bbox_center_offset": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "primitives_dir": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives",
+  "modules_dir": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/modules",
+  "device_index": {
+    "XMP1": {
+      "drain": "net4",
+      "gate": "net4",
+      "source": "VDD",
+      "bulk": "VDD",
+      "kind": "pfet",
+      "macro": "current_mirror_XMP1_XMP2"
+    },
+    "XMP2": {
+      "drain": "net5",
+      "gate": "net4",
+      "source": "VDD",
+      "bulk": "VDD",
+      "kind": "pfet",
+      "macro": "current_mirror_XMP1_XMP2"
+    },
+    "XMN1": {
+      "drain": "net4",
+      "gate": "Vin",
+      "source": "net3",
+      "bulk": "VSS",
+      "kind": "nfet",
+      "macro": "diff_pair_XMN1_XMN2"
+    },
+    "XMN2": {
+      "drain": "net5",
+      "gate": "Vip",
+      "source": "net3",
+      "bulk": "VSS",
+      "kind": "nfet",
+      "macro": "diff_pair_XMN1_XMN2"
+    },
+    "XMN3": {
+      "drain": "net3",
+      "gate": "net7",
+      "source": "VSS",
+      "bulk": "VSS",
+      "kind": "nfet",
+      "macro": "XMN3"
+    },
+    "XMN4": {
+      "drain": "net7",
+      "gate": "net7",
+      "source": "VSS",
+      "bulk": "VSS",
+      "kind": "nfet",
+      "macro": "XMN4"
+    },
+    "XMP3": {
+      "drain": "vout",
+      "gate": "net5",
+      "source": "VDD",
+      "bulk": "VDD",
+      "kind": "pfet",
+      "macro": "XMP3"
+    },
+    "XMN5": {
+      "drain": "vout",
+      "gate": "net7",
+      "source": "VSS",
+      "bulk": "VSS",
+      "kind": "nfet",
+      "macro": "XMN5"
+    },
+    "R0": {
+      "drain": "net5",
+      "gate": null,
+      "source": "net8",
+      "bulk": null,
+      "kind": "res",
+      "macro": "R0"
+    },
+    "XC0": {
+      "drain": "net8",
+      "gate": null,
+      "source": "vout",
+      "bulk": null,
+      "kind": "cap",
+      "macro": "XC0"
+    },
+    "XMP4": {
+      "drain": "net7",
+      "gate": "net7",
+      "source": "VDD",
+      "bulk": "VDD",
+      "kind": "pfet",
+      "macro": "XMP4"
+    }
+  },
+  "manual_composition": [
+    {
+      "topology": "current_mirror",
+      "devices": [
+        "XMN4",
+        "XMN3",
+        "XMN5"
+      ],
+      "detail": "every leg has a fractional ratio to reference XMN4 (XMN3=0.400x, XMN5=1.200x) -- mirror_ratio takes integer reference units only, so no part of this mirror is composable; all 3 devices drawn standalone at their netlist widths",
+      "doc": "circuit-specific/current-mirror/current-mirror-layout.md"
+    },
+    {
+      "topology": "common_source_stage",
+      "devices": [
+        "XMP3"
+      ],
+      "detail": "circuit_decomposition.yaml pattern common_source_stage (confidence: certain) -- manual Structure test on the detector's `unclassified`: signal on the gate (net5 is stage-1's output, not a bias net), source on the VDD rail, drain at the high-impedance output `vout` loaded by a current source (XMN5).",
+      "doc": "../../circuit-decomposition/pattern-table.md"
+    },
+    {
+      "topology": "self_biased_reference",
+      "devices": [
+        "XMP4",
+        "XMN4"
+      ],
+      "detail": "circuit_decomposition.yaml pattern self_biased_reference (confidence: certain) -- manual Structure test: diode-connected pfet XMP4 (g==d==net7, s=VDD) in series with diode-connected nfet XMN4 (g==d==net7, s=VSS) between the rails, drains tied at net7; no external Ibias source exists anywhere in the netlist. net7 gates the whole nfet mirror family.",
+      "doc": "../../circuit-decomposition/pattern-table.md"
+    },
+    {
+      "topology": "rc_compensation_network",
+      "devices": [
+        "R0",
+        "XC0"
+      ],
+      "detail": "circuit_decomposition.yaml pattern rc_compensation_network (confidence: certain) -- manual Structure test (invisible to the detector -- both devices passive, parse_devices() returns MOS/BJT only): XC0 bridges net8..vout and R0 bridges net5..net8, so the series R+C spans net5 (stage-1 output / stage-2 input, high-Z gain node) to vout (stage-2 output gain node) -- two consecutive gain-stage outputs. Confirmed by the scan's `[net net8] R0, XC0 -> test rc_compensation_network` clique.",
+      "doc": "../../circuit-decomposition/pattern-table.md"
+    }
+  ],
+  "supply_rail_names": [
+    "avdd",
+    "avss",
+    "dvdd",
+    "dvss",
+    "gnd",
+    "vbulk",
+    "vcc",
+    "vdd",
+    "vee",
+    "vnb",
+    "vpb",
+    "vss"
+  ],
+  "top_pins": [
+    "Vip",
+    "Vin",
+    "VDD",
+    "VSS",
+    "vout"
+  ],
+  "min_metal_spacing_um": 0.14,
+  "min_metal_spacing_layer": "met2"
+}

@@ -1,0 +1,7 @@
+{
+  "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/placement_visualization.gds",
+  "top_cell": "placement_visualization",
+  "units": "um",
+  "drc_total": 0,
+  "violations": {}
+}

@@ -1,0 +1,167 @@
+--- attempt 1   2026-09-08T16:05:00
+gds    : designs/test_miller_ota_0908/layout/routed.gds   top=routed
+knobs  : baseline (router defaults: track_multiplier=1.0 via_pad_penalty=40 proximity_radius=2 proximity_weight=0.5 via_cost=10)
+total  : DRC_TOTAL=2  rects=3  rules=1   DIRTY
+rule   : Metal2 spacing < 0.14um (met2.2)  x3  class=TBD (pending attribution)
+  box  : [-401.63, -191.135, -401.57, -191.12]   net=? inst=? src=pending
+  box  : [-401.77, -190.995, -401.57, -190.98]   net=? inst=? src=pending
+  box  : [-401.77, -190.995, -401.63, -190.98]   net=? inst=? src=pending
+delta  : baseline
+flags  : out-of-context via_stack subcell counts (via_stack_2e2571cb=3, via_stack_686e5d96$66..69=1 each) - nothing in expanded top cell, per run_drc.py reading rule; layer 64/44 GDS-read warnings x N (expected, glayout pwell glayer)
+
+--- categorization run (baseline, does NOT count against budget)
+gds    : designs/test_miller_ota_0908/layout/placement_visualization.gds   top=placement_visualization
+work   : layout_fixer_work/drc_work_placement
+total  : DRC_TOTAL=0  rects=0  rules=0   CLEAN
+verdict: pre-routing placement is DRC-clean => 100% of the met2.2 violations are ROUTER-INTRODUCED, none inherited.
+
+--- attribution of attempt 1 (completed before deciding a lever)
+rule   : Metal2 spacing < 0.14um (met2.2)  x3  class=routing-fixable (quantized near-miss)
+  box  : [-401.63, -191.135, -401.57, -191.12]   net=VSS  inst=XMN5 (bottom edge y0=-190.892)  src=routes.json VSS #24/#25/#44
+  box  : [-401.77, -190.995, -401.57, -190.98]   net=VSS  inst=XMN5  src=routes.json VSS #44 (port-landing stub)
+  box  : [-401.77, -190.995, -401.63, -190.98]   net=VSS  inst=XMN5  src=routes.json VSS #25 (met3<->met2 via pad)
+mech   : SAME-NET notch, not a net-to-net conflict. XMN5's VSS port sits at y=-190.8923,
+         off-grid at fractional row 40.545 (pitch 0.72, y0=-220.0849). Landing stub #44
+         bottom edge = port-0.105 = -190.9973; via #25 sits one row DOWN at row 40
+         (y=-191.2849), its met3 pad top = -191.2849+0.165 = -191.1199.
+         gap = 0.1227um < 0.14um. The 0.21-wide connecting wire #24 spans only
+         x[-401.572,-401.362], so x[-401.630,-401.572] is left open as a 0.058x0.123 notch.
+keepout: checked FIRST against primitives/manifest.json -- only XC0 declares one
+         (keepout_um=1.2); XC0 box x[-439.09,-402.81] y[-175.91,-135.37] is ~15um away.
+         NOT a keepout breach, so not a router-defect on that ground.
+lever  : track-multiplier ONLY. route_nets.py CongestionMap.penalty() skips a net's own
+         metal ("Its own metal is free"), so shared_cell_penalty / via_pad_penalty /
+         proximity_* are structurally BLIND to a same-net notch. Confirmed empirically:
+         via-cost 5/20, via-pad-penalty 200, proximity r3 w2.0, wrong-direction 3.0,
+         over-macro 0.8, ripup-iters 12, shared-cell 1000 ALL left gaps=1 unchanged.
+
+--- attempt 2   2026-09-08T16:20:00
+gds    : layout_fixer_work/sweep/routed_tm1.04.gds   top=routed
+knobs  : --track-multiplier 1.0 -> 1.04  (pitch 0.7200 -> 0.7488um). Sole change.
+         Chosen from a screened sweep {1.02,1.04,1.05,1.06,1.08,1.10,1.12,1.15,1.20,1.25,1.30,1.50}
+         as the screen-clean point with the least perturbation of the two protected nets.
+total  : DRC_TOTAL=0  rects=0  rules=0   CLEAN
+rule   : (none)
+delta  : 3 -> 0 rects vs attempt 1   better
+guard  : bbox (-439.095,-206.710)..(-344.345,-130.015), 38125 polys, 48 cells -- non-empty,
+         so the 0 is a real clean, not the empty-cell false pass.
+flags  : out-of-context via_stack counts unchanged (via_stack_2e2571cb=3,
+         via_stack_686e5d96$66..69=1 each); `drc listall why` reports 0 rules in the
+         expanded top cell. Layer 64/44 GDS-read warnings x4 (expected).
+protect: net7 104.17 -> 104.68um (+0.51, 0 vias both);  net8 50.12 -> 50.25um (+0.13, 4 vias
+         both, width 0.21 unchanged).  net5 123.17 -> 120.96 (better), net4 20.77 -> 20.92.
+         total vias 30 -> 27. congestion PASS, path-on-path shorts 0.
+
+--- DRC GATE CLOSED after attempt 2 (1 fix cycle of 5 budget)
+final  : layout/test_miller_ota_0908_fixed.gds  top=routed  (md5 2fafcc17fe4935de329b2baaa4fee2fe,
+         byte-identical to the DRC'd layout_fixer_work/sweep/routed_tm1.04.gds)
+promoted: sweep/routes_tm1.04.json  -> layout/routes.json      (baseline kept as routes_prefix_baseline.json)
+          sweep/summary_tm1.04.txt  -> layout/routing_summary.txt (baseline kept as routing_summary_prefix_baseline.txt)
+          physical_map.json regenerated FROM THIS geometry (baseline kept as physical_map_prefix_baseline.json)
+
+--- LVS attempt 1   2026-09-08T16:01:00
+gds    : layout/test_miller_ota_0908_fixed.gds   top=routed
+golden : layout/primitives/lvs_compare.spice  subckt=two_stage_rz  (NOT the frozen .sp)
+flow   : gds read -> load routed -> select top cell -> port makeall -> extract path . ->
+         extract all -> ext2spice lvs -> ext2spice -o routed_extracted.spice; then
+         netgen -batch lvs "routed_extracted.spice routed" "lvs_compare.spice two_stage_rz"
+         $PDK/libs.tech/netgen/sky130A_setup.tcl lvs1.out
+artifacts: layout_fixer_work/lvs_attempt_1/{extract.tcl,extract.log,routed_extracted.spice,lvs1.out,netgen1.log}
+guard  : SRC_BBOX -87819 -41342 -68869 -26003 (x0.005 = -439.095,-206.710..-344.345,-130.015)
+         -- matches the source GDS, so extraction ran on real geometry, not an empty cell.
+result : MATCH -- "Final result: Circuits match uniquely."
+         devices 13/13, nets 10/10, pins 5/5 (Vip Vin vout VDD VSS, equivalent)
+         nfet 200->6 vs 7->6, pfet 28->5 vs 5, cap 1 vs 1, res 1 vs 1
+         217 parallel devices merged layout-side, 1 schematic-side.
+shorts : the two router-predicted extraction shorts did NOT occur. VSS on
+         diff_pair_XMN1_XMN2 (tap_ring) and net8 on XC0 (top_met) both extracted as
+         distinct nets; a short would have given 9 nets vs 10 and blocked a unique match.
+R-vs-X : pre-empted. R0 carries the R prefix on both sides; no dummy_/proxy nets in the
+         report. Did not fire, no iterations lost to it.
+geom   : NO geometry change during LVS, so no DRC re-run was owed (2.6 not triggered).
+--- LVS GATE CLOSED after attempt 1 (1 of 5 budget)
+
+==============================================================================
+PASS 2 -- RE-GATE after route-optimizer (geometry changed; pass-1 verdict void)
+Budget: layout_fix_iterations=5 per gate, from
+  `python .claude/reference/design_constraints.py designs/test_miller_ota_0908 --key layout_fix_iterations`
+Not overwriting pass-1 evidence: reports go to *_shortened.log, LVS artifacts to
+  layout_fixer_work/lvs_shortened_attempt_<n>/. Only the drc_work scratch is reused.
+==============================================================================
+
+--- attempt 1 (pass 2)   2026-09-08T16:20:00
+gds    : designs/test_miller_ota_0908/layout/shortening/test_miller_ota_0908_fixed_shortened.gds   top=routed
+knobs  : baseline for this pass -- geometry as route-optimizer emitted it.
+         vs pass-1 final: wirelength 703.86 -> 545.75um (-22.5%), vias 27 -> 23, corners 55 -> 44.
+         Changed nets: VSS (131.27->28.36, 7->4 via), VDD (131.88->85.07, 8->7 via),
+         net3 (79.54->71.15). vout rebuilt then self-reverted by the optimizer (new DRC
+         violation on its rebuilt metal). net4/net5/net7/net8 excluded, byte-identical.
+total  : DRC_TOTAL=0  rects=0  rules=0   CLEAN
+rule   : (none) -- `drc listall why` reports 0 distinct violated rules, 0 instances
+delta  : 0 -> 0 rects vs pass-1 final attempt 2   same (still clean)
+guard  : Magic SRC_BBOX -87819 -41174 -68869 -26115 (x0.005 = -439.095,-205.870 ..
+         -344.345,-130.575) == gdstk bbox of the same file; 34 cells, 38084 flat polys,
+         21 distinct layer/datatype pairs (identical layer SET to the pre-shortening GDS,
+         38125 polys). Non-empty and matched => the 0 is real, not the empty-cell false pass.
+categ  : no violations to categorize (inherited-vs-introduced not applicable). The
+         pre-routing placement_visualization.gds baseline was already recorded CLEAN in
+         pass 1, so a re-run would add nothing; not repeated.
+flags  : out-of-context via_stack subcell counts (via_stack_2e2571cb=3,
+         via_stack_686e5d96$66/$67/$68=1 each; 6 total, was 7 in pass 1 -- one fewer
+         via_stack instance, consistent with 27->23 vias). Nothing in the expanded top
+         cell, so out-of-context per run_drc.py's reading rule, not real.
+         Layer 64/44 GDS-read warnings x4 (expected, glayout pwell glayer).
+runtime: 1.6 s wall (budget 5 min; no retry needed, no exception)
+
+--- DRC GATE CLOSED (pass 2) after attempt 1 -- 0 fix cycles of 5 budget consumed
+
+--- LVS attempt 1 (pass 2)   2026-09-08T16:25:00
+gds    : layout/shortening/test_miller_ota_0908_fixed_shortened.gds   top=routed
+golden : layout/primitives/lvs_compare.spice  subckt=two_stage_rz  (NOT the frozen .sp;
+         it folds w->w*m, normalizes nf/m to 1, and declares the 3 merged tie-off dummies)
+flow   : environment.md "Magic Extraction + netgen LVS" verbatim -- gds read -> load routed ->
+         select top cell -> port makeall -> extract path . -> extract all -> ext2spice lvs ->
+         ext2spice -o routed_extracted.spice; then netgen -batch lvs
+         "routed_extracted.spice routed" "lvs_compare.spice two_stage_rz"
+         $PDK/libs.tech/netgen/sky130A_setup.tcl lvs1.out
+artifacts: layout_fixer_work/lvs_shortened_attempt_1/{extract.tcl,extract.log,
+         routed_extracted.spice,lvs_compare.spice,lvs1.out,netgen1.log}
+         (pass-1's lvs_attempt_1/ left untouched -- it is the fallback's evidence)
+guard  : SRC_BBOX -87819 -41174 -68869 -26115 (= -439.095,-205.870..-344.345,-130.575),
+         which is the SHORTENED bbox and differs from pass-1's -41342/-26003 => extraction
+         demonstrably ran on the shortened geometry, and on real geometry not an empty cell.
+result : MATCH -- "Final result: Circuits match uniquely."
+         devices 13/13, nets 10/10, pins 5/5 (Vip Vin vout VDD VSS, "Cell pin lists are equivalent")
+         nfet 200->6 vs 7->6, pfet 28->5 vs 5, cap 1 vs 1, res 1 vs 1
+         217 parallel devices merged layout-side, 1 schematic-side. Identical census to pass 1.
+props  : zero property mismatches in netgen1.log (no "mismatch"/"differ"/"failed" lines).
+         Only informational "No property <sa|sb|sd|nf|mult|perim|nrs|topography> found" lines,
+         which netgen's sky130 setup emits by design.
+bulk   : the VSS/VDD tie-ring relaxation caused NO LVS trouble. VSS and VDD each still extract
+         as ONE net; net count is 10 on both sides, so no ring split (would show as 11+ nets)
+         and no ring merge/short (would show as 9 and block a unique match). The relaxation
+         moved landings onto rings the nets were already part of, so it is invisible to LVS
+         by construction -- confirmed, not assumed.
+R-vs-X : did not fire, as expected. Extracted netlist element-prefix census = 1 R + 247 X;
+         the single R is `R0 a_n200_6200# a_n200_n6280# sky130_fd_pr__res_generic_po w=2 l=62`,
+         R-prefixed on both sides. Zero dummy_/proxy nets in lvs1.out. 0 iterations lost.
+delta  : extracted netlist vs pass 1 differs on exactly ONE line -- the top .subckt port ORDER
+         (pass1 `vout VDD VSS Vin Vip` -> pass2 `vout Vin Vip VDD VSS`), a consequence of the
+         optimizer relocating the VDD and VSS met3 labels. All 247 device lines byte-identical.
+         netgen matches pins by NAME, so this does not affect LVS -- but it DOES affect any
+         testbench that instantiates the PEX subckt positionally (environment.md's PEX note).
+         FLAGGED TO verify-agent.
+geom   : NO geometry change during LVS => no DRC re-run owed (2.6 not triggered).
+runtime: extraction 2.4 s, netgen 0.05 s (budget 5 min each; no retry, no exception)
+--- LVS GATE CLOSED (pass 2) after attempt 1 -- 0 fix cycles of 5 budget consumed
+
+--- RE-GATE VERDICT (pass 2): BOTH GATES PASS on the SHORTENED layout.
+ships  : layout/shortening/test_miller_ota_0908_fixed_shortened.gds  top=routed
+         map layout/shortening/physical_map.json (route-optimizer's own, built from the FINAL
+         geometry; 99.51% of its 153 segments covered by the shipped GDS metal, residual is a
+         2 nm lambda-grid snap on segment edges. Control: the same map is only 71.0% covered by
+         the PRE-shortening GDS, proving it is not stale.)
+map    : did NOT re-run physical_map_from_placement.py. That bridge reads the canonical
+         layout/routes.json, which is still the PRE-shortening routing, so it would have
+         produced a map describing wiring that no longer exists -- the stale-map failure mode.
+fallback: NOT taken. layout/test_miller_ota_0908_fixed.gds remains intact and unmodified.

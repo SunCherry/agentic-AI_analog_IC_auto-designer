@@ -1,0 +1,68 @@
+==============================================================================
+shaping_report.log -- device-shaper
+netlist : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/sizing/two_stage_rz_final.sp
+PDK     : sky130A
+==============================================================================
+
+THE FOUR PRINCIPLES, applied in this order
+  1 unit device      every member of a tie group is one device repeated
+  2 maximal unit     as big as the PDK's widest model bin allows
+  3 square device    one copy as tall as it is wide
+  4 square array     the copies tile into a square block
+  constraint         total width w*m preserved; residual bounded by --max-total-error 2.000% and reported below
+
+PROCESS GEOMETRY (one copy = nf gate columns + nf+1 source/drain columns)
+  source              glayout get_grule() on sky130_mapped
+  sd_column           0.3300 um
+  poly_extension      0.1300 um
+  min finger width    1.000 um (floor on w_unit/nf)
+  height = w_unit/nf + 2*poly_extension
+  width  = nf*l + (nf+1)*sd_column
+
+------------------------------------------------------------------------------
+tg1_current_mirror  [current_mirror]  ['XMN4', 'XMN3', 'XMN5']
+  UNIT   w=47.2000 um  l=0.4 um  nf=8   (PDK bin max 100 um)
+  DEVICE 6.160 x 6.170 um   aspect 0.998   (1.000 = square, penalty 0.0016)
+  member       total was   total now      err    m    array   aspect
+  XMN4          236.0000    236.0000   0.000%    5      5x1    4.992  <-- strip
+  XMN3           94.4000     94.4000   0.000%    2      2x1    1.997
+  XMN5          283.2000    283.2000   0.000%    6      3x2    1.498
+------------------------------------------------------------------------------
+tg2_differential_pair  [differential_pair]  ['XMN1', 'XMN2']   (tied m -- identical halves)
+  UNIT   w=80.0000 um  l=0.3 um  nf=11   (PDK bin max 100 um)
+  DEVICE 7.533 x 7.260 um   aspect 1.038   (1.000 = square, penalty 0.0369)
+  member       total was   total now      err    m    array   aspect
+  XMN1          320.0000    320.0000   0.000%    4      2x2    1.038
+  XMN2          320.0000    320.0000   0.000%    4      2x2    1.038
+------------------------------------------------------------------------------
+tg3_current_mirror  [current_mirror]  ['XMP1', 'XMP2']
+  UNIT   w=14.4000 um  l=0.4 um  nf=4   (PDK bin max 100 um)
+  DEVICE 3.860 x 3.250 um   aspect 1.188   (1.000 = square, penalty 0.1720)
+  member       total was   total now      err    m    array   aspect
+  XMP1           14.4000     14.4000   0.000%    1      1x1    1.188
+  XMP2           14.4000     14.4000   0.000%    1      1x1    1.188
+------------------------------------------------------------------------------
+free_XMP3  [standalone]  ['XMP3']
+  UNIT   w=60.0000 um  l=0.4 um  nf=9   (PDK bin max 100 um)
+  DEVICE 6.927 x 6.900 um   aspect 1.004   (1.000 = square, penalty 0.0039)
+  member       total was   total now      err    m    array   aspect
+  XMP3          120.0000    120.0000   0.000%    2      1x2    0.502
+------------------------------------------------------------------------------
+free_XMP4  [standalone]  ['XMP4']
+  UNIT   w=1.4000 um  l=0.15 um  nf=1   (PDK bin max 100 um)
+  DEVICE 1.660 x 0.810 um   aspect 2.049   (1.000 = square, penalty 0.7175)
+  member       total was   total now      err    m    array   aspect
+  XMP4            1.4000      1.4000   0.000%    1      1x1    2.049
+------------------------------------------------------------------------------
+
+WORST TOTAL-WIDTH RESIDUAL: 0.0000%  (every device exact)
+DEVICES RESHAPED: 9
+
+A `<-- strip` array is a copy count with no square factorisation (a prime, usually).
+It is reported rather than padded: a partly-filled row breaks the symmetry the array exists
+to provide. If it matters, the fix is upstream -- a copy count with factors, which means a
+different unit width, which sizing chose.
+
+NOT MEASURED HERE: what any of this costs electrically. These are geometric rules, and the
+re-expression is width-preserving, but finger count changes junction and gate perimeter.
+Run verify_shaping.py to simulate before/after and get the spec delta.

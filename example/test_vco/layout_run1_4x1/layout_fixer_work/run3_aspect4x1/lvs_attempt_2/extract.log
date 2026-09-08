@@ -1,0 +1,93 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "extract.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "routed".
+Reading "Unnamed_4ab843b8".
+Error while reading cell "Unnamed_4ab843b8" (byte position 9948): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "via_stack_686e5d96$33".
+Reading "XC0".
+Reading "via_stack_918d05dd$2".
+Reading "via_stack_627eccf4$2".
+Reading "via_stack_627eccf4$5".
+Reading "Unnamed_b74db7d7".
+Error while reading cell "Unnamed_b74db7d7" (byte position 379410): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "via_stack_18d6ab16$3".
+Reading "via_stack_2e2571cb$2".
+Reading "current_mirror_XN5_XN4".
+Reading "via_stack_f018e2c2".
+Reading "vco_spiral_ind".
+Reading "via_stack_2e2571cb".
+Reading "XN1".
+Reading "Unnamed_b8d8d2c8".
+Error while reading cell "Unnamed_b8d8d2c8" (byte position 771310): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "Unnamed_7533bd66".
+Reading "XC1".
+Reading "XN3".
+Reading "Unnamed_5d39a6f6".
+Reading "Unnamed_e30dc562".
+Error while reading cell "Unnamed_e30dc562" (byte position 932218): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "XN0".
+Reading "via_stack_627eccf4$6".
+Reading "via_stack_918d05dd$4".
+Reading "via_stack_18d6ab16$2".
+Reading "via_stack_2e2571cb$1".
+Reading "via_stack_2e2571cb$4".
+Reading "XN2".
+Reading "Unnamed_c2c574c1".
+Error while reading cell "Unnamed_c2c574c1" (byte position 1078006): Unknown layer/datatype in boundary, layer=64 type=44
+EXT_BBOX: 20800 10800 78780 54064
+Extracting vco_spiral_ind into vco_spiral_ind.ext:
+Extracting via_stack_2e2571cb$4 into via_stack_2e2571cb$4.ext:
+Extracting via_stack_918d05dd$4 into via_stack_918d05dd$4.ext:
+Extracting Unnamed_5d39a6f6 into Unnamed_5d39a6f6.ext:
+Extracting XC0 into XC0.ext:
+Extracting via_stack_2e2571cb$2 into via_stack_2e2571cb$2.ext:
+Extracting via_stack_18d6ab16$3 into via_stack_18d6ab16$3.ext:
+Extracting via_stack_918d05dd$2 into via_stack_918d05dd$2.ext:
+Extracting Unnamed_4ab843b8 into Unnamed_4ab843b8.ext:
+Unnamed_4ab843b8: 2 warnings
+Extracting XN2 into XN2.ext:
+Extracting via_stack_2e2571cb$1 into via_stack_2e2571cb$1.ext:
+Extracting Unnamed_b74db7d7 into Unnamed_b74db7d7.ext:
+Unnamed_b74db7d7: 2 warnings
+Extracting XN3 into XN3.ext:
+Extracting Unnamed_7533bd66 into Unnamed_7533bd66.ext:
+Extracting XC1 into XC1.ext:
+Extracting via_stack_2e2571cb into via_stack_2e2571cb.ext:
+Extracting Unnamed_e30dc562 into Unnamed_e30dc562.ext:
+Unnamed_e30dc562: 2 warnings
+Extracting XN1 into XN1.ext:
+Extracting via_stack_627eccf4$6 into via_stack_627eccf4$6.ext:
+Extracting via_stack_627eccf4$2 into via_stack_627eccf4$2.ext:
+Extracting via_stack_18d6ab16$2 into via_stack_18d6ab16$2.ext:
+Extracting Unnamed_c2c574c1 into Unnamed_c2c574c1.ext:
+Unnamed_c2c574c1: 5 warnings
+Extracting current_mirror_XN5_XN4 into current_mirror_XN5_XN4.ext:
+Extracting Unnamed_b8d8d2c8 into Unnamed_b8d8d2c8.ext:
+Unnamed_b8d8d2c8: 2 warnings
+Extracting XN0 into XN0.ext:
+Extracting via_stack_627eccf4$5 into via_stack_627eccf4$5.ext:
+Extracting via_stack_686e5d96$33 into via_stack_686e5d96$33.ext:
+Extracting via_stack_f018e2c2 into via_stack_f018e2c2.ext:
+Extracting routed into routed.ext:
+Total of 13 warnings.
+exttospice finished.

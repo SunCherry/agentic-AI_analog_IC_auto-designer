@@ -1,0 +1,116 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U19/drc.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "routed".
+Reading "Unnamed_8a89893b".
+Reading "via_stack_18d6ab16$4".
+Reading "via_stack_686e5d96$33".
+Reading "XC0".
+Reading "Unnamed_43f39a32".
+Reading "via_stack_ea9c5ac0".
+Reading "via_stack_627eccf4$2".
+Reading "via_stack_918d05dd$2".
+Reading "via_stack_627eccf4$5".
+Reading "via_stack_18d6ab16$3".
+Reading "via_stack_2e2571cb$2".
+Reading "current_mirror_XN5_XN4".
+Reading "via_stack_f018e2c2".
+Reading "vco_spiral_ind".
+Reading "via_stack_2e2571cb".
+Reading "via_stack_f018e2c2$3".
+Reading "XN1".
+Reading "Unnamed_6f40f37b".
+Reading "via_stack_627eccf4$7".
+Reading "via_stack_ea9c5ac0$2".
+Reading "Unnamed_1dc60c31".
+Reading "Unnamed_c0a30604".
+Reading "via_stack_f018e2c2$1".
+Reading "XC1".
+Reading "XN3".
+Reading "Unnamed_4b7a68c3".
+Reading "Unnamed_dbd01499".
+Reading "via_stack_627eccf4$4".
+Reading "via_stack_ea9c5ac0$1".
+Reading "via_stack_2e2571cb$3".
+Reading "via_stack_f018e2c2$4".
+Reading "XN0".
+Reading "via_stack_627eccf4$6".
+Reading "via_stack_627eccf4$3".
+Reading "via_stack_627eccf4$8".
+Reading "via_stack_ea9c5ac0$3".
+Reading "via_stack_18d6ab16$2".
+Reading "via_stack_2e2571cb$1".
+Reading "via_stack_2e2571cb$4".
+Reading "via_stack_f018e2c2$2".
+Reading "XN2".
+DRC style is now "drc(full)"
+Loading DRC CIF style.
+DRC_TOTAL: 15
+CELLCOUNT: via_stack_2e2571cb$1 3
+CELLCOUNT: via_stack_2e2571cb$3 3
+CELLCOUNT: via_stack_918d05dd$2 3
+CELLCOUNT: via_stack_686e5d96$33 1
+CELLCOUNT: routed 15
+CELLCOUNT: via_stack_2e2571cb$4 3
+CELLCOUNT: via_stack_2e2571cb 3
+CELLCOUNT: via_stack_2e2571cb$2 3
+RULE: (13) MiM cap bottom plate spacing < 1.2um (capm.2b)
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43324 556 43517 634
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43051 453 43107 456
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43051 334 43107 453
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 42929 456 43051 512
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43564 325 43757 334
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43324 334 43517 453
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 46264 -781 46285 -774
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43564 556 43757 725
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43107 456 43291 512
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43051 556 43107 634
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43051 512 43107 556
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 43564 334 43757 453
+COORD: MiM cap bottom plate spacing < 1.2um (capm.2b) @ 46504 -781 46525 -534
+RULE: (8) Metal3 spacing < 0.3um (met3.2)
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43564 634 43577 694
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43564 556 43577 694
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43504 556 43517 634
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43564 325 43577 334
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43564 325 43577 452
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43564 452 43577 453
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43504 452 43517 453
+COORD: Metal3 spacing < 0.3um (met3.2) @ 43504 334 43517 452
+RULE: (11) Metal4 spacing < 0.3um (met4.2)
+COORD: Metal4 spacing < 0.3um (met4.2) @ 42985 518 43017 555
+COORD: Metal4 spacing < 0.3um (met4.2) @ 43045 516 43077 518
+COORD: Metal4 spacing < 0.3um (met4.2) @ 43045 515 43047 516
+COORD: Metal4 spacing < 0.3um (met4.2) @ 43047 515 43077 516
+COORD: Metal4 spacing < 0.3um (met4.2) @ 42985 516 43017 555
+COORD: Metal4 spacing < 0.3um (met4.2) @ 42985 515 43017 516
+COORD: Metal4 spacing < 0.3um (met4.2) @ 43045 452 43046 453
+COORD: Metal4 spacing < 0.3um (met4.2) @ 43045 450 43046 452
+COORD: Metal4 spacing < 0.3um (met4.2) @ 42985 452 42986 453
+COORD: Metal4 spacing < 0.3um (met4.2) @ 42985 414 42986 452
+COORD: Metal4 spacing < 0.3um (met4.2) @ 42985 414 42986 450
+
+Error while reading cell "Unnamed_43f39a32" (byte position 20552): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_6f40f37b" (byte position 240138): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_1dc60c31" (byte position 609022): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_c0a30604" (byte position 752642): Unknown layer/datatype in boundary, layer=64 type=44
+Error while reading cell "Unnamed_4b7a68c3" (byte position 896670): Unknown layer/datatype in boundary, layer=64 type=44

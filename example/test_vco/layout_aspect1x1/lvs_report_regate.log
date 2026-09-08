@@ -1,0 +1,136 @@
+================================================================================
+LVS REPORT -- RE-GATE after route-shortner
+design      : test_vco (vco_lc)
+report_dir  : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+layout      : shortening/test_vco_fixed_shortened.gds   TOP CELL = routed
+schematic   : primitives/lvs_compare.sp -> vco_lc.spice, subckt `vco_lc`
+tools       : Magic 8.3 ext2spice + netgen 1.5 (PDK_ROOT=$HOME/pdk/manual)
+setup       : sky130A_setup.tcl + 2 appended `ignore class` lines (see below)
+budget      : MAX_SUBRETRY = 5 (design_constraints.json:layout_fix_iterations)
+consumed    : 0 fix iterations -- matched on the first attempt
+artifacts   : layout_fixer_work/regate/lvs_attempt_1/
+
+VERDICT: **MATCH**
+  "Netlists match uniquely."  +  "Final result: Circuits match uniquely."
+  AND zero 'property error' hits in lvs.out and netgen.log (grep -ci = 0 in both).
+
+  Both conditions are required. netgen prints "Final result: Circuits match
+  uniquely" EVEN WHEN property errors exist -- re-proved on this run by
+  falsification, see below. The match line alone is not a verdict.
+
+DEVICE / NET SUMMARY
+--------------------------------------------------------------------------------
+| Quantity                | Layout (routed) | Schematic (vco_lc) |
+|-------------------------|-----------------|--------------------|
+| sky130_fd_pr__nfet_01v8 | 18 -> 7         | 8 -> 7             |
+| sky130_fd_pr__cap_mim_m3_1 | 2            | 2                  |
+| Number of devices       | 9               | 9                  |
+| Number of nets          | 7               | 7                  |
+(the "18 -> 7" / "8 -> 7" is netgen's parallel-device merge; both sides land on 7.
+Layout starts at 18 because glayout draws each device as multiple parallel fingers
+plus the two tie-off dummies, which lvs_compare.sp declares as XDUMMY1/XDUMMY2.)
+
+PIN CORRESPONDENCE TABLE
+--------------------------------------------------------------------------------
+| Layout port (routed) | Schematic port (vco_lc) | Status |
+|----------------------|-------------------------|--------|
+| VDD                  | VDD                     | match  |
+| VSS                  | VSS                     | match  |
+| Iref                 | Iref                    | match  |
+| voutn                | voutn                   | match  |
+| voutp                | voutp                   | match  |
+| Vcont                | Vcont                   | match  |
+"Cell pin lists are equivalent." / "Device classes routed and vco_lc are equivalent."
+6 of 6. Critically, the extracted .subckt line is
+  .subckt routed VDD voutn voutp Iref Vcont VSS
+i.e. SIX ports. Without the workaround below it comes out with FOUR.
+
+MISMATCHES
+--------------------------------------------------------------------------------
+None. No layout geometry was changed in this step, so rule 2.6 (re-run DRC after an
+LVS-driven geometry fix) does not apply -- there was no fix. The delivered GDS
+sha256 is 46d05b0f...7743 before and after LVS.
+
+THE ONE HAND-BUILT WORKAROUND -- READ THIS, IT IS THE REAL FINDING
+--------------------------------------------------------------------------------
+This gate CANNOT be crossed by the documented flow alone. Magic has no `device`
+line for an inductor in sky130A.tech, so a drawn spiral extracts as plain wire and
+both coil terminals land on ONE node:
+    Ports "B" and "A" are electrically shorted
+and the short PROPAGATES: `equiv "B" "A"` in vco_spiral_ind.ext collapses
+VDD + voutp + voutn into a single net, and the top cell extracts with 4 ports.
+
+Levers that DO NOT work (established by the pre-shortening run, not re-tested here
+because the coil cell is bit-for-bit unchanged -- verified: 347 polygons, identical
+layer histogram, identical 2 labels, identical bbox):
+  - `ignore class "-circuit1/2 vco_spiral_ind"` alone: insufficient. Those lines can
+    only delete a subcircuit INSTANCE, and there is none on the layout side because
+    ext2spice omits a subcircuit containing no devices. The damage happens inside
+    Magic, upstream of anything netgen can be told.
+  - `property LEFview true`: FAILS SILENTLY. Magic 8.3 accepts it with no error and
+    extracts the coil internals anyway.
+  - editing the .ext to delete the `equiv`: recovers voutn but not voutp -- the
+    parent's hierarchical merges were already written against the merged canonical
+    node, and splitting a child cannot undo a parent assignment.
+
+What DOES work, and what I rebuilt against the NEW geometry (the recipe is
+re-applied, not reused -- the shortened GDS is a different file):
+  an EXTRACTION-ONLY GDS view, layout_fixer_work/regate/lvs_attempt_1/routed_lvsview.gds
+    - deleted the ONE 74-point met5 (72/20) spiral polygon of vco_spiral_ind
+      (bbox -98,-44 .. 98,153) that fuses A to B;
+    - re-added an 8x5 um met5 patch (90,148)..(98,153) under port B so its pin still
+      lands on real met5;
+    - kept everything else: all 340 via4 (71/44) cuts, all three met4 (71/20)
+      landings, the met5 port-A stub, both (72,16) labels A and B.
+  Result: 0x "electrically shorted", no `equiv` line in vco_spiral_ind.ext, node A
+  and node B independent, 6 ports.
+  The coil is then black-boxed on BOTH sides by two lines appended to a copy of the
+  stock netgen setup (sky130A_setup_vco.tcl):
+      ignore class "-circuit1 vco_spiral_ind"
+      ignore class "-circuit2 vco_spiral_ind"
+
+THE DELIVERED GDS IS NOT MODIFIED. routed_lvsview.gds is a scratch copy that exists
+only to be extracted. Do not ship it and do not DRC it (deleting the spiral would
+of course change the circuit).
+
+ASSESSMENT / OWNERSHIP: this is a TOOLING gap, not a layout bug, and it is not mine
+to fix in geometry. It is the reason this gate is not reproducible unattended for
+this circuit class: any design containing a drawn inductor will hit the same wall
+and will need the same hand-built extraction view. A durable fix belongs upstream
+of layout-fixer -- either a real `device` line / abstract view for the spiral cell
+in the PDK's Magic tech, or a scripted "black-box this cell for extraction" step
+that builds the view automatically from the primitive's port list. Flagged to the
+orchestrator.
+
+FALSIFICATION -- PROOF THE MATCH IS MEANINGFUL (run on THIS re-gate)
+--------------------------------------------------------------------------------
+Changed XN2 `w=60` -> `w=42` on the schematic side only (vco_lc_wbad.spice) and
+re-ran the identical comparison:
+    line 55: "Netlists match uniquely with property errors."
+    line 72: "Final result: Circuits match uniquely."      <-- STILL PRINTED
+    line 73: "Property errors were found."
+So (a) device w/l genuinely ARE compared here, which makes the clean MATCH above a
+real result rather than a vacuous one, and (b) the documented trap reproduces
+exactly: gating on "Circuits match uniquely" alone would have passed a netlist with
+a 30%-wrong device width. Artifacts: vco_lc_wbad.spice, lvs_wbad.out, netgen_wbad.log.
+
+NETLIST PROVENANCE
+--------------------------------------------------------------------------------
+Compared against primitives/lvs_compare.sp (NOT the design's golden .sp), as the
+payload directs: it is the placer-built comparison view with `w` folded to w*m and
+nf/m forced to 1, and it declares the two glayout tie-off dummies. It is
+byte-identical to the copy the pre-shortening gate used, so its hand-repair (moving
+XDUMMY1/XDUMMY2 out of `vco_spiral_ind` into `vco_lc`) is present and preserved.
+The golden netlist was not read, not copied and not modified at any point.
+
+OTHER WARNINGS (non-blocking)
+--------------------------------------------------------------------------------
+- "cell sky130_fd_pr__nfet_01v8 / cap_mim_m3_1 is a placeholder, treated as a black
+  box" x2 each -- normal for PDK primitives compared by property, not topology.
+- 14 "Flattening unmatched subcell ... in circuit routed" lines (XN0..XN3, XC0, XC1,
+  current_mirror_XN5_XN4, and 7 Unnamed_* glayout wrappers). Expected: the layout is
+  hierarchical and the schematic is flat, so netgen flattens to compare. Both sides
+  converge to 9 devices / 7 nets.
+- R-vs-X element-prefix quirk: NOT APPLICABLE. This design extracts no resistor
+  devices; the only R in lvs_compare.sp (R1) is inside the black-boxed coil subckt.
+================================================================================

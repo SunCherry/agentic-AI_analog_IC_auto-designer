@@ -1,0 +1,131 @@
+================================================================================
+LAYOUT REPORT -- test_vco  (REGRESSION run, suffix _regress)
+================================================================================
+generated : 2026-09-07T07:26:28Z
+deliverable GDS : example/test_vco/layout/test_vco_fixed_regress.gds
+TOP CELL        : routed     <-- renaming the FILE did not rename the CELL.
+                  Keep passing --top routed to every downstream Magic call;
+                  without it Magic creates and cleanly DRCs an empty cell.
+physical_map    : example/test_vco/layout/physical_map.json
+pdk             : sky130A
+provenance      : placer + router (glayout primitives, A* negotiated-congestion)
+
+--------------------------------------------------------------------------------
+GATE STATUS
+--------------------------------------------------------------------------------
+  DRC : CLEAN   -- DRC_TOTAL=0, 0 rectangles, 0 rules.  Fix iterations: 0
+        (clean on the first/baseline pass).  see drc_report_regress.log
+  LVS : MATCH   -- "Circuits match uniquely", 0 property errors on both
+        lvs.out and netgen.log.  Iterations: 1 (matched on attempt 1).
+        see lvs_report_regress.log
+  Budget MAX_SUBRETRY = 5 per gate (design_constraints.json:
+  layout_fix_iterations, read via .claude/reference/design_constraints.py).
+  Consumed: 0/5 DRC, 0/5 LVS.
+
+--------------------------------------------------------------------------------
+DEVICE COUNT BY KIND  (from physical_map.json 'devices', 10 entries)
+--------------------------------------------------------------------------------
+  nfet  : 6   (XN0 XN1 XN2 XN3 XN4 XN5)
+  pfet  : 0
+  cap   : 2   (XC0 XC1  -- sky130_fd_pr__cap_mim_m3_1)
+  res   : 0
+  bjt   : 0
+  other : 2   (XL0 XL1  -- kind 'ind', vco_spiral_ind custom coil cells)
+  dummies flagged in map: 0
+  NOTE XN4/XN5 share one macro (current_mirror_XN5_XN4), so 10 device entries
+  occupy 9 distinct placed boxes.
+
+--------------------------------------------------------------------------------
+TOTAL PLACEMENT AREA
+--------------------------------------------------------------------------------
+  bbox over physical_map.json 'devices' via
+  .claude/reference/generate_grid.py :: overall_bbox()  (not re-derived):
+     (135.72, 221.21) - (529.32, 516.10) um
+     393.60 x 294.89  =  116068.28 um^2
+  Full GDS extent of the top cell (incl. routing) : 397.10 x 295.72 um,
+     aspect 1.34.
+
+--------------------------------------------------------------------------------
+DISTINCT GDS LAYERS ACTUALLY DRAWN  (read from the GDS, not the PDK layer list)
+--------------------------------------------------------------------------------
+  22 layer/datatype pairs:
+    (64,44) (65,20) (66,20) (66,44) (67,20) (67,44) (68,16) (68,20) (68,44)
+    (69,16) (69,20) (69,44) (70,20) (70,44) (71,20) (71,44) (72,16) (72,20)
+    (89,44) (93,44) (94,20) (95,20)
+  Routing stack present as expected: li1(67) met1(68) met2(69) met3(70)
+  met4(71) met5(72) with their via datatypes (44), plus label datatypes (16).
+  (64,44) is glayout's internal pwell glayer -- the one Magic warns about and
+  drops; harmless.
+
+--------------------------------------------------------------------------------
+SYMMETRY -- the point of this rebuild
+--------------------------------------------------------------------------------
+  Nothing was moved and nothing was re-routed, so symmetry is preserved by
+  construction; no one-sided fix was applied (none was needed).
+  Tank drawn metal, from routes.json, BEFORE == AFTER (identical files):
+     voutp : 107.6620 um^2   (met2 8.13, met3 20.48, met4 53.31, met5 25.73)
+     voutn : 107.7057 um^2   (met2 19.72, met3 11.64, met4 50.41, met5 25.93)
+     delta : 0.0437 um^2 = 0.041% of the larger
+  Per-net routing totals (unchanged):
+     | net   | wires | vias | drawn metal um^2 |
+     |-------|-------|------|------------------|
+     | VDD   |  11   |  4   |      93.0908     |
+     | VSS   |  23   |  2   |      21.1835     |
+     | Vcont |  23   |  0   |      36.3640     |
+     | voutn |  31   |  4   |     107.7057     |
+     | voutp |  33   |  5   |     107.6620     |
+     | vtail |  15   |  1   |      17.2241     |
+     | Iref  |   0   |  0   |       0.0000     |  (single-macro pin, label only)
+  total wirelength 1438.01 um, 16 vias, router status converged, 0
+  path-on-path shorts, 0 failed nets.
+  Orientation taken from placement_pos.json's authoritative rotation_deg +
+  separate mirror flag (never the legacy 'rotated' bool, which cannot tell 0
+  from 180): XL0 rot=0 mirror=true, XL1 rot=180 mirror=false -- the 0-vs-180
+  distinction is correctly represented in the map. Remaining macros rot=90.
+
+--------------------------------------------------------------------------------
+physical_map.json VALIDITY  (asserted non-degenerate, not assumed)
+--------------------------------------------------------------------------------
+  Regenerated with the CORRECT script for this provenance:
+    .claude/skills/layout-extractor/script/physical_map_from_placement.py
+    (placer+router layout. extract_physical_info.py would have silently
+    produced null positions and 'unmatched' nets here -- not used.)
+  Script reported: devices 10/10 with a real placed box;
+                   nets 6/7 with routing geometry (136 polygons, 16 vias).
+  The 7th net is Iref, a single-macro labelled pin with no routed segments --
+  expected, matches routing_summary.txt.
+  Regenerated output is BYTE-IDENTICAL to the pre-existing physical_map.json
+  (json-normalised diff empty), confirming the map already described the FINAL
+  geometry and is not stale. Backup of the prior file:
+  layout_fixer_work_regress/physical_map.before_regen.json
+  Non-degeneracy: 0 devices with null position, all rotations emitted, all
+  primitive_cell fields populated, 7/7 nets source='router'.
+
+--------------------------------------------------------------------------------
+PER-ITERATION HISTORY  (append-only; both phases)
+--------------------------------------------------------------------------------
+  DRC attempt 1 (baseline) : routed.gds / top=routed. No knobs changed.
+      DRC_TOTAL=0, rects=0, rules=0 -> CLEAN. Bound-checked: flatten
+      re-check (bbox identical, FLAT_DRC_TOTAL=0, zero CELLCOUNT) and
+      negative control (2 met1 rects 0.05 um apart -> met1.2 x2).
+      No further DRC attempts required.
+  LVS attempt 1            : extraction-only view built (coil spiral replaced
+      by an isolated met5 pad in a SCRATCH copy). port makeall applied.
+      6-port top cell. netgen -> "Circuits match uniquely", 0 property errors.
+      Bound-checked by two golden-side perturbations, both correctly rejected.
+      No layout geometry changed -> no DRC re-run needed. No further attempts.
+  Geometry changes applied across the whole run: NONE.
+      test_vco_fixed_regress.gds md5 == routed.gds md5
+      == 5cf3029967e6726fad9bca9d0aebf467
+
+--------------------------------------------------------------------------------
+REGRESSION VERDICT
+--------------------------------------------------------------------------------
+  The rebuilt layout stack produces a layout that is DRC-clean and LVS-matched
+  with ZERO fix iterations on either gate. The 29 well/latch-up violations that
+  earlier runs inherited from the generated primitives are gone (confirmed by
+  empty 'drc listall why' on both the pre-routing and routed GDS, not assumed).
+  Both risks flagged by the placement run were investigated and neither is a
+  real defect in this build.
+  NOT run, by scope: PEX, post-layout simulation, fidelity, route-optimizer.
+================================================================================

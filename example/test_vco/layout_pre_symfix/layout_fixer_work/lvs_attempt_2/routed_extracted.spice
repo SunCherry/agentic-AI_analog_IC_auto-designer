@@ -1,0 +1,89 @@
+* NGSPICE file created from routed.ext - technology: sky130A
+
+.subckt Unnamed_1dc60c31 D S G B
+X0 B B B B sky130_fd_pr__nfet_01v8 ad=9.5 pd=40.95 as=38 ps=163.8 w=20 l=0.15
+X1 B B B B sky130_fd_pr__nfet_01v8 ad=9.5 pd=40.95 as=0 ps=0 w=20 l=0.15
+X2 D G S B sky130_fd_pr__nfet_01v8 ad=9.5 pd=40.95 as=9.5 ps=40.95 w=20 l=0.15
+.ends
+
+.subckt XN0 Unnamed_1dc60c31_0/S Unnamed_1dc60c31_0/G Unnamed_1dc60c31_0/D VSUBS
+XUnnamed_1dc60c31_0 Unnamed_1dc60c31_0/D Unnamed_1dc60c31_0/S Unnamed_1dc60c31_0/G
++ VSUBS Unnamed_1dc60c31
+.ends
+
+.subckt Unnamed_43f39a32 a_n1104_n2041# a_242_n1500# a_64_n1500# a_n242_n1696# a_n320_n1500#
+X0 a_n242_n1696# a_n242_n1696# a_n320_n1500# a_n1104_n2041# sky130_fd_pr__nfet_01v8 ad=5.85 pd=30.78 as=5.85 ps=30.78 w=15 l=0.5
+X1 a_242_n1500# a_n242_n1696# a_64_n1500# a_n1104_n2041# sky130_fd_pr__nfet_01v8 ad=5.85 pd=30.78 as=5.85 ps=30.78 w=15 l=0.5
+X2 a_242_n1500# a_n242_n1696# a_64_n1500# a_n1104_n2041# sky130_fd_pr__nfet_01v8 ad=5.85 pd=30.78 as=5.85 ps=30.78 w=15 l=0.5
+X3 a_242_n1500# a_n242_n1696# a_64_n1500# a_n1104_n2041# sky130_fd_pr__nfet_01v8 ad=5.85 pd=30.78 as=5.85 ps=30.78 w=15 l=0.5
+X4 a_242_n1500# a_n242_n1696# a_64_n1500# a_n1104_n2041# sky130_fd_pr__nfet_01v8 ad=5.85 pd=30.78 as=5.85 ps=30.78 w=15 l=0.5
+X5 a_n1104_n2041# a_n1104_n2041# a_n1104_n2041# a_n1104_n2041# sky130_fd_pr__nfet_01v8 ad=5.85 pd=30.78 as=11.7 ps=61.56 w=15 l=0.5
+.ends
+
+.subckt current_mirror_XN5_XN4 Unnamed_43f39a32_0/a_n242_n1696# Unnamed_43f39a32_0/a_64_n1500#
++ Unnamed_43f39a32_0/a_242_n1500# VSUBS Unnamed_43f39a32_0/a_n320_n1500#
+XUnnamed_43f39a32_0 VSUBS Unnamed_43f39a32_0/a_242_n1500# Unnamed_43f39a32_0/a_64_n1500#
++ Unnamed_43f39a32_0/a_n242_n1696# Unnamed_43f39a32_0/a_n320_n1500# Unnamed_43f39a32
+.ends
+
+.subckt Unnamed_dbd01499 c1_n750_n750# m3_n1218_n200#
+X0 c1_n750_n750# m3_n1218_n200# sky130_fd_pr__cap_mim_m3_1 l=7.5 w=7.5
+.ends
+
+.subckt XC0 Unnamed_dbd01499_0/c1_n750_n750# Unnamed_dbd01499_0/m3_n1218_n200#
+XUnnamed_dbd01499_0 Unnamed_dbd01499_0/c1_n750_n750# Unnamed_dbd01499_0/m3_n1218_n200#
++ Unnamed_dbd01499
+.ends
+
+.subckt Unnamed_4b7a68c3 D S G B
+X0 D G S B sky130_fd_pr__nfet_01v8 ad=23.4 pd=120.78 as=23.4 ps=120.78 w=60 l=0.5
+X1 B B B B sky130_fd_pr__nfet_01v8 ad=23.4 pd=120.78 as=93.6 ps=483.12 w=60 l=0.5
+X2 B B B B sky130_fd_pr__nfet_01v8 ad=23.4 pd=120.78 as=0 ps=0 w=60 l=0.5
+.ends
+
+.subckt XN3 Unnamed_4b7a68c3_0/S Unnamed_4b7a68c3_0/G VSUBS Unnamed_4b7a68c3_0/D
+XUnnamed_4b7a68c3_0 Unnamed_4b7a68c3_0/D Unnamed_4b7a68c3_0/S Unnamed_4b7a68c3_0/G
++ VSUBS Unnamed_4b7a68c3
+.ends
+
+.subckt Unnamed_c0a30604 D S G B
+X0 B B B B sky130_fd_pr__nfet_01v8 ad=9.5 pd=40.95 as=38 ps=163.8 w=20 l=0.15
+X1 B B B B sky130_fd_pr__nfet_01v8 ad=9.5 pd=40.95 as=0 ps=0 w=20 l=0.15
+X2 D G S B sky130_fd_pr__nfet_01v8 ad=9.5 pd=40.95 as=9.5 ps=40.95 w=20 l=0.15
+.ends
+
+.subckt XN1 Unnamed_c0a30604_0/S Unnamed_c0a30604_0/G Unnamed_c0a30604_0/D VSUBS
+XUnnamed_c0a30604_0 Unnamed_c0a30604_0/D Unnamed_c0a30604_0/S Unnamed_c0a30604_0/G
++ VSUBS Unnamed_c0a30604
+.ends
+
+.subckt Unnamed_8a89893b c1_n750_n750# m3_n1218_n200#
+X0 c1_n750_n750# m3_n1218_n200# sky130_fd_pr__cap_mim_m3_1 l=7.5 w=7.5
+.ends
+
+.subckt XC1 Unnamed_8a89893b_0/c1_n750_n750# Unnamed_8a89893b_0/m3_n1218_n200#
+XUnnamed_8a89893b_0 Unnamed_8a89893b_0/c1_n750_n750# Unnamed_8a89893b_0/m3_n1218_n200#
++ Unnamed_8a89893b
+.ends
+
+.subckt Unnamed_6f40f37b D S G B
+X0 D G S B sky130_fd_pr__nfet_01v8 ad=23.4 pd=120.78 as=23.4 ps=120.78 w=60 l=0.5
+X1 B B B B sky130_fd_pr__nfet_01v8 ad=23.4 pd=120.78 as=93.6 ps=483.12 w=60 l=0.5
+X2 B B B B sky130_fd_pr__nfet_01v8 ad=23.4 pd=120.78 as=0 ps=0 w=60 l=0.5
+.ends
+
+.subckt XN2 Unnamed_6f40f37b_0/S Unnamed_6f40f37b_0/G Unnamed_6f40f37b_0/D VSUBS
+XUnnamed_6f40f37b_0 Unnamed_6f40f37b_0/D Unnamed_6f40f37b_0/S Unnamed_6f40f37b_0/G
++ VSUBS Unnamed_6f40f37b
+.ends
+
+.subckt routed VDD Vcont voutn voutp VSS Iref
+XXN0_0 XN1_0/Unnamed_c0a30604_0/S voutp voutn VSS XN0
+Xcurrent_mirror_XN5_XN4_0 Iref VSS XN1_0/Unnamed_c0a30604_0/S VSS VSS current_mirror_XN5_XN4
+XXC0_0 VDD voutp XC0
+XXN3_0 Vcont voutn VSS Vcont XN3
+XXN1_0 XN1_0/Unnamed_c0a30604_0/S voutn voutp VSS XN1
+XXC1_0 VDD voutn XC1
+XXN2_0 Vcont voutp Vcont VSS XN2
+.ends
+

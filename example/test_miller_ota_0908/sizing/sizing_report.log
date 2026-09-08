@@ -1,0 +1,139 @@
+================================================================================
+sizing_report.log -- two_stage_rz   (design test_miller_ota_0908)
+schematic-sizing, Step 3. PDK sky130A. Ideal schematic -- NO parasitic figure
+appears anywhere in this file; this skill annotated and estimated nothing.
+================================================================================
+
+VERDICT:  CONVERGED
+          Every key of target_spec.json AND every key of harder_target_spec.json
+          is met, at iteration 6 of a budget of 8.
+
+--------------------------------------------------------------------------------
+THE TABLE -- every key against BOTH bars
+--------------------------------------------------------------------------------
+Metric        Real target      Harder target    Achieved      Meets  Meets   Margin over
+              (target_spec)    (+10%)                         real?  harder? the REAL bar
+------------- ---------------- ---------------- ------------- ------ ------- ---------------
+Gain (dB)     >= 40            >= 44            62.3872       YES    YES     +22.39 dB
+UGBW (MHz)    >= 15            >= 16.5          16.7834       YES    YES     +1.783 MHz (+11.9%)
+PM (degree)   [50, 70]         [52, 68]         56.9566       YES    YES     +6.96 over floor
+                                                                              -13.04 under ceiling
+Power (mW)    <= 0.5813        <= 0.63943       0.382772      YES    YES     -0.1985 mW (34.1% under)
+
+  Reading the margin column: Gain and Power are enormously safe. PM sits near
+  the middle of its window with room on both sides. UGBW carries the THINNEST
+  margin at +11.9% over the real bar and only +0.28 MHz over the harder bar --
+  it is the key most likely to fail once real parasitics exist, which is
+  consistent with spec_analysis.log's expression UGBW ~ gm1/(2*pi*Cc), whose
+  Cc gains directly from any capacitance layout adds to net5 or vout.
+
+--------------------------------------------------------------------------------
+HOW IT GOT THERE  (full per-iteration record: sizing/book_keeper.log)
+--------------------------------------------------------------------------------
+iter  Gain dB   UGBW MHz   PM deg    Power mW    what moved
+  0   32.1258    9.4312   72.3228   0.538682    (seed -- nothing changed)
+  1   61.9039   17.6094   47.0891   0.604905    MN4_L/MP1_L/MP3_L 0.15->0.4, MN1_L->0.3
+  2   61.9213   18.1962   71.5497   0.585016    R0_L 4.15->50 ; MN5_M 7->6
+  3   62.3872   11.9492   65.7845   0.382772    MP4_W 2.3->1.4
+  4   62.3872   15.3803   56.3580   0.382772    C0 45x45 -> 38x38
+  5   37.3155   11.9202   71.0054   0.429229    MN3_M 2->3 ; C0 -> 45x45   (FAILED)
+  6   62.3872   16.7834   56.9566   0.382772    MN3_M->2 ; C0 -> 36x36 ; R0_L 50->62
+                                                *** CONVERGED ***
+
+Budget: N = 8, from design_constraints.json (`schematic_sizing_iterations`), NOT
+overridden by the caller. Converged at 6, so ONE iteration (7) went unspent --
+stop condition 1, not budget exhaustion. Nothing was cut short.
+
+THE THREE MOVES THAT MATTERED, and why:
+  1. LENGTH (iter 1, +29.8 dB). Every one of the nine devices arrived at
+     l = 0.15 um, the sky130 minimum -- the worst intrinsic gain the process
+     offers, on every device at once. gm/gds went 7.8-24.6 to 88-96. It also
+     FIXED THE MIRROR: at minimum length, channel-length modulation had broken
+     the ratio badly (XMN3/XMN4 measured 0.258 against its geometric 0.400),
+     and lengthening restored it while costing almost no gm, because the nfets
+     sit at gm/id ~ 23-26 where gm tracks current rather than W/L.
+  2. THE NULLING RESISTOR (iter 2, +24.5 deg of PM for zero current). R0 arrived
+     at 100 ohm against 1/gm2 = 460 ohm -- 4.6x under-sized, so the RHP zero was
+     not being cancelled at all. Sized ABOVE 1/gm2 it becomes an LHP zero near
+     the output pole. The single cheapest move in the run.
+  3. THE BIAS LEG (iter 3, -34% power). The self-biased reference was burning
+     118.6 uA -- 36% of the entire supply -- to produce a 43 uA tail. Cutting
+     MP4_W redirected that overhead; it is why the design finishes 34% under
+     its power ceiling instead of over it.
+
+--------------------------------------------------------------------------------
+THE MIRROR TIE  (the property this run was built to test)
+--------------------------------------------------------------------------------
+HELD, end to end, with no intervention.
+
+  XMN4 net7 net7 VSS VSS sky130_fd_pr__nfet_01v8 l=0.4 w=47.2 nf=1 m=5
+  XMN3 net3 net7 VSS VSS sky130_fd_pr__nfet_01v8 l=0.4 w=47.2 nf=1 m=2
+  XMN5 vout net7 VSS VSS sky130_fd_pr__nfet_01v8 l=0.4 w=47.2 nf=1 m=6
+  XMP1 net4 net4 VDD VDD sky130_fd_pr__pfet_01v8 l=0.4 w=14.4 nf=1 m=1
+  XMP2 net5 net4 VDD VDD sky130_fd_pr__pfet_01v8 l=0.4 w=14.4 nf=1 m=1
+
+One shared w and one shared l per family, differing only in m. This was never
+enforced by vigilance: MN4_W/MN4_L each write all three nfet legs BY
+CONSTRUCTION in two_stage_rz_tunable.sp.j2, so no --set could have separated
+them and no iteration ever produced a leg with its own width.
+(For contrast, the run under the old contract, test_miller_ota_0907, finished
+at w = 47.2 / 85 / 100 um on one gate net.)
+
+--------------------------------------------------------------------------------
+THE HAND-OFF
+--------------------------------------------------------------------------------
+  sizing/two_stage_rz_final.sp        THE NETLIST. Flat, single .subckt, so this
+                                      one file closes -- no sub-circuit set.
+  sizing/two_stage_rz_tb_final.spice  the filed deck VERBATIM with its .include
+                                      re-pointed at two_stage_rz_final.sp. This
+                                      is the deck that reproduces the numbers
+                                      above; the filed testbench/ deck still
+                                      points at the UN-SIZED netlist and would
+                                      silently measure 32.29 dB / 11.46 MHz.
+                                      Verified: re-simulating through this deck
+                                      returns 62.3872 / 16.7834 / 56.9566 /
+                                      0.382772 -- identical to iteration 6.
+  sizing/two_stage_rz_ac.png          converged AC response vs the seed, targets
+                                      marked.
+  sizing/book_keeper.log              per-iteration record, incl. the converged
+                                      full-state entry.
+  sizing/debug/iter0..6.json          every iteration's raw result + op point.
+
+nf: UNMEASURED BY THIS SKILL. Every device carries nf=1, the value the golden
+netlist arrived with -- carried through, not chosen. finalize_netlist.py was
+passed no --nf. Whether nf=1 is right is device-shaper's question.
+
+--------------------------------------------------------------------------------
+WHAT A FURTHER RUN WOULD NEED
+--------------------------------------------------------------------------------
+NO FURTHER SIZING RUN IS NEEDED. Every key of the real spec is met, every key of
+the harder spec is met, and the design sits 34% under its power ceiling. There
+is no unmet obligation to discharge.
+
+If a future pass is wanted anyway, the honest ranking of what is left:
+  * MORE UGBW MARGIN is the only thing worth buying, and it is NOT free. The
+    cheap lever is spent: Cc is already down to 36x36 from 45x45, and shrinking
+    it further trades PM at about -37 deg per natural-log of UGBW (measured,
+    iterations 3->4), so PM would reach its harder floor of 52 at roughly
+    18.5 MHz. Past that the only route is more gm1, i.e. more tail current.
+  * MORE TAIL CURRENT IS NOT A ONE-VARIABLE MOVE -- iteration 5 proved this
+    empirically and it is the most useful finding in the log. XMP3's gate (net5)
+    and XMP1/XMP2's gate (net4) sit at the same DC level in balance, so
+        I_XMP3 = I_XMP1 * (W/L)_XMP3 / (W/L)_XMP1 = 8.333 * I_tail / 2
+    and vout only sits mid-rail when XMN5 sinks exactly that. Raising MN3_M
+    2->3 without raising MN5_M put XMP3 into triode (vds 0.090 < vdsat 0.128,
+    gm/gds collapsed 74.9 -> 2.0) and cost 25 dB of gain. Any future tail rise
+    must move MN3_M and MN5_M TOGETHER, keeping m5/m3 ~ 3. The 1.5x version
+    costs about 0.53 mW -- 40% more power for ~1 MHz -- which is why it was
+    rejected here rather than pursued.
+  * ROUGH COST: 2-3 iterations to re-land a 1.5x-current variant, arriving near
+    22 MHz UGBW at ~0.53 mW. Only worth it if post-layout UGBW actually falls
+    below 15 MHz. Wait for a real PEX number before spending it.
+
+NOTHING IS JUDGED UNREACHABLE. spec_analysis.log flagged the SET as MODERATELY
+CONSTRAINED and pre-registered a STOP test: "if gm/gds is saturated at the l in
+force AND PM is driven to the bottom of its range and a key is still short, the
+target is over-constrained." Neither condition was reached -- gm/gds is 48-107
+with more length available, and PM finished mid-window at 56.96. The spec was
+comfortably reachable on this topology with the mirror tied.
+================================================================================

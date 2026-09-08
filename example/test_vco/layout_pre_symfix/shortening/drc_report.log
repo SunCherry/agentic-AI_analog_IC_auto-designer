@@ -1,0 +1,74 @@
+================================================================================
+DRC REPORT -- test_vco (vco_lc) RE-GATE of route-shortner output
+report_dir : .../example/test_vco/layout/shortening/
+             (deliberately NOT layout/, so the fallback's own drc_report.log/
+             lvs_report.log/layout_report.log stay intact beside the fallback GDS)
+generated  : 2026-09-04  by layout-fixer (Step 1 gate)
+================================================================================
+
+VERDICT: CLEAN (DRC_TOTAL = 0, 0 violated rules, 0 instances).
+  gds  : layout/shortening/test_vco_fixed_shortened.gds
+  top  : routed   -- read from the GDS with gdstk top_level(), NOT the filename.
+         The rename did not rename the cell. --top routed passed on every Magic call.
+  md5  : 2394ebf03abb02cd5b586cea7cd02d17
+  fix iterations consumed : 0 of 5
+    MAX_SUBRETRY = 5 = layout_fix_iterations, read from example/test_vco/
+    design_constraints.json via .claude/reference/design_constraints.py.
+    Step 1 and Step 2 budgeted independently.
+  Clean on the BASELINE run, so no fix was applied and no knob was turned.
+
+--------------------------------------------------------------------------------
+ERRORS BY RULE CATEGORY
+--------------------------------------------------------------------------------
+  | Category   | Rule | Count | Fixable? |
+  |------------|------|-------|----------|
+  | spacing    | --   | 0     | n/a      |
+  | width      | --   | 0     | n/a      |
+  | enclosure  | --   | 0     | n/a      |
+  | other      | --   | 0     | n/a      |
+  `drc listall why` returned 0 distinct rules / 0 instances in the expanded top cell.
+  drc_violations.json written empty: {"drc_total": 0, "violations": {}}.
+
+  NETS ranked by violation count : none -- zero violations. (Leading with NETS is the
+  correct framing here: this is a router/shortener hand-off, so any violation would
+  have been net geometry, not a device's fault.)
+  DEVICES ranked by violation count : none.
+  Spacing violations pairwise : none.
+  Modification notes : none -- no geometry was changed by this gate.
+
+--------------------------------------------------------------------------------
+THE via_stack PHANTOM -- DISPROVED AGAIN, INDEPENDENTLY
+--------------------------------------------------------------------------------
+  `drc listall count` reports 19 errors in 7 STANDALONE via_stack subcells:
+    via_stack_2e2571cb x3, $1 x3, $2 x3, $3 x3,
+    via_stack_918d05dd$2 x3, $3 x3, via_stack_686e5d96$33 x1.
+  Same 19 the hand-off predicted. NOT fixed, because it is not a violation:
+  the metal completing those stacks lives in the parent, so the subcells are
+  out-of-context.
+  I did not take this on trust. Flatten control run on THIS geometry:
+    flatten -dobox -> FLAT_DRC_TOTAL: 0
+                      `drc listall count` EMPTY (all 19 vanish)
+                      `drc listall why`  0 rules
+  Third independent disproof of this phantom. Recommend it stop being re-litigated.
+
+--------------------------------------------------------------------------------
+WARNINGS (non-blocking; no errors exist, so nothing outranks them)
+--------------------------------------------------------------------------------
+  5x  "Unknown layer/datatype in boundary, layer=64 type=44" while reading cells
+      Unnamed_43f39a32, _6f40f37b, _1dc60c31, _c0a30604, _4b7a68c3.
+      Expected GDS-read warning for this flow. Logged, not swallowed, not transcribed.
+  1x  "RLIMIT_NOFILE is above 1024 and Tcl_Version<9" -- Magic/Tcl environment notice.
+
+--------------------------------------------------------------------------------
+PROVENANCE / TOOL BUDGET
+--------------------------------------------------------------------------------
+  Magic 8.3 rev610, stock sky130A.magicrc, PDK_ROOT=$HOME/pdk/manual, via
+  .claude/skills/router/script/run_drc.py (validated Tcl, not hand-rolled).
+  work-dir layout_fixer_work/drc_work (reused, overwritten; durable history is
+  layout_fixer_work/bookkeeper.log).
+  drc_work_placement NOT run: categorizing inherited-vs-introduced needs at least one
+  violation to categorize, and there are none.
+  runtime 1.2 s against a 5-min per-call budget. 0 retries, 0 exceptions, 0 hangs.
+  The 1.2 s was verified as a real run, not a false PASS: drc.log shows Magic reading
+  all 31 cells of this GDS by name and printing "DRC_TOTAL: 0" / "No errors found.".
+================================================================================

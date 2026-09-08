@@ -1,0 +1,123 @@
+* vco_lc_pre testbench — transient oscillator characterization.
+* [schematic-sizing Step 3] MODIFIED: .include re-pointed to "vco_lc_final.sp"
+* (the SIZED netlist, beside this file). Otherwise BYTE-IDENTICAL to the filed
+* testbench/vco_lc_pre.spice. This is a promoted copy, never an edit: the deck is
+* a mandatory user input and testbench/ + user_inputs/ are untouched. Run this
+* file, from THIS directory, to reproduce sizing_report.log's numbers -- the
+* filed deck still includes the UNSIZED netlist/vco_lc.sp and will silently
+* measure the wrong circuit.
+* [design-sheets-intake] MODIFIED: .include "vco_lc.sp" -> "../netlist/vco_lc.sp"
+* (netlist moved from the flat folder into <design_dir>/netlist/ at intake; the PDK .lib line is untouched)
+* Ported from example/training_example/VCO/first/netlist/oceanScript.ocn.
+*
+* What each Ocean measurement became, and why:
+*   OscFreq      ymax(freq(v("/Vout+") "rising"))          -> `meas tran`
+*                zero-crossing period on the differential output. Same idea,
+*                measured over 40 settled periods instead of one edge pair.
+*   Power        getData(":pwr" ?result "dcOp")            -> VDD * mean(i(vdd))
+*                averaged over an integer number of periods. The DC op point
+*                cannot be used here: the oscillator's DC solution is the
+*                unstable symmetric one, and the real average current differs.
+*   OutputPower  ymax(dbm(pvr('hb "/Vout+" "/Vout-" 50)))  -> the differential
+*                fundamental amplitude A1 into 50 ohm, dBm = 10*log10(A1^2/(2*50)/1m).
+*                ngspice has no harmonic balance, so A1 comes from the RMS of
+*                the settled waveform over an integer number of periods
+*                (A1 = sqrt(2)*Vrms). THD here is ~1.4%, so this agrees with a
+*                Fourier fundamental to better than 0.03%.
+*   TuningRange  ymax(harmonic(...)) - ymin(harmonic(...)) over the Vcont sweep
+*                -> f(Vcont=VDD) - f(Vcont=0), the two sweep endpoints run as
+*                separate transients.
+*   PhaseNoise   value(leafValue(pn('hbnoise) ...))        -> NOT PORTED.
+*                ngspice has neither harmonic balance nor pnoise, so oscillator
+*                phase noise cannot be measured by this toolchain at all. It is
+*                therefore absent from target_spec.json rather than present and
+*                unmeasurable, which would block the measurability gate.
+*
+* Startup: the source netlist used converge('ic "/Vout+" "0" / "/Vout-" "1.2").
+* ngspice's equivalent (.ic + uic) skips the operating point and starts every
+* other node at 0, which this bias chain does not recover from. Instead the
+* op point is solved normally and the tank is kicked by a single 1 mA / 50 ps
+* differential current pulse — deterministic, and it does not recur.
+.lib "/Users/cherrysun/pdk/manual/sky130A/libs.tech/ngspice/sky130.lib.spice" tt
+
+.subckt vco_core Vcont Iref VDD VSS voutp voutn
+.include "vco_lc_final_shaped.sp"
+X0 Vcont Iref VDD VSS voutp voutn vco_lc
+.ends
+
+.param vdd_val=1.8
+.param iref_val=300u
+
+xvco (Vcont Iref VDD VSS voutp voutn) vco_core ;
+
+vdd   VDD 0 dc={vdd_val}
+vss   VSS 0 dc=0
+vctrl Vcont 0 dc={vdd_val/2}
+iref  VDD Iref dc={iref_val}
+
+* single-shot differential kick to start the oscillation
+ikick voutp voutn pulse(0 1m 0 5p 5p 50p 1)
+
+.control
+set filetype=ascii
+
+* The supply and the Vcont sweep endpoints are read back off the solved deck
+* rather than restated here, so `.param vdd_val` stays the single place the
+* rail is set. `alter` needs a shell variable, hence the $& round-trip.
+op
+let v_sup = v(VDD)
+let v_mid = v(VDD) / 2
+set s_vsup = $&v_sup
+set s_vmid = $&v_mid
+
+* ---- Vcont = 0 : low tuning endpoint --------------------------------------
+alter vctrl dc = 0
+tran 2p 60n
+let vdiff = v(voutp) - v(voutn)
+meas tran tlo1 WHEN vdiff=0 RISE=1  TD=30n
+meas tran tlo2 WHEN vdiff=0 RISE=41 TD=30n
+let f_lo = 40 / (tlo2 - tlo1)
+set s_flo = $&f_lo
+
+* ---- Vcont = VDD : high tuning endpoint -----------------------------------
+alter vctrl dc = $s_vsup
+tran 2p 60n
+let vdiff = v(voutp) - v(voutn)
+meas tran thi1 WHEN vdiff=0 RISE=1  TD=30n
+meas tran thi2 WHEN vdiff=0 RISE=41 TD=30n
+let f_hi = 40 / (thi2 - thi1)
+set s_fhi = $&f_hi
+
+* ---- Vcont = VDD/2 : the nominal operating point ---------------------------
+alter vctrl dc = $s_vmid
+tran 2p 60n
+let vdiff = v(voutp) - v(voutn)
+meas tran t1 WHEN vdiff=0 RISE=1  TD=30n
+meas tran t2 WHEN vdiff=0 RISE=41 TD=30n
+* every average below runs over exactly 40 periods, so tank ripple cancels
+meas tran vrms  RMS vdiff  FROM=$&t1 TO=$&t2
+meas tran iavg  AVG i(vdd) FROM=$&t1 TO=$&t2
+
+let OscFreq     = 40 / (t2 - t1)
+let a1          = sqrt(2) * vrms
+let OutputPower = 10 * log10( a1*a1 / (2 * 50) / 1e-3 )
+let Power       = abs(iavg) * $s_vsup
+let TuningRange = $s_fhi - $s_flo
+
+* settled differential waveform, for a post-layout comparison and for any
+* transient extractor added to .claude/reference/compute_fidelity.py
+write ./simout_vco_lc_pre.out vdiff v(voutp) v(voutn)
+
+echo "Simulated performance ..." > ./vco_lc_pre_results.txt
+echo "OscFreq: $&OscFreq"         >> ./vco_lc_pre_results.txt
+echo "OutputPower: $&OutputPower" >> ./vco_lc_pre_results.txt
+echo "TuningRange: $&TuningRange" >> ./vco_lc_pre_results.txt
+echo "Power: $&Power"             >> ./vco_lc_pre_results.txt
+echo "f_lo: $s_flo"               >> ./vco_lc_pre_results.txt
+echo "f_hi: $s_fhi"               >> ./vco_lc_pre_results.txt
+echo "Vamp_fund: $&a1"            >> ./vco_lc_pre_results.txt
+
+quit
+.endc
+
+.end

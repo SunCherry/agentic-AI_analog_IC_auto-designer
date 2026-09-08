@@ -1,0 +1,35 @@
+port_aware_place: wire term = port-aware HPWL over the ROUTER's net set (bulk pins + supply rails included). Gates unchanged.
+=== Annealing placement: 9 macros, 6 nets (excl. supply rails) ===
+  min_metal_spacing=0.1400um -- min_distance per macro (10x spacing x num_nets): current_mirror_XN5_XN4=2.80um, XN2=4.20um, XN3=4.20um, XC0=2.80um, XC1=2.80um, XN1=5.60um, XN0=5.60um, XL0=2.80um, XL1=2.80um
+  max canvas aspect=4.000:1  (4:1 from /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/design_constraints.json)
+  iter      0/20000  t=  50.000  cost=   5923.06  best=   5923.06
+  iter   2000/20000  t=  25.059  cost=   1277.58  best=   1261.09
+  iter   4000/20000  t=  12.559  cost=   1190.21  best=   1178.11
+  iter   6000/20000  t=   6.295  cost=   1028.62  best=   1026.69
+  iter   8000/20000  t=   3.155  cost=    946.65  best=    946.65
+  iter  10000/20000  t=   1.581  cost=    952.56  best=    945.66
+  iter  12000/20000  t=   0.792  cost=    935.80  best=    935.80
+  iter  14000/20000  t=   0.397  cost=    931.76  best=    931.65
+  iter  16000/20000  t=   0.199  cost=    929.71  best=    929.71
+  iter  18000/20000  t=   0.100  cost=    926.93  best=    926.79
+
+=== Final placement ===
+  cost=926.05  hpwl=679.60um  overlap_area=0.0000um^2  symmetry_penalty=0.00  density_penalty=0.0000um (worst shortfall=0.0000um)  bbox_area=123224.89um^2
+  bbox=312.05x394.88um (aspect 1.27:1)  cell_area=85833.92um^2  utilization=69.7%
+  Overlap check: PASS (0 overlap)
+  Density/clearance check: PASS (every pair meets its required min_distance)
+  Canvas aspect check: PASS (1.27:1, within 4.00:1)
+  current_mirror_XN5_XN4         @ (  198.32,   225.95)   14.86 x  20.75                num_nets=2  min_distance=2.80um
+  XN2                            @ (  127.78,   225.66)   66.28 x   9.64  [rotated 90]  num_nets=3  min_distance=4.20um
+  XN3                            @ (  127.82,   239.52)   66.28 x   9.64  [rotated 90]  num_nets=3  min_distance=4.20um
+  XC0                            @ (  216.03,   238.84)    7.78 x  12.04  [rotated 90]  num_nets=2  min_distance=2.80um
+  XC1                            @ (  215.97,   262.15)    7.78 x  12.04  [rotated 90]  num_nets=2  min_distance=2.80um
+  XN1                            @ (  186.52,   254.78)    9.10 x  26.27                num_nets=4  min_distance=5.60um
+  XN0                            @ (  201.24,   252.33)    9.10 x  26.27                num_nets=4  min_distance=5.60um
+  XL0                            @ (  206.25,   284.21)  213.22 x 196.00  [rotated 90]  num_nets=2  min_distance=2.80um
+  XL1                            @ (  226.61,    85.33)  213.22 x 196.00  [rotated 90]  num_nets=2  min_distance=2.80um
+
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/placement_pos.json
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/sweep/P4_placing.txt (placement performance report)
+  --no-render passed -- run script/render_placement.py manually for the KLayout-viewable GDS
+  stock centre-HPWL (unpatched metric, for comparison only): 620.98 um

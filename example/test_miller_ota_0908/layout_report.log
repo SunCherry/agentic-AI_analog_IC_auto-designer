@@ -1,0 +1,113 @@
+================================================================================
+LAYOUT REPORT -- test_miller_ota_0908
+================================================================================
+report_dir : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/   (= <design_dir>)
+final GDS  : layout/test_miller_ota_0908_fixed.gds
+TOP CELL   : `routed`  -- renaming the file did NOT rename the cell. Every downstream
+             Magic/DRC/PEX call must still pass --top routed, or it will load an empty
+             cell and report a false PASS.
+provenance : placer + router (glayout primitives, A* negotiated-congestion routing)
+PDK        : sky130A
+
+--------------------------------------------------------------------------------
+DEVICE COUNT BY KIND   (from physical_map.json, 11 devices, all placed)
+--------------------------------------------------------------------------------
+| Kind  | Count | Instances                        |
+|-------|-------|----------------------------------|
+| nfet  |   5   | XMN1 XMN2 XMN3 XMN4 XMN5         |
+| pfet  |   4   | XMP1 XMP2 XMP3 XMP4              |
+| cap   |   1   | XC0                              |
+| res   |   1   | R0                               |
+| bjt   |   0   | --                               |
+| other |   0   | --                               |
+| TOTAL |  11   |                                  |
+  Magic additionally extracts 3 merged tie-off dummy devices that glayout draws inside
+  the generated cells (XDUMMY1/2/3); they are declared in lvs_compare.spice and are
+  not separate placed macros.
+
+--------------------------------------------------------------------------------
+TOTAL PLACEMENT AREA
+--------------------------------------------------------------------------------
+  bounding box over physical_map.json's `devices`, via
+  .claude/reference/generate_grid.py's overall_bbox() (not re-derived):
+     (-439.0945, -205.8722) .. (-344.3426, -130.5737) um
+     width 94.752 um  x  height 75.299 um
+     AREA = 7134.67 um^2
+  Cross-checked against generate_grid.load_device_boxes() -- identical.
+  (The GDS bbox is slightly larger, (-439.095,-206.710)..(-344.345,-130.015), because
+  it includes routing metal outside the device boxes.)
+
+--------------------------------------------------------------------------------
+DISTINCT GDS LAYERS ACTUALLY DRAWN   (read from the GDS, not the PDK layer list)
+--------------------------------------------------------------------------------
+  21 distinct layer/datatype pairs:
+    (64,20) (64,44) (65,20) (66,13) (66,20) (66,44) (67,20) (67,44)
+    (68,16) (68,20) (68,44) (69,16) (69,20) (69,44) (70,20) (70,44)
+    (71,20) (89,44) (93,44) (94,20) (95,20)
+  Routing layers carrying wires: 67/20 (li1), 68/20 (met1), 69/20 (met2), 70/20 (met3),
+  71/20 (met4).  Note the router calls these met1..met5 respectively -- the glayout
+  glayer names are offset by one from the Magic/PDK process layers.
+  4 distinct label layers present.
+
+--------------------------------------------------------------------------------
+DRC FINAL STATUS
+--------------------------------------------------------------------------------
+  STATUS        : CLEAN -- 0 violations (DRC_TOTAL=0, 0 rects, 0 rules)
+  fix iterations: 1 (of a 5 budget; baseline run excluded, per protocol)
+  detail        : drc_report.log
+  bookkeeper    : layout_fixer_work/bookkeeper.log
+
+--------------------------------------------------------------------------------
+LVS FINAL STATUS
+--------------------------------------------------------------------------------
+  STATUS        : MATCH -- "Circuits match uniquely"
+                  devices 13/13, nets 10/10, pins 5/5
+  iterations    : 1 (of a 5 budget) -- matched first try, no geometry change
+  detail        : lvs_report.log
+
+--------------------------------------------------------------------------------
+PER-ITERATION HISTORY (append-only -- what changed each round, both phases)
+--------------------------------------------------------------------------------
+DRC phase
+  [D-baseline] routed.gds, top=routed, router defaults (pitch 0.7200um).
+      DRC_TOTAL=2, 3 rects, 1 rule: Metal2 spacing < 0.14um (met2.2).
+      All 3 on net VSS at XMN5's VSS port, ~(-401.6,-191.0).
+  [D-categorize] placement_visualization.gds, top=placement_visualization.
+      DRC_TOTAL=0 -> the pre-routing placement is clean, so 100% of the violations
+      are router-introduced. (Baseline/categorization runs do not consume budget.)
+  [D-attribute] Attributed via routes.json (exact coordinate match, not label
+      proximity) and cross-checked against GDS layer-69 polygons. Diagnosed as a
+      SAME-NET notch: landing-stub bottom (-190.9973) vs met3<->met2 via pad top
+      (-191.1199) = 0.1227um gap. Keepouts checked first: only XC0 declares one
+      (1.2um), ~15um away -- not breached.
+  [D-knob-probe] Established that every non-pitch knob is a no-op here, because
+      route_nets.py's penalty() exempts a net's own metal. 9 knob settings tried,
+      all left the violation unchanged. Cheap geometric screen (validated to
+      reproduce Magic's result exactly) used to rank candidates without spending
+      DRC budget.
+  [D-iter-1] Re-ran route_nets.py with the SOLE change --track-multiplier 1.0 -> 1.04
+      (pitch 0.7200 -> 0.7488um). Real Magic DRC: 0 violations. Bbox/polygon guard
+      confirms the 0 is real. => DRC gate CLOSED after 1 fix iteration.
+
+LVS phase
+  [L-iter-1] Magic extraction (gds read -> load routed -> port makeall -> extract all
+      -> ext2spice lvs) on the DRC-clean GDS; netgen against
+      primitives/lvs_compare.spice subckt two_stage_rz.
+      Result: MATCH, 13 devices / 10 nets / 5 pins, unique.
+      No layout change made, so no DRC re-run was owed.
+      => LVS gate CLOSED after 1 iteration.
+
+--------------------------------------------------------------------------------
+EFFECT OF THE FIX ON THE PROTECTED NETS (circuit-read constraints)
+--------------------------------------------------------------------------------
+| Net  | Baseline        | Final (tm 1.04) | Delta          | Note |
+|------|-----------------|-----------------|----------------|------|
+| net7 | 104.17um, 0 via | 104.68um, 0 via | +0.51um (+0.5%)| bias spine; still 0 vias, still a chain not a Steiner tree (pre-existing shortfall, not worsened structurally) |
+| net8 |  50.12um, 4 via |  50.25um, 4 via | +0.13um (+0.26%)| width unchanged at 0.21um; +0.13um adds ~0.08 ohm against R0 = ~100 ohm |
+| net5 | 123.17um, 3 via | 120.96um, 3 via | -2.21um        | improved |
+| net4 |  20.77um, 0 via |  20.92um, 0 via | +0.15um        | |
+| total|  715.20um, 30 via| 715.79um, 27 via| +0.59um, -3 via| 3 fewer vias overall |
+  Differential twins {Vip,Vin} and {net4,net5} were not mirrored or re-paired.
+  The ratioed family {net7,net3,vout} was not mirrored.
+  Placement was NOT touched: every device box is bit-identical to placement_pos.json.
+================================================================================

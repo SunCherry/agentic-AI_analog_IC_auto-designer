@@ -1,0 +1,76 @@
+========================================================================
+ROUTING SUMMARY -- vco_lc_final_shaped_flat
+========================================================================
+generated   : 2026-09-04T21:03:48
+design dir  : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+runtime     : 1.9s
+overall     : PASS
+
+-- quality gates ---------------------------------------------------
+  nets routed        : 6/6 multi-macro   (+1 single-macro pin(s) labeled)
+  path-on-path shorts: 0   (must be 0 -- exactly modelled, no rasterization slack)
+  congestion         : PASS (converged)   after 1 ripup pass(es)
+  failed nets        : none
+  conservative cells : 12   (via/stub pad footprints rasterized to whole
+                       grid cells -- an UPPER bound, not a violation; DRC is
+                       the authority, see ../SKILL.md)
+
+-- wire length -----------------------------------------------------
+  total wirelength   : 877.16 um
+  total vias         : 18   (7 on gate-sensitive nets)
+  mean / max per net : 146.19 um  /  299.84 um
+  feed-through       : 35.92 um (4.1%) runs over a macro on a layer it leaves empty
+
+-- by layer --------------------------------------------------------
+  layer   dir   width        wire   share   blocked
+  met2      H   0.210    207.56um   23.7%      1.0%
+  met3      V   0.210    198.29um   22.6%      0.2%
+  met4      H   0.310    119.99um   13.7%      0.2%
+  met5      V   0.310    351.32um   40.1%     38.7%
+
+-- vias by transition (pad = real via_stack footprint) -------------
+  met2  <-> met3   pad= 0.43um  count=7
+  met3  <-> met4   pad= 1.50um  count=2
+  met4  <-> met5   pad= 0.38um  count=8
+  met1  <-> met2   (port landing)   count=1
+
+-- worst nets by wirelength ----------------------------------------
+  voutn           299.84 um ( 34.2%)   5 macro(s)   33 seg   3 via   [gate-sensitive]
+  VDD             230.90 um ( 26.3%)   4 macro(s)   29 seg   6 via
+  voutp           155.39 um ( 17.7%)   5 macro(s)   36 seg   4 via   [gate-sensitive]
+  VSS              88.80 um ( 10.1%)   5 macro(s)   36 seg   4 via
+  vtail            55.38 um (  6.3%)   3 macro(s)   13 seg   1 via
+  Vcont            46.84 um (  5.3%)   2 macro(s)   23 seg   0 via
+
+-- macro obstacle map (per layer) ----------------------------------
+   full=whole box blocked   geom=only real metal   free=open
+  XC0                            met2:free  met3:free  met4:full  met5:full
+  XC1                            met2:free  met3:free  met4:full  met5:full
+  XL0                            met2:free  met3:free  met4:free  met5:full
+  XL1                            met2:free  met3:free  met4:free  met5:full
+  XN0                            met2:full  met3:geom(2p,3c)  met4:free  met5:free
+  XN1                            met2:full  met3:geom(2p,6c)  met4:free  met5:free
+  XN2                            met2:full  met3:geom(2p,3c)  met4:free  met5:free
+  XN3                            met2:full  met3:geom(2p,3c)  met4:free  met5:free
+  current_mirror_XN5_XN4         met2:full  met3:full  met4:free  met5:free
+
+-- landing points --------------------------------------------------
+  real glayout ports : 28
+  box-edge fallback  : 0   (macro had no near-edge port for that net -- see
+                       generate_primitives.py's near_edge_ports())
+  corridor-clean     : moved 0 landing(s) off another net's metal; 2 had NO clean option; 10 corridor cell-layer(s) sit on another net's conductor (reported, not withheld -- see route_nets.py)
+      DIRTY: VDD on XC0 (top_met) -- every candidate's corridor crosses another net's metal; expect an extraction-level short on this net
+      DIRTY: VDD on XC1 (top_met) -- every candidate's corridor crosses another net's metal; expect an extraction-level short on this net
+
+-- routing grid ----------------------------------------------------
+  602 x 713 cells x 4 layers   pitch=0.7200um (coarsest legal layer pitch 0.7200 x1.0)
+  origin=(-58.304, -124.877)
+
+-- reproducibility -------------------------------------------------
+  layers=met2,met3,met4,met5  track_multiplier=1.0  ripup_iters=5
+  via_cost=10.0 (x real pad um)  sensitive_via_multiplier=3.0
+  wrong_direction_penalty=1.5  over_macro_cost=0.4  sensitive_over_macro_multiplier=3.0
+  shared_cell_penalty=400.0  via_pad_penalty=40.0  feedthrough=True
+  proximity_radius=2  proximity_weight=0.5  history_step=1.0
+  sensitive nets: voutn, voutp
+========================================================================

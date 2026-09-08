@@ -1,0 +1,805 @@
+# circuit_decomposition.yaml -- the circuit read that schematic-agent and
+# schematic-sizing work from. Conclusions only: which patterns the netlist
+# contains, and which devices must share a tunable parameter. The scan
+# evidence behind them is printed by build_decomposition.py, not stored
+# here. Key meanings: .claude/skills/circuit-decomposition/SKILL.md
+#
+#   `hierarchy` is machine-written -- re-run the script rather than editing.
+#   `tie_groups` and `tunable_parameters` are DERIVED by build_tunables.py
+#   from pattern-table.md's own "Tie group" rules -- machine-written, like
+#   `hierarchy`. Re-run the script rather than editing them, and do not
+#   "correct" a mirror into per-leg free widths: one shared unit w/l with a
+#   per-leg integer m IS the mirror rule, and `tunable_template` is rendered
+#   straight from them.
+#
+#   `patterns`, `unmatched_devices`, `matched_nets`, `open_questions` are
+#   AUTHORED against pattern-table.md, and are empty until SKILL.md's
+#   judgment steps have run. Empty means "not done yet", never "none found".
+#   `matched_nets` is the layout half of a tie group: the wiring that must
+#   match for the matched devices to stay matched.
+schema: circuit-decomposition/v1
+netlist: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/netlist/two_stage_rz.sp
+top: two_stage_rz
+generated: '2026-09-08'
+confirmed_by_user: false   # PENDING -- NOT confirmed, and NOT inferred as confirmed.
+# schematic-agent ran as a subagent, where AskUserQuestion does not reach the
+# user, so the read below (patterns, function_analysis, parasitic_sensitivity,
+# matched_nets, and the Q1/Q2 recommendations) is AUTHORED BEST JUDGMENT that
+# the sizing run proceeded on, unconfirmed. Q1 and Q2 in `open_questions` are
+# the two the user must close; Q3 and Q4 were resolved from structure alone.
+# Set this flag true only by the user's own confirmation.
+hierarchy:
+  diagram: two_stage_rz   (1 cap, 9 mos, 1 res)
+  levels: 1
+  blocks:
+  - name: two_stage_rz
+    pins: [Vip, Vin, VDD, VSS, vout]
+    instance_paths: [(top)]
+    own_devices: 11
+    sub_instances: []
+tie_groups:
+- id: tg1_current_mirror
+  pattern: current_mirror
+  devices: [XMN4, XMN3, XMN5]
+  status: ok
+  tied: [w, l]
+  ratio_carrier: m
+  free: []
+  unit_device: XMN4
+  ratio_seed:
+    XMN4: {w_total_as_written: 236.0, m_seed: 5, w_total_seeded: 236.0}
+    XMN3: {w_total_as_written: 102.6, m_seed: 2, w_total_seeded: 94.4}
+    XMN5: {w_total_as_written: 345.0, m_seed: 7, w_total_seeded: 330.4}
+- id: tg2_differential_pair
+  pattern: differential_pair
+  devices: [XMN1, XMN2]
+  status: ok
+  tied: [w, l, m]
+  ratio_carrier: none
+  free: []
+- id: tg3_current_mirror
+  pattern: current_mirror
+  devices: [XMP1, XMP2]
+  status: ok
+  tied: [w, l]
+  ratio_carrier: m
+  free: []
+  unit_device: XMP1
+  ratio_seed:
+    XMP1: {w_total_as_written: 14.4, m_seed: 1, w_total_seeded: 14.4}
+    XMP2: {w_total_as_written: 14.4, m_seed: 1, w_total_seeded: 14.4}
+tunable_parameters:
+- name: MN4_W
+  param: w
+  members: [XMN4, XMN3, XMN5]
+  seed: 47.2
+  kind: continuous
+  tunable_by: sizing
+- name: MN4_L
+  param: l
+  members: [XMN4, XMN3, XMN5]
+  seed: 0.15
+  kind: continuous
+  tunable_by: sizing
+- name: MN4_M
+  param: m
+  members: [XMN4]
+  seed: 5
+  kind: integer
+  tunable_by: sizing
+- name: MN3_M
+  param: m
+  members: [XMN3]
+  seed: 2
+  kind: integer
+  tunable_by: sizing
+- name: MN5_M
+  param: m
+  members: [XMN5]
+  seed: 7
+  kind: integer
+  tunable_by: sizing
+- name: MN1_W
+  param: w
+  members: [XMN1, XMN2]
+  seed: 40.0
+  kind: continuous
+  tunable_by: sizing
+- name: MN1_L
+  param: l
+  members: [XMN1, XMN2]
+  seed: 0.15
+  kind: continuous
+  tunable_by: sizing
+- name: MN1_M
+  param: m
+  members: [XMN1, XMN2]
+  seed: 8
+  kind: integer
+  tunable_by: sizing
+- name: MP1_W
+  param: w
+  members: [XMP1, XMP2]
+  seed: 14.4
+  kind: continuous
+  tunable_by: sizing
+- name: MP1_L
+  param: l
+  members: [XMP1, XMP2]
+  seed: 0.15
+  kind: continuous
+  tunable_by: sizing
+- name: MP1_M
+  param: m
+  members: [XMP1]
+  seed: 1
+  kind: integer
+  tunable_by: sizing
+- name: MP2_M
+  param: m
+  members: [XMP2]
+  seed: 1
+  kind: integer
+  tunable_by: sizing
+- name: MP3_W
+  param: w
+  members: [XMP3]
+  seed: 40.0
+  kind: continuous
+  tunable_by: sizing
+- name: MP3_L
+  param: l
+  members: [XMP3]
+  seed: 0.15
+  kind: continuous
+  tunable_by: sizing
+- name: R0_W
+  param: w
+  members: [R0]
+  seed: 2.0
+  kind: continuous
+  tunable_by: sizing
+- name: R0_L
+  param: l
+  members: [R0]
+  seed: 4.15
+  kind: continuous
+  tunable_by: sizing
+- name: C0_W
+  param: w
+  members: [XC0]
+  seed: 45.0
+  kind: continuous
+  tunable_by: sizing
+- name: C0_L
+  param: l
+  members: [XC0]
+  seed: 45.0
+  kind: continuous
+  tunable_by: sizing
+- name: MP4_W
+  param: w
+  members: [XMP4]
+  seed: 2.3
+  kind: continuous
+  tunable_by: sizing
+- name: MP4_L
+  param: l
+  members: [XMP4]
+  seed: 0.15
+  kind: continuous
+  tunable_by: sizing
+- name: MP3_M
+  param: m
+  members: [XMP3]
+  seed: 3
+  kind: integer
+  tunable_by: fold
+- name: MP4_M
+  param: m
+  members: [XMP4]
+  seed: 1
+  kind: integer
+  tunable_by: fold
+patterns:
+# Step 2 -- matched against pattern-table.md, from build_decomposition.py's
+# printed scan (re-printed to a scratch path; the scan was NOT re-run over
+# this file). Every device has exactly one `primary` owner -- see
+# `device_ownership` for the single structural overlap (XMN4) that two
+# registered patterns legitimately share. `device_params` are the AS-WRITTEN
+# netlist values; the tie-group seed re-expresses two nfet legs (see
+# tie_groups.tg1.ratio_seed and open_questions Q1).
+- id: current_mirror
+  block: two_stage_rz
+  instance_paths: ['(top)']
+  devices: [XMN4, XMN3, XMN5]
+  reference: XMN4
+  legs: [XMN3, XMN5]
+  tie_group: tg1_current_mirror
+  matched_by: >-
+    detector signature: XMN4 diode-connected (g==d==net7); XMN3 and XMN5 share
+    that gate net AND the source rail VSS, with distinct drains (net3, vout).
+    One REF fanning out to 2 legs = one 1:N finding, not two mirrors.
+  confidence: certain
+  device_params:
+    XMN4: {w: 47.2, l: 0.15, m: 5, nf: 1}      # total 236.0 um
+    XMN3: {w: 34.2, l: 0.15, m: 3, nf: 1}      # total 102.6 um
+    XMN5: {w: 43.125, l: 0.15, m: 8, nf: 1}    # total 345.0 um
+  note: >-
+    The legs do genuinely different jobs (bias reference / input-pair tail /
+    stage-2 load) and are still ONE tie group -- pattern-table's own watch-out.
+    One shared unit w/l plus a per-leg integer m IS the mirror; three
+    independent widths on one gate net is not, and is what the 0907 run
+    produced under the old contract.
+- id: current_mirror
+  block: two_stage_rz
+  instance_paths: ['(top)']
+  devices: [XMP1, XMP2]
+  reference: XMP1
+  legs: [XMP2]
+  tie_group: tg3_current_mirror
+  matched_by: >-
+    detector signature: XMP1 diode-connected (g==d==net4); XMP2 shares that
+    gate net and the source rail VDD, distinct drain net5. 1:1 (m=1 both).
+  confidence: certain
+  device_params:
+    XMP1: {w: 14.4, l: 0.15, m: 1, nf: 1}
+    XMP2: {w: 14.4, l: 0.15, m: 1, nf: 1}
+- id: differential_pair
+  block: two_stage_rz
+  instance_paths: ['(top)']
+  devices: [XMN1, XMN2]
+  tie_group: tg2_differential_pair
+  matched_by: >-
+    detector signature: same-type nfets sharing source net3 (not a rail),
+    distinct gates (Vin, Vip) driven from OUTSIDE the pair -- the
+    cross_coupled_pair disambiguator -- and distinct drains (net4, net5).
+  confidence: certain
+  device_params:
+    XMN1: {w: 40, l: 0.15, m: 8, nf: 1}        # total 320.0 um
+    XMN2: {w: 40, l: 0.15, m: 8, nf: 1}        # total 320.0 um
+- id: common_source_stage
+  block: two_stage_rz
+  instance_paths: ['(top)']
+  devices: [XMP3]
+  tie_group: none
+  matched_by: >-
+    manual Structure test on the detector's `unclassified`: signal on the gate
+    (net5 is stage-1's output, not a bias net), source on the VDD rail, drain
+    at the high-impedance output `vout` loaded by a current source (XMN5).
+  confidence: certain
+  device_params:
+    XMP3: {w: 40, l: 0.15, m: 3, nf: 1}        # total 120.0 um
+- id: self_biased_reference
+  block: two_stage_rz
+  instance_paths: ['(top)']
+  devices: [XMP4, XMN4]
+  primary: [XMP4]
+  tie_group: none
+  matched_by: >-
+    manual Structure test: diode-connected pfet XMP4 (g==d==net7, s=VDD) in
+    series with diode-connected nfet XMN4 (g==d==net7, s=VSS) between the
+    rails, drains tied at net7; no external Ibias source exists anywhere in
+    the netlist. net7 gates the whole nfet mirror family.
+  confidence: certain
+  device_params:
+    XMP4: {w: 2.3, l: 0.15, m: 1, nf: 1}
+    XMN4: {w: 47.2, l: 0.15, m: 5, nf: 1}      # shared with the nfet current_mirror
+  note: >-
+    Per pattern-table: the SMALLER device dominates. XMP4 is 2.3 um against
+    XMN4's 236 um total, so this one tiny pfet sets the reference current for
+    every downstream mirror leg -- and therefore the Power key.
+- id: rc_compensation_network
+  block: two_stage_rz
+  instance_paths: ['(top)']
+  devices: [R0, XC0]
+  tie_group: none
+  matched_by: >-
+    manual Structure test (invisible to the detector -- both devices passive,
+    parse_devices() returns MOS/BJT only): XC0 bridges net8..vout and R0
+    bridges net5..net8, so the series R+C spans net5 (stage-1 output /
+    stage-2 input, high-Z gain node) to vout (stage-2 output gain node) --
+    two consecutive gain-stage outputs. Confirmed by the scan's
+    `[net net8] R0, XC0 -> test rc_compensation_network` clique.
+  confidence: certain
+  device_params:
+    R0:  {w: 2.0, l: 4.15}                     # sky130_fd_pr__res_generic_po, ~100 ohm
+    XC0: {w: 45, l: 45}                        # sky130_fd_pr__cap_mim_m3_1, ~4.05 pF
+
+unmatched_devices: []   # all 11 devices matched to a registered pattern
+
+device_ownership:
+# The "every device exactly once" reconciliation, 11/11. XMN4 is structurally
+# a member of TWO registered patterns -- the nfet mirror's REFERENCE and the
+# self-biased leg's nfet half. That is what a self-biased mirror IS, not a
+# detection ambiguity. Primary ownership goes to the current_mirror, because
+# that is the pattern whose TIE GROUP sizing acts on and whose template
+# variable (MN4_W/MN4_L) writes the device.
+  XMP1: current_mirror(pfet_load)
+  XMP2: current_mirror(pfet_load)
+  XMN1: differential_pair
+  XMN2: differential_pair
+  XMN3: current_mirror(nfet_bias)
+  XMN4: current_mirror(nfet_bias)     # also self_biased_reference (secondary)
+  XMN5: current_mirror(nfet_bias)
+  XMP3: common_source_stage
+  XMP4: self_biased_reference
+  R0:   rc_compensation_network
+  XC0:  rc_compensation_network
+
+cross_pattern_dependencies:
+# SKILL.md Step 3 says cross-pattern dependencies are still AUTHORED, but the
+# derived `tie_groups` only contain the three AUTO patterns, so there is no
+# rc_compensation_network group to append one to. Recorded here instead, at
+# top level, so nothing in the machine-written sections is edited.
+- id: xpd1_miller_branch
+  between: [rc_compensation_network, common_source_stage, differential_pair]
+  devices: [R0, XC0, XMP3, XMN1, XMN2]
+  dependency: >-
+    HARD. R0 must track 1/gm2 of XMP3 to cancel the RHP zero gm2/Cc; Cc
+    (XC0 area x ~2 fF/um^2 ~ 4.05 pF at 45x45) trades against gm1 of the input
+    pair, since UGBW ~ gm1/(2*pi*Cc). Moving gm1 (MN1_W/MN1_L/MN1_M) or gm2
+    (MP3_W/MP3_L) without revisiting R0_L/C0_W/C0_L moves UGBW and PM together
+    and looks inexplicable in the iteration log.
+- id: xpd2_bias_propagation
+  between: [self_biased_reference, current_mirror]
+  devices: [XMP4, XMN4, XMN3, XMN5]
+  dependency: >-
+    HARD. There is no external Ibias: XMP4 in series with XMN4 sets the whole
+    reference current, which MN3_M and MN5_M then scale into the tail current
+    and the stage-2 load current. So MP4_W and MN4_W move the tail current,
+    the output-branch current, Power, UGBW and Gain all at once -- they are
+    the coarsest levers in the design, not local ones.
+matched_nets:
+# Step 4 -- the layout half of the tie groups, in pattern-table.md's own
+# vocabulary. Authored from the scan's `[net-match: ...]` candidates plus a
+# manual pass for the two passive patterns (which get no candidates).
+# layout (placer/router) reads this; sizing does not.
+- id: mn1_input_gates
+  nets: [Vip, Vin]
+  kind: differential
+  pattern: differential_pair
+  devices: [XMN2, XMN1]
+  terminal: gate
+  scan_said: differential
+  why: >-
+    Route as mirror images about the pair's axis -- same layer, length, via
+    count and neighbours. 20um of extra met1 on one gate is series R and
+    coupling C the other half never sees: input-referred offset and CMRR loss
+    that no amount of device matching can cancel.
+- id: mn2_pair_drains
+  nets: [net4, net5]
+  kind: differential
+  pattern: differential_pair
+  devices: [XMN1, XMN2]
+  terminal: drain
+  scan_said: differential
+  carried_outward_to:
+    pattern: current_mirror(pfet_load)
+    devices: [XMP1, XMP2]
+    terminal: drain
+    scan_said: branch
+    promoted_to: differential
+    because: >-
+      Step 4.1's 1:1 check: the pfet load legs are m=1 on both with one shared
+      w (MP1_W writes both), so the two branch nets ARE twins. CHOSEN
+      DELIBERATELY as differential, not left at branch. If sizing ever moves
+      MP1_M and MP2_M apart, this entry must drop back to `branch`.
+  why: >-
+    These are the same two physical nets as the pfet mirror's leg drains, so
+    the pairing must not stop at the diff pair's boundary. Asymmetric load on
+    net4 vs net5 unbalances stage-1's differential-to-single-ended conversion:
+    systematic offset and a CMRR floor.
+- id: mn3_tail_node
+  nets: [net3]
+  kind: common
+  pattern: differential_pair
+  devices: [XMN1, XMN2, XMN3]
+  terminal: source (pair) / drain (tail device)
+  scan_said: common
+  why: >-
+    Both halves must reach the tail identically. Asymmetric access splits the
+    tail current before any device mismatch does -- offset that common-centroid
+    device placement cannot undo.
+- id: mn4_nfet_bias_spine
+  nets: [net7]
+  kind: common
+  pattern: current_mirror(nfet_bias) + self_biased_reference
+  devices: [XMN4, XMN3, XMN5, XMP4]
+  terminal: gate (all four) / drain (XMN4, XMP4)
+  scan_said: common
+  why: >-
+    The net that bites: it carries no DC current, so its resistance is
+    invisible to simulation, yet each leg samples Vgs where IT taps. One
+    low-resistance spine with symmetric taps, never a daisy chain outward from
+    XMN4. It is simultaneously the self-biased leg's shared bias node, so IR
+    drop along it is a systematic current error in the tail AND the stage-2
+    load at once -- i.e. in Power, UGBW and Gain together.
+- id: mn5_nfet_bias_leg_drains
+  nets: [net7, net3, vout]
+  kind: branch
+  pattern: current_mirror(nfet_bias)
+  devices: [XMN4, XMN3, XMN5]
+  terminal: drain
+  scan_said: branch
+  why: >-
+    Explicitly branch, NOT twins -- Step 4.1's 1:1 check FAILS here. The family
+    seeds at m = 5 / 2 / 7 off one shared unit w, a deliberately ratioed
+    1 : 0.4 : 1.4 current family. Do not route these as mirror images. What
+    layout must match instead is the PER-UNIT wiring: each of the m copies
+    should see the same interconnect, so the ratio the m count expresses is
+    the ratio the silicon delivers.
+- id: mn6_pfet_load_gate
+  nets: [net4]
+  kind: common
+  pattern: current_mirror(pfet_load)
+  devices: [XMP1, XMP2]
+  terminal: gate
+  scan_said: common
+  why: >-
+    Shared gate spine of the 1:1 load mirror. net4 is ALSO one half of mn2 (it
+    is XMP1's drain as well as its gate, being diode-connected), so it carries
+    a differential constraint and a common one at the same time -- match it to
+    net5 AND keep it low-resistance.
+- id: mn7_stage1_output_node
+  nets: [net5]
+  kind: sensitive
+  pattern: rc_compensation_network + common_source_stage
+  devices: [XMP2, XMN2, XMP3, R0]
+  terminal: drain (XMP2/XMN2) / gate (XMP3) / node 1 (R0)
+  scan_said: not proposed -- `sensitive` is never auto-proposed (Step 4.3)
+  why: >-
+    High-impedance gain node and the near end of the Miller branch. Routing
+    capacitance here lands directly on pole splitting and phase margin; it is
+    also half of mn2, so capacitance added asymmetrically versus net4 is a
+    differential error on top of the PM cost. Keep short, away from rails and
+    away from vout's swing.
+- id: mn8_output_node
+  nets: [vout]
+  kind: sensitive
+  pattern: common_source_stage + rc_compensation_network
+  devices: [XMP3, XMN5, XC0]
+  terminal: drain (XMP3/XMN5) / plate 2 (XC0)
+  scan_said: not proposed -- `sensitive` is never auto-proposed (Step 4.3)
+  why: >-
+    The second high-impedance gain node and the far end of the compensation
+    branch. Capacitance here moves the output pole, hence PM and UGBW
+    directly; it also carries the full output current, so it needs width for
+    IR drop -- which fights keeping it small.
+- id: mn9_miller_internal_node
+  nets: [net8]
+  kind: sensitive
+  pattern: rc_compensation_network
+  devices: [R0, XC0]
+  terminal: node 2 (R0) / plate 1 (XC0)
+  scan_said: not proposed -- manual pattern, no candidates at all
+  why: >-
+    The node between the nulling resistor and the cap. Routing resistance here
+    adds in series with R0, moving the zero away from the gm2 it was sized to
+    cancel; routing capacitance here shunts the cap. Keep the R-C branch
+    physically adjacent and short.
+- id: mn10_supply_rails
+  nets: [VDD, VSS]
+  kind: none
+  pattern: (all)
+  devices: [all]
+  terminal: source / bulk
+  scan_said: excluded -- rails are never twins
+  why: >-
+    Recorded explicitly so this reads as "looked at", not "missed". Rails carry
+    no matching constraint; their constraint is IR drop and it belongs to the
+    power grid, not to this section.
+open_questions:
+# UNCONFIRMED -- authored by schematic-agent without an interactive channel
+# (AskUserQuestion does not reach the user from inside a subagent). Each
+# carries the recommendation THIS RUN PROCEEDED ON. The user closes them.
+- id: Q1
+  about: tg1_current_mirror -- the seed re-expression moved two legs' bias
+  question: >-
+    Re-expressing the nfet bias family on one shared unit device (w = 47.2,
+    m = 5 / 2 / 7) preserves XMN4's 236.0 um exactly but moves XMN3 from
+    102.6 to 94.4 um (-8.0%) and XMN5 from 345.0 to 330.4 um (-4.2%), which
+    drops seed UGBW from the golden netlist's 11.46 MHz to ~9.43 MHz. Is
+    sizing free to re-establish the bias family from that seed using the
+    shared MN4_W/MN4_L and the per-leg MN3_M/MN5_M/MN4_M, accepting whatever
+    totals fall out -- or must the as-written 236 / 102.6 / 345 um totals be
+    reproduced exactly?
+  needs: user confirmation
+  agent_recommendation: >-
+    Re-establish freely from the seed. The as-written totals are not a spec --
+    target_spec.json names PM, UGBW, Gain and Power and nothing else -- and
+    reproducing 102.6 / 345 exactly would require per-leg independent widths,
+    which is the very thing the 0907 run did and the thing that is not a
+    mirror. The shared w plus integer m is both the correct electrical
+    expression and the only one layout can draw as one device family. The
+    -8.0% / -4.2% shift is a starting-point offset for iteration 1 to correct,
+    not a loss. THIS RUN PROCEEDED ON IT, unconfirmed.
+- id: Q2
+  about: absence of an external bias current
+  question: >-
+    The design has no external Ibias -- the reference is the self-biased
+    XMP4/XMN4 diode stack, which makes the whole bias, and therefore the Power
+    key, supply- and temperature-dependent with no PTAT or bandgap behind it.
+    Confirm this is intended, and that Power is to be judged at the nominal
+    1.8 V / tt corner the supplied testbench sets, not across PVT.
+  needs: user confirmation
+  agent_recommendation: >-
+    Judge Power at the testbench's nominal 1.8 V / tt point -- the only
+    condition the supplied deck defines. Inventing another would be authoring
+    an operating condition the spec never states, which is a STOP, not a
+    workaround. Recorded as an explicit hand-off risk: whatever margin the run
+    achieves against the 0.5813 mW ceiling is a nominal-corner margin and is
+    not corner-proof. No PVT sweep is in this run's scope. THIS RUN PROCEEDED
+    ON IT, unconfirmed. (The same question was raised and closed ON this
+    recommendation for the identical user files in test_miller_ota_0907.)
+- id: Q3
+  about: XMN4 double membership
+  question: >-
+    XMN4 belongs structurally to both current_mirror(nfet_bias) (as its
+    reference) and self_biased_reference (as its nfet half). Which pattern
+    owns it for the "every device exactly once" reconciliation?
+  needs: none   # resolved from structure -- no user input required
+  resolution: >-
+    RESOLVED from the netlist alone. This is what a self-biased mirror IS, not
+    a detection ambiguity: both readings are correct simultaneously. Primary
+    ownership is assigned to current_mirror(nfet_bias), because that is the
+    pattern whose tie group sizing acts on and whose template variables
+    (MN4_W / MN4_L) physically write the device line. self_biased_reference
+    keeps XMP4 as its exclusively-owned device and lists XMN4 as a secondary
+    member. See `device_ownership`.
+- id: Q4
+  about: MP3_M and MP4_M are templated but frozen
+  question: >-
+    XMP3 (the stage-2 gain device) carries m=3 and XMP4 m=1, both templated as
+    MP3_M / MP4_M but marked `tunable_by: fold` -- the loop refuses them,
+    correctly, since neither device is a ratio carrier. So stage-2 drive can
+    only be moved through MP3_W, whose per-copy w is bounded by the PDK model
+    bin. Is that the intended limit?
+  needs: none   # resolved from the contract -- recorded so the limit is visible
+  resolution: >-
+    RESOLVED from pattern-table.md: `m` is a sizing variable only where a
+    pattern names it `ratio_carrier`, and common_source_stage / 
+    self_biased_reference name none. It is frozen by design, and the PDK-bin
+    fold is the only thing that writes it. Recorded here because it is a real
+    ceiling on the stage-2 lever, and worth knowing before reading a Gain or
+    PM shortfall as a sizing failure.
+tunable_template: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/two_stage_rz_tunable.sp.j2
+
+# ============================================================================
+# Step 2b -- FUNCTION (schematic-agent, authored on top of the SHAPE above).
+# 2a says XMN4/XMN3/XMN5 are a mirror; this section says which of them is the
+# tail and which is the output load, and what each one moves in the spec.
+# ============================================================================
+function_analysis:
+  summary: >-
+    This is a two-stage Miller-compensated OTA: an NMOS input differential pair
+    (XMN1/XMN2) with a 1:1 PMOS mirror load (XMP1/XMP2) converting differential
+    to single-ended at net5, driving a PMOS common-source second stage (XMP3)
+    loaded by an NMOS current source (XMN5) at vout. Stability comes from a
+    Miller branch, XC0 (~4.05 pF MiM) in series with the nulling resistor R0
+    (~100 ohm), tied from net5 back to vout -- pole splitting plus an R that
+    pushes the gm2/Cc right-half-plane zero out of the way. Bias is entirely
+    internal and has no external Ibias: the diode stack XMP4 over XMN4 sets a
+    reference on net7, which the nfet mirror scales by integer m into the
+    input pair's tail (XMN3) and the stage-2 load (XMN5). Every current in the
+    circuit therefore traces back to one 2.3 um pfet, which makes MP4_W and the
+    shared MN4_W the coarsest levers in the design and the direct carriers of
+    the Power key. The signal path is Vip/Vin -> XMN1/XMN2 -> net4/net5 ->
+    XMP3 -> vout, two gain stages in cascade with local Miller feedback around
+    the second.
+  blocks:
+  - ref: XMN1, XMN2   (differential_pair, tg2)
+    function: stage-1 input pair -- converts the differential input to a
+      current difference; its gm1 is stage-1 gain and, with Cc, sets UGBW
+    spec_keys: [Gain, UGBW, PM, Power]
+  - ref: XMP1, XMP2   (current_mirror, pfet_load, tg3)
+    function: stage-1 active load and differential-to-single-ended converter;
+      its ro sets stage-1 output resistance, hence half the total gain
+    spec_keys: [Gain, PM]
+  - ref: XMN3         (current_mirror leg, tg1)
+    function: input-pair tail current source -- sets the pair's bias current
+      and therefore gm1; its m alone is the tail-current ratio knob
+    spec_keys: [UGBW, Gain, Power]
+  - ref: XMN4         (current_mirror reference, tg1; also self_biased_reference)
+    function: the bias reference the whole nfet family mirrors from; shared
+      unit w/l for all three legs, so it sets the family's current density
+    spec_keys: [Power, UGBW, Gain]
+  - ref: XMN5         (current_mirror leg, tg1)
+    function: stage-2 current-source load -- sets XMP3's bias current and,
+      through its ro, the second stage's output resistance
+    spec_keys: [Gain, UGBW, PM, Power]
+  - ref: XMP3         (common_source_stage)
+    function: stage-2 gain device; its gm2 sets stage-2 gain, the RHP zero
+      gm2/Cc that R0 cancels, and the output pole gm2/CL
+    spec_keys: [Gain, PM, UGBW, Power]
+  - ref: XMP4         (self_biased_reference)
+    function: the pfet half of the self-biased diode stack; the smaller device,
+      so it dominates the reference current for every mirror leg
+    spec_keys: [Power, UGBW, Gain]
+  - ref: XC0          (rc_compensation_network)
+    function: Miller compensation capacitor -- splits the two poles and sets
+      UGBW = gm1/(2*pi*Cc)
+    spec_keys: [PM, UGBW]
+  - ref: R0           (rc_compensation_network)
+    function: series nulling resistor -- moves the RHP zero gm2/Cc toward or
+      past infinity when R0 ~ 1/gm2; pure phase-margin device
+    spec_keys: [PM]
+  critical_techniques:
+  - technique: Miller compensation with a series nulling resistor
+    devices: [XC0, R0, XMP3, XMN1, XMN2]
+    buys: >-
+      Pole splitting -- the dominant pole moves to 1/(gm2*ro1*ro2*Cc) and the
+      output pole out to gm2/CL -- plus removal of the RHP zero gm2/Cc that
+      plain Miller capacitance creates, which is what makes >50 deg of phase
+      margin reachable at all on a two-stage amp into 10 pF.
+    costs: >-
+      Cc directly divides UGBW (gm1/(2*pi*Cc)), so every degree of phase margin
+      is bought with bandwidth; and R0 must track 1/gm2, so any change to
+      XMP3's sizing silently detunes the zero.
+  - technique: self-biased reference (no external Ibias)
+    devices: [XMP4, XMN4]
+    buys: >-
+      A complete, self-contained amplifier -- no bias pin, no external current
+      source, and a very small area cost (2.3 um of pfet setting a ~100 uA
+      class of reference).
+    costs: >-
+      The reference is a plain diode stack, so it is supply- and
+      temperature-dependent with no PTAT or bandgap behind it: the Power
+      number, and every gm that follows from it, is a nominal-corner number
+      only. Recorded as open_questions Q2.
+  - technique: mirror ratio expressed as integer m on one shared unit device
+    devices: [XMN4, XMN3, XMN5, XMP1, XMP2]
+    buys: >-
+      The 1 : 0.4 : 1.4 nfet current family is set by copy COUNT off one
+      identical unit transistor, so the ratio is set by geometry that matches
+      by construction and can be drawn as one interdigitated device family.
+    costs: >-
+      The ratio is quantized -- only integers are reachable, so a leg cannot be
+      trimmed finely without moving the shared unit w, which moves every leg at
+      once. That coupling is a real constraint on the tuning loop.
+  - technique: 1:1 pfet mirror load for differential-to-single-ended conversion
+    devices: [XMP1, XMP2]
+    buys: >-
+      Full differential-to-single-ended conversion with no signal current lost,
+      and stage-1 gain gm1*(ro_n||ro_p) from a two-device load.
+    costs: >-
+      The mirror's own pole at net4 is a mirror-pole doublet in the signal
+      path, and the load's ro caps stage-1 gain -- there is no cascode here to
+      lift it, which is the structural reason Gain is the hardest key.
+  - technique: PDK-bin folding as pure re-expression
+    devices: [XMN1, XMN2, XMN3, XMN4, XMN5, XMP3]
+    buys: >-
+      Devices that would otherwise match no sky130 model card (320, 345 um)
+      reach the simulator as m parallel copies of a legal per-copy w, with
+      total width, topology and nets identical.
+    costs: >-
+      m is then doing double duty -- part bin compliance, part mirror ratio --
+      so a fold on a ratio carrier must move every member's m by one common
+      factor, or the ratio is silently damaged.
+
+# ============================================================================
+# Step 2c -- PARASITIC EXPOSURE (schematic-agent). Ranked most-sensitive
+# first. Evidence is STRUCTURE AND GEOMETRY ONLY -- no layout and no PEX
+# numbers exist at this stage, so where the netlist alone cannot rank
+# something, `why` says so rather than inventing a number.
+# `severity: high` is also device-shaper's selection filter for its Nf sweep.
+# ============================================================================
+parasitic_sensitivity:
+- ref: R0 + XC0 (rc_compensation_network), net8
+  nodes: [net8, net5, vout]
+  mechanism: >-
+    The compensation branch's EFFECTIVE R and C both include routing. Series
+    routing resistance on net5-net8-vout adds directly to R0's ~100 ohm --
+    R0 is small enough that a few tens of ohms of wire is a double-digit
+    percentage error -- and it is sized to cancel a zero at gm2/Cc, so the
+    error lands straight on phase margin. Routing capacitance from net8 to any
+    rail shunts the cap and reduces the effective Cc.
+  spec_keys: [PM, UGBW]
+  severity: high
+  why: >-
+    This is the only element in the circuit whose design value (~100 ohm) is
+    the same order as ordinary interconnect resistance. Nothing else here has
+    that property, which is why it ranks first despite being two passive
+    devices.
+- ref: XMP3, XMN5, XC0 @ vout (common_source_stage + rc_compensation_network)
+  nodes: [vout]
+  mechanism: >-
+    vout is a high-impedance gain node, the far plate of Cc, and the node the
+    output pole gm2/CL sits on. Added capacitance moves that pole down and eats
+    phase margin; added resistance in the XMP3/XMN5 drain path is directly in
+    series with the output. It also carries the full stage-2 current, so it
+    wants width -- which adds the very capacitance that hurts it.
+  spec_keys: [PM, UGBW, Gain]
+  severity: high
+  why: >-
+    Structural: two large drains (XMP3 at 120 um total, XMN5 at ~330 um) plus
+    a 45x45 um MiM plate all land here, so this node's junction and plate area
+    is the largest of any signal node in the design before a single wire is
+    drawn. The 10 pF CL dominates absolutely, but the PM budget is what the
+    parasitic increment is measured against.
+- ref: net5 (XMP2, XMN2 drains / XMP3 gate / R0 node 1)
+  nodes: [net5]
+  mechanism: >-
+    The stage-1 output and stage-2 input -- the highest-impedance node in the
+    circuit, since it is loaded only by ro_p||ro_n and XMP3's gate. Capacitance
+    here is multiplied by the second stage's gain looking into Cc, so it moves
+    the dominant pole and pole splitting together. It is also half of the mn2
+    differential pair, so capacitance added here and NOT at net4 is a
+    differential error on top of the PM cost.
+  spec_keys: [PM, UGBW, Gain]
+  severity: high
+  why: >-
+    Highest impedance in the design AND a differential twin AND one end of the
+    compensation branch -- three separate reasons in one node. How much
+    capacitance a real route adds cannot be ranked from the netlist; only that
+    this node is where it costs the most.
+- ref: net7 bias spine (XMN4, XMN3, XMN5 gates + XMP4)
+  nodes: [net7]
+  mechanism: >-
+    A gate-only net carrying zero DC current, so its resistance is INVISIBLE to
+    every simulation this flow runs, yet each mirror leg samples Vgs at its own
+    tap. A daisy chain outward from XMN4 gives XMN5 (the farthest, largest leg)
+    a different Vgs from the reference -- a systematic current error in the
+    tail and the stage-2 load simultaneously.
+  spec_keys: [Power, UGBW, Gain]
+  severity: high
+  why: >-
+    The severity comes from invisibility, not magnitude: nothing in this
+    pipeline will ever measure this error, so it can only be prevented by
+    layout discipline (one low-R spine, symmetric taps). Four devices and
+    ~570 um of total gate width hang off it, the widest fan-out here.
+- ref: XMN1, XMN2 (differential_pair) gates Vip/Vin and drains net4/net5
+  nodes: [Vip, Vin, net4, net5]
+  mechanism: >-
+    A matched pair whose ratio is broken by a MISMATCHED routing load, not by
+    an absolute one: unequal series R or coupling C between the two gates, or
+    between the two drains, is input-referred offset and a CMRR floor that
+    identical devices cannot cancel.
+  spec_keys: [Gain]
+  severity: medium
+  why: >-
+    Structurally this is the textbook high-severity item, and the devices are
+    the largest in the design (320 um each, 8 copies) so their routing is long.
+    Ranked MEDIUM only because this run's target_spec.json names no offset,
+    CMRR or noise key -- nothing measured here will detect it. If an offset or
+    CMRR key is ever added, this moves to the top of the list.
+- ref: XMP1, XMP2 (current_mirror pfet_load) @ net4
+  nodes: [net4]
+  mechanism: >-
+    net4 is diode-connected, so it is a moderate-impedance node (~1/gm_p), but
+    it is also the mirror's gate spine and the twin of net5. Asymmetric loading
+    versus net5 unbalances the differential-to-single-ended conversion; the
+    mirror pole at 1/(net4 R*C) is a doublet in the signal path.
+  spec_keys: [Gain, PM]
+  severity: medium
+  why: >-
+    1/gm_p at these widths is low enough that ordinary routing capacitance
+    moves the mirror pole well above UGBW, so the absolute effect is small; the
+    asymmetry against net5 is the part that matters and it is a matching, not a
+    magnitude, question.
+- ref: net3 tail node (XMN1/XMN2 sources, XMN3 drain)
+  nodes: [net3]
+  mechanism: >-
+    Low-impedance (1/gm of the pair in parallel with the tail's ro), so
+    capacitance here barely moves the differential response. Asymmetric ACCESS
+    from the two halves splits the tail current before any device mismatch
+    does; the node's own capacitance sets the CMRR zero.
+  spec_keys: [Gain]
+  severity: low
+  why: >-
+    Genuinely low for the four keys this spec names -- the differential
+    half-circuit does not see this node's capacitance. It is listed so layout
+    knows the constraint is symmetric ACCESS, not low capacitance.
+- ref: XC0 bottom-plate parasitic to substrate
+  nodes: [net8]
+  mechanism: >-
+    A 45x45 um MiM cap has a real plate-to-substrate capacitance on its lower
+    plate. Whichever plate faces net8 shunts the compensation branch's internal
+    node; whichever faces vout adds to an already-dominated 10 pF load.
+  spec_keys: [PM]
+  severity: low
+  why: >-
+    Low because MiM caps in this stack sit high in the metal and their bottom
+    plate parasitic is a small fraction of 4.05 pF -- but the netlist alone
+    cannot rank it, since orientation is a layout choice not yet made. If it
+    matters, orient the low plate toward vout, where CL swamps it.

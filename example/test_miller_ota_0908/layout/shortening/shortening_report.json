@@ -1,0 +1,326 @@
+{
+  "input_gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/test_miller_ota_0908_fixed.gds",
+  "input_map": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/physical_map.json",
+  "output_gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/shortening_trial/test_miller_ota_0908_fixed_shortened.gds",
+  "output_map": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/shortening_trial/physical_map.json",
+  "drc": "PASS (clean)",
+  "reverted": {
+    "vout": "reverted: new DRC violation on its rebuilt metal"
+  },
+  "bulk_landings_released": {
+    "VDD": [
+      {
+        "instance": "XMP3",
+        "landable_boxes": 72,
+        "region_bbox": [
+          -398.765,
+          -165.425,
+          -387.225,
+          -148.83499999999998
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XMP4",
+        "landable_boxes": 18,
+        "region_bbox": [
+          -402.59000000000003,
+          -200.5,
+          -396.32000000000005,
+          -197.51999999999998
+        ],
+        "is_ring": true
+      }
+    ],
+    "VSS": [
+      {
+        "instance": "XMN1",
+        "landable_boxes": 3,
+        "region_bbox": [
+          -381.755,
+          -170.035,
+          -345.615,
+          -145.045
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XMN3",
+        "landable_boxes": 96,
+        "region_bbox": [
+          -375.015,
+          -185.97000000000003,
+          -352.355,
+          -174.99
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XMN4",
+        "landable_boxes": 150,
+        "region_bbox": [
+          -391.605,
+          -205.87,
+          -355.365,
+          -194.89
+        ],
+        "is_ring": true
+      },
+      {
+        "instance": "XMN5",
+        "landable_boxes": 178,
+        "region_bbox": [
+          -423.395,
+          -190.89000000000001,
+          -380.21500000000003,
+          -179.91
+        ],
+        "is_ring": true
+      }
+    ]
+  },
+  "before": {
+    "VDD": {
+      "net": "VDD",
+      "wirelength_um": 131.87682713334223,
+      "vias": 8,
+      "corners": 4,
+      "terminals": 7,
+      "bbox_bound_um": 109.30127271763575,
+      "mst_um": 110.71877271763574,
+      "excess_um": 22.575554415706478,
+      "excess_ratio": 1.2065442959116057,
+      "cost": 147.87682713334223
+    },
+    "VSS": {
+      "net": "VSS",
+      "wirelength_um": 131.2740215112641,
+      "vias": 7,
+      "corners": 11,
+      "terminals": 7,
+      "bbox_bound_um": 84.7017335387606,
+      "mst_um": 128.3443211186779,
+      "excess_um": 46.57228797250349,
+      "excess_ratio": 1.5498386635875807,
+      "cost": 145.2740215112641
+    },
+    "Vin": {
+      "net": "Vin",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "Vip": {
+      "net": "Vip",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "net3": {
+      "net": "net3",
+      "wirelength_um": 79.53658360856423,
+      "vias": 1,
+      "corners": 4,
+      "terminals": 2,
+      "bbox_bound_um": 69.80873825149868,
+      "mst_um": 69.80873825149868,
+      "excess_um": 9.727845357065547,
+      "excess_ratio": 1.1393499667909655,
+      "cost": 81.53658360856423
+    },
+    "net4": {
+      "net": "net4",
+      "wirelength_um": 20.495339893290435,
+      "vias": 0,
+      "corners": 2,
+      "terminals": 2,
+      "bbox_bound_um": 19.61712545559152,
+      "mst_um": 19.61712545559152,
+      "excess_um": 0.8782144376989152,
+      "excess_ratio": 1.0447677433519493,
+      "cost": 20.495339893290435
+    },
+    "net5": {
+      "net": "net5",
+      "wirelength_um": 119.27971586723885,
+      "vias": 3,
+      "corners": 8,
+      "terminals": 4,
+      "bbox_bound_um": 107.26789153944372,
+      "mst_um": 119.97083025645745,
+      "excess_um": 12.011824327795125,
+      "excess_ratio": 1.1119796814816503,
+      "cost": 125.27971586723885
+    },
+    "net7": {
+      "net": "net7",
+      "wirelength_um": 100.26594861178256,
+      "vias": 0,
+      "corners": 21,
+      "terminals": 6,
+      "bbox_bound_um": 72.31004794382838,
+      "mst_um": 86.82945642055333,
+      "excess_um": 27.955900667954182,
+      "excess_ratio": 1.3866115631629892,
+      "cost": 100.26594861178256
+    },
+    "net8": {
+      "net": "net8",
+      "wirelength_um": 49.9083109898757,
+      "vias": 4,
+      "corners": 1,
+      "terminals": 2,
+      "bbox_bound_um": 48.7726362740766,
+      "mst_um": 48.7726362740766,
+      "excess_um": 1.135674715799098,
+      "excess_ratio": 1.0232850795560282,
+      "cost": 57.9083109898757
+    },
+    "vout": {
+      "net": "vout",
+      "wirelength_um": 71.22077101288204,
+      "vias": 4,
+      "corners": 4,
+      "terminals": 3,
+      "bbox_bound_um": 60.37097829759239,
+      "mst_um": 60.37097829759239,
+      "excess_um": 10.849792715289652,
+      "excess_ratio": 1.1797186830699802,
+      "cost": 79.22077101288204
+    }
+  },
+  "after": {
+    "VDD": {
+      "net": "VDD",
+      "wirelength_um": 85.07006891571737,
+      "vias": 7,
+      "corners": 2,
+      "terminals": 7,
+      "bbox_bound_um": 109.30127271763575,
+      "mst_um": 110.71877271763574,
+      "excess_um": 0.0,
+      "excess_ratio": 0.7783081276233971,
+      "cost": 99.07006891571737
+    },
+    "VSS": {
+      "net": "VSS",
+      "wirelength_um": 28.36473138502646,
+      "vias": 4,
+      "corners": 4,
+      "terminals": 7,
+      "bbox_bound_um": 84.7017335387606,
+      "mst_um": 128.3443211186779,
+      "excess_um": 0.0,
+      "excess_ratio": 0.33487781418365414,
+      "cost": 36.36473138502646
+    },
+    "Vin": {
+      "net": "Vin",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "Vip": {
+      "net": "Vip",
+      "wirelength_um": 0,
+      "vias": 0,
+      "corners": 0,
+      "terminals": 0,
+      "bbox_bound_um": 0.0,
+      "mst_um": 0.0,
+      "excess_um": 0.0,
+      "excess_ratio": 0.0,
+      "cost": 0.0
+    },
+    "net3": {
+      "net": "net3",
+      "wirelength_um": 71.14822186006285,
+      "vias": 1,
+      "corners": 2,
+      "terminals": 2,
+      "bbox_bound_um": 69.80873825149868,
+      "mst_um": 69.80873825149868,
+      "excess_um": 1.3394836085641657,
+      "excess_ratio": 1.0191879074470367,
+      "cost": 73.14822186006285
+    },
+    "net4": {
+      "net": "net4",
+      "wirelength_um": 20.495339893290435,
+      "vias": 0,
+      "corners": 2,
+      "terminals": 2,
+      "bbox_bound_um": 19.61712545559152,
+      "mst_um": 19.61712545559152,
+      "excess_um": 0.8782144376989152,
+      "excess_ratio": 1.0447677433519493,
+      "cost": 20.495339893290435
+    },
+    "net5": {
+      "net": "net5",
+      "wirelength_um": 119.27971586723885,
+      "vias": 3,
+      "corners": 8,
+      "terminals": 4,
+      "bbox_bound_um": 107.26789153944372,
+      "mst_um": 119.97083025645745,
+      "excess_um": 12.011824327795125,
+      "excess_ratio": 1.1119796814816503,
+      "cost": 125.27971586723885
+    },
+    "net7": {
+      "net": "net7",
+      "wirelength_um": 100.26594861178256,
+      "vias": 0,
+      "corners": 21,
+      "terminals": 6,
+      "bbox_bound_um": 72.31004794382838,
+      "mst_um": 86.82945642055333,
+      "excess_um": 27.955900667954182,
+      "excess_ratio": 1.3866115631629892,
+      "cost": 100.26594861178256
+    },
+    "net8": {
+      "net": "net8",
+      "wirelength_um": 49.9083109898757,
+      "vias": 4,
+      "corners": 1,
+      "terminals": 2,
+      "bbox_bound_um": 48.7726362740766,
+      "mst_um": 48.7726362740766,
+      "excess_um": 1.135674715799098,
+      "excess_ratio": 1.0232850795560282,
+      "cost": 57.9083109898757
+    },
+    "vout": {
+      "net": "vout",
+      "wirelength_um": 71.22077101288204,
+      "vias": 4,
+      "corners": 4,
+      "terminals": 3,
+      "bbox_bound_um": 60.37097829759239,
+      "mst_um": 60.37097829759239,
+      "excess_um": 10.849792715289652,
+      "excess_ratio": 1.1797186830699802,
+      "cost": 79.22077101288204
+    }
+  }
+}

@@ -1,0 +1,17 @@
+=== verify_shortening: test_vco_fixed_shortened.gds vs test_vco_fixed.gds ===
+  [PASS] output map and output GDS describe the same metal (0 missing, 0 unclaimed)
+  partitioning macro metal into nodes ...
+  [PASS] every net is one connected piece (macro-internal nodes counted)
+  [PASS] every original pin connection is still made (0 lost, 6 moved along their own node)
+  [PASS] no two nets overlap on one layer (0 found)
+  extracting both layouts with Magic (slow) ...
+    ---------------------------------------------------------------------------------------
+    Cell pin lists are equivalent.
+    Device classes routed and routed are equivalent.
+    Final result: Circuits match uniquely.
+    .
+  [PASS] the two layouts extract to the same circuit
+
+  wirelength 645.91 -> 605.56 um (-40.35, -6.2%), vias 19 -> 20
+
+VERDICT: PASS -- shorter wire, same circuit. DRC is shorten_routes.py's gate; LVS against the schematic remains layout-fixer's.

@@ -1,0 +1,38 @@
+2026-09-04 21:01:49.018 | WARNING  | gdsfactory.pdk:get_active_pdk:733 - No active PDK. Activating generic PDK.
+
+2026-09-04 21:01:49.253 | INFO     | gdsfactory.technology.layer_views:__init__:790 - Importing LayerViews from YAML file: '/opt/anaconda3/envs/transconductor/lib/python3.11/site-packages/gdsfactory/generic_tech/layer_views.yaml'.
+2026-09-04 21:01:49.254 | INFO     | gdsfactory.pdk:activate:337 - 'generic' PDK is now active
+2026-09-04 21:01:49.257 | INFO     | gdsfactory.pdk:activate:337 - 'sky130' PDK is now active
+2026-09-04 21:01:49.265 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met2_met3.gds'
+2026-09-04 21:01:49.276 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met3_met4.gds'
+2026-09-04 21:01:49.288 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met4_met5.gds'
+2026-09-04 21:01:49.435 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met2_met3.gds'
+2026-09-04 21:01:49.446 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met3_met4.gds'
+2026-09-04 21:01:49.456 | INFO     | gdsfactory.component:_write_library:1851 - Wrote to '/var/folders/49/69rbxk796pjg7kb9dd02j6xc0000gn/T/_via_met4_met5.gds'
+  grid: 746x583 cells x 4 layers, pitch=0.7200um (coarsest legal layer pitch 0.7200um x1.0)
+  keepout: +0.750um via-pad protrusion allowance on 4 macro(s) declaring one
+  wire widths: met2=0.210um  met3=0.210um  met4=0.310um  met5=0.310um
+  per-layer obstacles (macro x layer -- 'full'=whole box blocked, 'geom'=only real metal, 'free'=open):
+    XC0                          met2:free  met3:free  met4:full  met5:full
+    XC1                          met2:free  met3:free  met4:full  met5:full
+    XL0                          met2:free  met3:free  met4:free  met5:full
+    XL1                          met2:free  met3:free  met4:free  met5:full
+    XN0                          met2:full  met3:geom(2p,4c)  met4:free  met5:free
+    XN1                          met2:full  met3:geom(2p,7c)  met4:free  met5:free
+    XN2                          met2:full  met3:geom(2p,8c)  met4:free  met5:free
+    XN3                          met2:full  met3:geom(2p,4c)  met4:free  met5:free
+    current_mirror_XN5_XN4       met2:full  met3:full  met4:free  met5:free
+    met2: 4235/434918 cells blocked (1.0%)
+    met3: 683/434918 cells blocked (0.2%)
+    met4: 726/434918 cells blocked (0.2%)
+    met5: 166288/434918 cells blocked (38.2%)
+  via cost (scale x real via_stack footprint): met2->met3 0.43um(pads 0.43/0.33) -> 4.3  met3->met4 1.50um(pads 0.58/1.50) -> 15.0  met4->met5 0.38um(pads 0.38/0.34) -> 3.8
+=== Routing 6 net(s) (2 flagged sensitive: gate-connected) + labeling 1 single-macro pin(s) over 9 placed macro(s) ===
+  ripup iter 0: 29 congested cell(s) (0 path-on-path, 17 via/stub-pad, 12 spacing), 0 failed net(s), total overflow=29
+      VDD+voutp:15, VSS+vtail:6, voutn+vtail:3, VSS+voutn:3, voutp+vtail:2
+
+=== Routing result ===
+  routed 6/6 multi-macro net(s), labeled 1/1 single-macro pin(s)  total_wire=748.79um  vias=24 (sensitive=12)
+  Congestion check: PASS (converged, no failed nets)
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/sweep/Q6_routes.json
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/sweep/Q6_routing.txt (routing performance report)

@@ -1,0 +1,28 @@
+=== Magic DRC: U5_routed.gds (top cell 'routed') ===
+  DRC errors (per-cell, from `drc listall count`): 8
+  Errors by cell: routed=8, via_stack_2e2571cb=3, via_stack_2e2571cb$1=3, via_stack_2e2571cb$2=3, via_stack_2e2571cb$3=3, via_stack_2e2571cb$4=3, via_stack_686e5d96$33=1, via_stack_918d05dd$2=3
+  Cross-check: 3 distinct violated rule(s), 20 instance(s) from `drc listall why`
+  Violations by rule:
+       5  Metal2 spacing < 0.14um (met2.2)
+          at (339.59, 261.355) .. (339.645, 261.495) um
+          at (339.59, 261.295) .. (339.645, 261.32) um
+          at (339.59, 261.32) .. (339.645, 261.495) um
+          at (339.45, 261.32) .. (339.505, 261.355) um
+          at (339.45, 261.295) .. (339.505, 261.32) um
+       9  MiM cap bottom plate spacing < 1.2um (capm.2b)
+          at (329.17, 246.1) .. (330.365, 246.615) um
+          at (330.37, 244.615) .. (331.565, 245.195) um
+          at (329.17, 245.195) .. (330.365, 245.46) um
+          at (326.225, 232.11) .. (327.425, 232.42) um
+          at (327.425, 232.11) .. (328.02, 232.42) um
+          (+4 more -- full list in drc_violations.json)
+       6  Metal3 spacing < 0.3um (met3.2)
+          at (330.07, 246.615) .. (330.365, 246.695) um
+          at (330.37, 246.1) .. (330.665, 246.615) um
+          at (330.07, 246.1) .. (330.365, 246.695) um
+          at (330.37, 244.895) .. (330.665, 245.195) um
+          at (330.37, 244.895) .. (330.665, 245.46) um
+          (+1 more -- full list in drc_violations.json)
+  violation coordinates: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U5/drc_violations.json
+  full Magic log: /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/drc_screen/U5/drc.log
+  DRC check: FAIL -- see violations above

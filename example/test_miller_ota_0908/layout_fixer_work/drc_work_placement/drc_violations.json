@@ -1,0 +1,7 @@
+{
+  "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/placement_visualization.gds",
+  "top_cell": "placement_visualization",
+  "units": "um",
+  "drc_total": 0,
+  "violations": {}
+}

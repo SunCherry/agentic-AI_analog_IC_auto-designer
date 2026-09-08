@@ -1,0 +1,7 @@
+{
+  "gds": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/shortening_p4/test_vco_fixed_shortened.gds",
+  "top_cell": "routed",
+  "units": "um",
+  "drc_total": 0,
+  "violations": {}
+}

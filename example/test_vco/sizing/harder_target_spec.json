@@ -1,0 +1,25 @@
+{
+  "OscFreq": {
+    "Direction": "RANGE",
+    "Value": [
+      3.42,
+      3.58
+    ],
+    "Units": "GHz"
+  },
+  "TuningRange": {
+    "Direction": "FLOOR",
+    "Value": 660.0,
+    "Units": "MHz"
+  },
+  "OutputPower": {
+    "Direction": "FLOOR",
+    "Value": 11.0,
+    "Units": "dBm"
+  },
+  "Power": {
+    "Direction": "CEILING",
+    "Value": 3.3000000000000003,
+    "Units": "mW"
+  }
+}

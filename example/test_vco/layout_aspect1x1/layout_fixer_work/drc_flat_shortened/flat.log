@@ -1,0 +1,61 @@
+
+Magic 8.3 revision 610 - Compiled on Sun Mar  1 14:56:29 CST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    ubm 
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Loading "flat.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: library
+Reading "routed".
+Reading "Unnamed_4ab843b8".
+Error while reading cell "Unnamed_4ab843b8" (byte position 9584): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "via_stack_686e5d96$33".
+Reading "XC0".
+Reading "via_stack_918d05dd$2".
+Reading "via_stack_627eccf4$2".
+Reading "via_stack_627eccf4$5".
+Reading "Unnamed_b74db7d7".
+Error while reading cell "Unnamed_b74db7d7" (byte position 379046): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "via_stack_2e2571cb$2".
+Reading "current_mirror_XN5_XN4".
+Reading "via_stack_f018e2c2".
+Reading "vco_spiral_ind".
+Reading "via_stack_2e2571cb".
+Reading "XN1".
+Reading "Unnamed_b8d8d2c8".
+Error while reading cell "Unnamed_b8d8d2c8" (byte position 771258): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "Unnamed_7533bd66".
+Reading "XC1".
+Reading "XN3".
+Reading "via_stack_918d05dd$3".
+Reading "via_stack_627eccf4$4".
+Reading "Unnamed_5d39a6f6".
+Reading "Unnamed_e30dc562".
+Error while reading cell "Unnamed_e30dc562" (byte position 932662): Unknown layer/datatype in boundary, layer=64 type=44
+Reading "XN0".
+Reading "via_stack_627eccf4$6".
+Reading "via_stack_18d6ab16$2".
+Reading "via_stack_2e2571cb$1".
+Reading "XN2".
+Reading "Unnamed_c2c574c1".
+Error while reading cell "Unnamed_c2c574c1" (byte position 1077954): Unknown layer/datatype in boundary, layer=64 type=44
+SRC_BBOX: 26373 14883 105500 94011
+FLAT_BBOX: 26373 14883 105500 94011
+DRC style is now "drc(full)"
+Loading DRC CIF style.
+FLAT_DRC_TOTAL: 0
+No errors found.

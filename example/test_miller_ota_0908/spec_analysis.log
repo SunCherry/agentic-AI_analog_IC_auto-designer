@@ -1,0 +1,179 @@
+================================================================================
+spec_analysis.log -- two_stage_rz  (design test_miller_ota_0908)
+schematic-agent step #3. Consumer: step #4 (testbench audit) and
+schematic-sizing (which reads the per-key expression to decide what to move).
+Circuit read this rests on: circuit_decomposition.yaml (PENDING confirmation).
+================================================================================
+
+MEASURED STARTING POINT (not an estimate -- ngspice, tt corner, VDD=1.8, vcm=0.9, CL=10p)
+  Two distinct seeds exist and they are NOT the same circuit. Both are recorded
+  because reading a delta against the wrong one is a wasted iteration.
+
+  (A) FILED netlist  netlist/two_stage_rz.sp, as design-sheets-checker ran it
+        Gain 32.2936 dB · UGBW 11.4564 MHz · PM 70.6228 deg · Power 0.585366 mW
+  (B) TEMPLATE seed  sizing/two_stage_rz_tuning.sp, the loop's iteration-0 state
+        Differs from (A) by the tie-group re-expression ONLY: the nfet bias
+        family is re-expressed on one shared unit device w=47.2, m=5/2/7, which
+        holds XMN4 at 236.0 um but moves XMN3 102.6 -> 94.4 um (-8.0%) and
+        XMN5 345.0 -> 330.4 um (-4.2%). Less tail current and less stage-2 load
+        current, so (B) starts SLOWER than (A) -- expected, printed by Step 1 as
+        `<-- seed moved this leg`, and covered by open_questions Q1.
+  THE LOOP TUNES (B). Deltas are measured from (B).
+
+THE TWO BARS
+  real   : spec/target_spec.json
+  harder : sizing/harder_target_spec.json  (+10%; a CEILING gets MORE allowance,
+           a RANGE closes inward by 10% of its width)
+
+--------------------------------------------------------------------------------
+KEY 1 -- Gain          FLOOR 40 dB          harder 44 dB
+--------------------------------------------------------------------------------
+DIRECTION   FLOOR: met when sim >= 40 dB. Higher is better, no upper limit.
+EXPRESSION  Av = [gm1 * (ro_XMN1 || ro_XMP2)] * [gm2 * (ro_XMP3 || ro_XMN5)]
+            -- two cascaded stages, no cascode anywhere, so total gain is the
+            product of two plain gm*ro terms and nothing lifts either one.
+INSTANCES   gm1: XMN1/XMN2 (MN1_W, MN1_L, MN1_M) biased by tail XMN3 (MN3_M)
+            ro1: XMP1/XMP2 (MP1_L dominates) in parallel with XMN1/XMN2's ro
+            gm2: XMP3 (MP3_W, MP3_L)
+            ro2: XMP3 (MP3_L) in parallel with XMN5 (MN4_L, shared)
+GAP         seed (B) is BELOW (A)'s 32.2936 dB; needs >= 40, i.e. >= +7.7 dB
+            = a factor 2.43 in volts. Large but not exotic.
+PLAUSIBILITY  PLAUSIBLE -- and the reason is specific, not optimism: EVERY MOS
+            in this netlist is at l = 0.15 um, which is sky130's minimum. That
+            is the WORST intrinsic gain (gm/gds) the process offers, on every
+            device at once. Raising l on the load devices (MP1_L, MN4_L, MP3_L)
+            is the direct, entirely untried lever, and it costs current nothing.
+            Corroboration: the same topology and PDK reached 51.97 dB in
+            test_miller_ota_0907 -- context only, since that netlist's mirror
+            was invalid, but it bounds the topology's capability from below.
+WATCH       gm/gds per device, not the dB alone. If gm/gds has saturated at the
+            l in force, more l is the answer; if it has not, the shortfall is
+            loading and the speed keys will show it.
+TENSION     l up -> ro up (Gain up) but gm down at fixed current (UGBW down) and
+            Cgg up (poles down, PM down). Gain is bought from UGBW here.
+SIMULATE    .ac dec 10 1 10G ; SAVE v(vout). Gain = |v(vout)| in dB at the first
+            swept point (the registered `ac` extractor's mag[0]).
+SAVE ALSO   gm, gds, id, vds, vgs, vdsat, cgg on XMN1, XMP2, XMP3, XMN5 (the
+            four devices in the expression). The op-probe splice provides these.
+
+--------------------------------------------------------------------------------
+KEY 2 -- UGBW          FLOOR 15 MHz         harder 16.5 MHz
+--------------------------------------------------------------------------------
+DIRECTION   FLOOR: met when sim >= 15 MHz.
+EXPRESSION  UGBW = gm1 / (2*pi*Cc), with Cc = XC0 area x ~2 fF/um^2
+            (45 x 45 um -> ~4.05 pF as written).
+INSTANCES   gm1: XMN1/XMN2 (MN1_W, MN1_L, MN1_M), whose bias current is
+            (MN3_M / MN4_M) x I_ref -- so MN3_M and MN4_W move it too.
+            Cc: XC0 (C0_W, C0_L) -- pure geometry, costs no current at all.
+GAP         (A) measured 11.4564 MHz; (B) starts lower still (less tail current).
+            Needs >= 15 MHz: about +31% on (A), more on (B).
+PLAUSIBILITY  PLAUSIBLE, and this is the key with the cleanest lever in the whole
+            design: UGBW is inversely proportional to Cc, and Cc is set by two
+            tunable geometry variables (C0_W, C0_L) that draw zero current.
+            Shrinking the 45x45 cap is a first-order, immediate move.
+TENSION     Cc down -> UGBW up but pole splitting weakens -> PM down. Since PM
+            starts ABOVE its range (see KEY 3) that trade is in our favour here,
+            which is the single most important fact in this analysis.
+SIMULATE    Same .ac run and same saved node. UGBW = the 0 dB crossing, log-
+            interpolated by the registered extractor. If the response never
+            crosses 0 dB inside 1 Hz..10 GHz the extractor returns None -- that
+            is "not measured", never 0.
+SAVE ALSO   gm and id on XMN1/XMN2 and XMN3 (gm1 and the tail current that sets
+            it); cgg on XMP3 (which loads net5 alongside Cc).
+
+--------------------------------------------------------------------------------
+KEY 3 -- PM            RANGE [50, 70] deg   harder [52, 68] deg
+--------------------------------------------------------------------------------
+DIRECTION   RANGE: met when 50 <= sim <= 70. IT CAN FAIL FROM ABOVE. This is the
+            one key in this spec that a "more is better" reflex gets wrong.
+EXPRESSION  Dominant pole p1 ~ 1/(gm2*ro1*ro2*Cc); output pole p2 ~ gm2/CL with
+            CL = 10 pF fixed by the deck; RHP zero z ~ 1/(Cc*(1/gm2 - R0)),
+            pushed to infinity when R0 = 1/gm2.
+INSTANCES   XC0 (C0_W, C0_L), R0 (R0_W, R0_L), XMP3 (MP3_W, MP3_L -> gm2).
+GAP         (A) measured 70.6228 deg -- 0.62 deg ABOVE the range top, i.e. the
+            circuit as filed is OVER-COMPENSATED and marginally out of spec on
+            the high side.
+PLAUSIBILITY  PLAUSIBLE and FAVOURABLE. Being over-compensated means there is
+            phase margin to SPEND, and the currency it buys is exactly UGBW.
+            Shrinking Cc moves PM down toward the middle of the range and UGBW
+            up toward its floor with one move. The keys are aligned, not opposed
+            -- unusual, and it is why this spec set is reachable at all.
+TENSION     R0 tracks 1/gm2. Any move to MP3_W or MP3_L changes gm2 and therefore
+            DETUNES R0's zero cancellation silently -- PM will move for a reason
+            that is not visible in the parameter that was changed. See
+            circuit_decomposition.yaml cross_pattern_dependencies xpd1.
+SIMULATE    Same .ac run, same saved node. PM = 180 + phase at the UGBW
+            crossing, from the same registered extractor. None when UGBW is None.
+SAVE ALSO   gm on XMP3 (to check R0 ~ 1/gm2 after any stage-2 move).
+
+--------------------------------------------------------------------------------
+KEY 4 -- Power         CEILING 0.5813 mW    harder 0.63943 mW
+--------------------------------------------------------------------------------
+DIRECTION   CEILING: met when sim <= 0.5813 mW. NOTE the harder bar is LARGER,
+            not smaller -- a ceiling's margin is allowance, by design.
+            THE REAL 0.5813 mW IS THE REQUIREMENT; the harder number is slack.
+EXPRESSION  P = VDD * ( I_ref + I_tail + I_stage2 )
+              I_ref    set by the XMP4-over-XMN4 diode stack (MP4_W dominates,
+                       being the far smaller device: 2.3 um vs 236 um)
+              I_tail   = (MN3_M / MN4_M) * I_ref     -> XMN3
+              I_stage2 = (MN5_M / MN4_M) * I_ref     -> XMN5
+            VDD = 1.8 V, fixed by the deck.
+GAP         (A) measured 0.585366 mW -- 0.0041 mW OVER the real ceiling (+0.7%),
+            though under the harder one. So Power starts marginally FAILING.
+            (B) starts lower, since two mirror legs shrank at the seed.
+PLAUSIBILITY  PLAUSIBLE but this is THE BINDING CONSTRAINT and the design's cost
+            function. Gain and UGBW both want more gm; gm at fixed geometry is
+            bought with current; current is this key. The whole run is a
+            negotiation between key 4 and keys 1-2, mediated by the two levers
+            that do NOT cost current: l (for Gain) and Cc (for UGBW).
+LEVERS      MP4_W  -- coarsest of all; scales I_ref and hence EVERY branch
+            MN4_W  -- the family's shared unit width; current density for all 3 legs
+            MN4_M  -- the ratio DENOMINATOR: raising it lowers I_tail and
+                      I_stage2 together without touching I_ref
+            MN3_M / MN5_M -- per-leg, the only way to move tail and output
+                      branch currents INDEPENDENTLY of each other
+SIMULATE    `op` after the AC `write`, then `wrdata <file> i(vdd)`.
+            Power_mW = |i(vdd)| * 1.8 * 1e3. Already present in the deck.
+
+--------------------------------------------------------------------------------
+OVER-CONSTRAINED? -- the cross-key judgement
+--------------------------------------------------------------------------------
+NO KEY IS INDIVIDUALLY FLAGGED OVER-CONSTRAINED. The SET is tight and is flagged
+MODERATELY CONSTRAINED, with the reason stated so a later shortfall can be
+checked against it rather than re-derived:
+
+  Gain must rise 2.43x AND UGBW must rise ~1.3-1.6x WHILE Power must FALL.
+  Taken naively that is contradictory, because the textbook lever for both gain
+  and bandwidth is more current.
+
+  It is nevertheless reachable, and by exactly two current-free mechanisms:
+    (i)  every device sits at l = 0.15 um, the process minimum, so gm/gds is at
+         its floor everywhere. Length is free gain.
+    (ii) PM starts 0.62 deg ABOVE its range, so Cc is oversized. Shrinking Cc is
+         free bandwidth AND moves PM into range.
+  If BOTH of those are exhausted -- gm/gds saturated at the l in force, and PM
+  driven to the bottom of its range -- and a key is still short, then the target
+  IS over-constrained on this topology, and the honest answer is a cascode (for
+  Gain) or a re-spec, not more iterations. That is the pre-registered test for
+  a STOP conclusion; it is written down here, before the loop runs, on purpose.
+
+RISK CARRIED FORWARD (not a spec key, do not tune for it)
+  There is no external Ibias. Power, and every gm downstream of it, is a
+  nominal-1.8V/tt-corner number with no PTAT or bandgap behind it, so whatever
+  Power margin the run achieves is NOT corner-proof. open_questions Q2.
+
+--------------------------------------------------------------------------------
+WHAT THE TESTBENCH MUST PROVIDE  (the contract step #4 audits against)
+--------------------------------------------------------------------------------
+  1. An `.ac` sweep wide enough to contain the 0 dB crossing (1 Hz..10 GHz: yes).
+  2. `write <raw> v(vout)` inside `.control`, after `run`   -> Gain, UGBW, PM.
+  3. An `op` analysis                                       -> Power.
+  4. `wrdata <file> i(vdd)` after that `op`                 -> the Power number.
+  5. Room for the op-probe splice: probe lines after `run`, the op/power save
+     after the AC `write`.
+  6. Conditions RECORDED, never assumed: VDD=1.8, vcm=0.9, cload=10p, tt.
+     All four are set by the user's own deck. Nothing here may add one.
+
+PLOT  YES -- this is a response-shaped spec (a gain, a bandwidth and a stability
+      margin read off one curve). generate_plot_script.py at Step 3.
+================================================================================

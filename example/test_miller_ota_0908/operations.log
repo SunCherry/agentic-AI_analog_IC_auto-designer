@@ -1,0 +1,76 @@
+# operations.log -- test_miller_ota_0908 (schematic stage)
+# format: <UTC-ish date> | <STEP> | <ACTION> | <path or subject> | <sha256[:8]> | <note>
+2026-09-08 | 0a | VERIFIED | netlist/two_stage_rz.sp | 8b6dc073 | back-filled: filed by design-sheets-intake before this agent ran; NOT re-filed
+2026-09-08 | 0a | VERIFIED | testbench/two_stage_rz_pre.spice | b60970df | back-filled; carries a prior #4a Power-probe correction header
+2026-09-08 | 0a | VERIFIED | spec/target_spec.json | 80de1fbe | back-filled; PM RANGE[50,70], UGBW>=15MHz, Gain>=40dB, Power<=0.5813mW
+2026-09-08 | 0a | VERIFIED | user_inputs/ (3 files) | -- | verbatim backups present; untouched
+2026-09-08 | 0a | VERIFIED | design_constraints.json | d6b70657 | schematic_sizing_iterations=8 (read, not re-asked)
+2026-09-08 | 0a | VERIFIED | circuit_decomposition.yaml | c7a2fc8b | Step-1 scan + DERIVED tie_groups/tunable_parameters already present; build_decomposition.py NOT re-run
+2026-09-08 | 0a | VERIFIED | two_stage_rz_tunable.sp.j2 | f82e36b9 | rendered template; MN4_W/MN4_L write XMN4/XMN3/XMN5 by construction
+2026-09-08 | 0a | FINDING | mechanism_demo/ | -- | owner-declared throwaway validation; read-only, not continued from, not modified
+2026-09-08 | 0b | VERIFIED | testbench/two_stage_rz_pre.spice | b60970df | checker: ERC exit 0; 4a output-node save '+' (v(vout) already written); no edit needed
+2026-09-08 | 0b | VERIFIED | netlist/two_stage_rz.sp | 8b6dc073 | checker 2a exit 0 (already bin-folded by a prior run), 2b exit 0, Step 3 exit 0
+2026-09-08 | 0b | CREATED  | compute_spec.py | ad8269cd | copy of .claude/reference/compute_fidelity.py for the checker's metric registry
+2026-09-08 | 0b | FINDING | pre-layout sim @ filed netlist | -- | Gain 32.2936 dB, UGBW 11.4564 MHz, PM 70.6228 deg, Power 0.58537 mW (i(vdd)=-325.203 uA)
+2026-09-08 | 0b | FINDING | verdict | -- | READY. No files modified by the checker. 4c: all 4 keys measurable (Power via the pre-existing op+wrdata i(vdd) correction)
+2026-09-08 | 1  | VERIFIED | netlist + testbench (run_erc_check.py, 2 separate runs) | -- | both PASS, no hard errors, exit 0
+2026-09-08 | 2a | VERIFIED | circuit_decomposition.yaml (machine sections) | -- | build_decomposition.py re-printed to a SCRATCH path only; hierarchy/tie_groups/tunable_parameters/tunable_template byte-identical (verified by yaml compare)
+2026-09-08 | 2a | MODIFIED | circuit_decomposition.yaml | 06f25f8b | authored patterns(6), unmatched_devices(0/11 left over), device_ownership, cross_pattern_dependencies, matched_nets(10), open_questions(4)
+2026-09-08 | 2bc| MODIFIED | circuit_decomposition.yaml | 06f25f8b | appended function_analysis (9 blocks, 5 critical_techniques) + parasitic_sensitivity (8 entries, 4 high / 2 medium / 2 low)
+2026-09-08 | 2  | FINDING | confirmed_by_user | -- | left FALSE and marked PENDING: no interactive channel from a subagent. Q1 (seed bias shift) and Q2 (self-biased ref / nominal-corner Power) proceeded on the agent recommendation, unconfirmed
+2026-09-08 | 2  | FINDING | cross_pattern_dependencies placement | -- | REGISTRY GAP: SKILL.md Step 3 says to append cross_pattern_dependency to "the relevant group", but derived tie_groups only cover the 3 AUTO patterns -- rc_compensation_network has no group. Recorded at top level instead
+2026-09-08 | 3  | CREATED | spec_analysis.log | 37411785 | 4 keys: direction, expression, instances, plausibility, tension, what to simulate/save. Set flagged MODERATELY CONSTRAINED with a pre-registered STOP test (l at min everywhere + PM above range = two current-free levers; both exhausted and still short => over-constrained)
+2026-09-08 | 4a | VERIFIED | testbench/two_stage_rz_pre.spice | b60970df | audited against spec_analysis's 6-item contract: all 6 satisfied by the deck as filed. NO CORRECTION MADE, 0 of 3 laps used, user_inputs/ untouched
+2026-09-08 | 4b | VERIFIED | op-probe splice | -- | generate_op_probe.py derives hier_prefix='xtwo_stage_amp.x0.', 9 MOS x 7 attrs = 63 let-lines. Deck has run first in .control and op/wrdata already after write => splice producible
+2026-09-08 | 4c | CREATED | process_two_stage_rz_results.py | dc3aab2a | from process_results_template.py; CONFIG read off the deck (AC_RAW=simout_rz_pre.out NOT the template default, OP_RAW=two_stage_rz_pre_op.txt, SUPPLIES=[(vdd,1.8)]). Runs: 4/4 keys produce a number
+2026-09-08 | 4  | FINDING | 0b re-entry | -- | NOT re-run: no correction was made to netlist/ or testbench/, so the READY earned at 0b stands unchanged. Files added since (compute_spec.py, spec_analysis.log, process_*.py, sizing/) are outside the gate's inputs
+2026-09-08 | 4c | FINDING | 4/4 measurable, 4/4 currently failing at the filed netlist | -- | PM 70.62 (above range top), UGBW 11.46 (<15), Gain 32.29 (<40), Power 0.5854 (>0.5813)
+2026-09-08 | sizing | CREATED | sizing/two_stage_rz_tuning.sp | a1c64277 | by sizing -- loop state, converged values
+2026-09-08 | sizing | CREATED | sizing/run_sizing_two_stage_rz.py | 4f50ac70 | by sizing -- Step 1a runner, all 4 keys reachable, no measure() hook needed
+2026-09-08 | sizing | CREATED | sizing/harder_target_spec.json | d796dd78 | by sizing -- +10%; note the Power CEILING relaxes to 0.63943 (looser than real)
+2026-09-08 | sizing | CREATED | sizing/book_keeper.log | 8d5561af | by sizing -- 7 iterations (0-6) + converged full-state entry. Entries 0-3 flushed late after a session interruption, numbers read from debug/iter*.json
+2026-09-08 | sizing | CREATED | sizing/two_stage_rz_final.sp | 8814191a | by sizing -- THE HAND-OFF. nf carried through (nf=1), 22 tunables rounded, width breakdown in header
+2026-09-08 | sizing | CREATED | sizing/two_stage_rz_tb_final.spice | 46b223d6 | by sizing -- filed deck verbatim, .include re-pointed. Reproduces 62.3872/16.7834/56.9566/0.382772 exactly
+2026-09-08 | sizing | CREATED | sizing/sizing_report.log | 37051909 | by sizing -- CONVERGED at iter 6 of 8; both bars met on all 4 keys
+2026-09-08 | sizing | CREATED | sizing/two_stage_rz_ac.png | -- | by sizing -- converged AC response vs seed
+2026-09-08 | sizing | FINDING | mirror tie HELD | -- | XMN4/XMN3/XMN5 all l=0.4 w=47.2 (m=5/2/6); XMP1/XMP2 all l=0.4 w=14.4 (m=1/1). Enforced by the template, not by vigilance
+2026-09-08 | sizing | FINDING | iter5 stage-1/stage-2 DC balance constraint | -- | I_XMP3 = I_XMP1 * (W/L)_XMP3/(W/L)_XMP1 = 8.333*I_tail/2. Raising MN3_M alone put XMP3 in triode (vov -0.037) and cost 25 dB. MN3_M and MN5_M must move together, m5/m3 ~ 3
+2026-09-08 | shaping | CREATED | device_shaping/shape_devices.json | 4efb7d03 | by device-shaper Step 1 -- 7 selected from severity:high, 2 pinned
+2026-09-08 | shaping | CREATED | device_shaping/two_stage_rz_final_shaped.sp | 8814191a | by device-shaper Step 3 -- SIMULABLE hand-off, nf=1 CARRIED not chosen; re-sim matches sizing exactly
+2026-09-08 | shaping | CREATED | device_shaping/two_stage_rz_final_shaped_primitives.sp | 0c8781c4 | by device-shaper Step 5 -- GEOMETRY ONLY, does not simulate. XMP3 only: w40 nf1 m3 -> w120 nf3 m1
+2026-09-08 | shaping | CREATED | device_shaping/decomp_blocks_compat.yaml | 26f1c58c | shim for a fold_multipliers.py parser bug; circuit_decomposition.yaml NOT edited
+2026-09-08 | shaping | CREATED | device_shaping/shaping_report.log | 7f08d275 | HAND-WRITTEN (--report-out never ran). nf NEVER MEASURED on sky130A
+2026-09-08 | shaping | FINDING | Nf sweep unsupported on sky130A | -- | sweep_fingers.py --pdk choice set is EMPTY (parasitic-estimation PDK_TABLES={} by design). nf unmeasured, NOT chosen
+2026-09-08 | shaping | FINDING | select_shape_devices.py splits tie groups | -- | chose XMP2 but pinned XMP1; chose XMN2 but pinned XMN1. Does not consult tie_groups. Harmless only because the sweep never ran
+2026-09-08 | shaping | FINDING | fold_multipliers.py silent mis-parse | -- | its {ref: X} regex misses the schema's plain-scalar devices list; all 6 patterns parsed EMPTY and all 9 devices reported standalone. Guard did not fire. Would have folded m on both mirrors + the diff pair
+2026-09-08 | freeze | VERIFIED | device_shaping/two_stage_rz_final_shaped.sp | 8814191a | NETLIST FROZEN. ERC PASS; shared w/l proven per family by arithmetic; re-sim 62.3872/16.7834/56.9566/0.382772
+2026-09-08 | freeze | FINDING | schematic stage COMPLETE | -- | CONVERGED at sizing iter 6 of 8. All 4 keys met on BOTH bars. nf unmeasured (PDK unsupported). circuit_decomposition.yaml confirmed_by_user still PENDING -- Q1/Q2 for the user
+
+================================================================================
+2026-09-08 -- ORCHESTRATOR: device-shaper REWRITTEN; netlist re-shaped and FROZEN
+================================================================================
+`device-shaper` was rewritten around four geometric principles (one unit device
+per tie group, maximal unit, square device, square array) with total width
+preserved. The Nf sweep and its PDK parasitic-table dependency are gone, so `nf`
+is now genuinely chosen on sky130A rather than defaulting to 1.
+
+  device_shaping_prev_nfsweep/   the earlier hand-off, from the REMOVED sweep.
+                                 All nine devices nf=1, UNMEASURED. Kept as the
+                                 before-picture; nothing downstream reads it.
+  device_shaping/                the current hand-off. nf chosen per group:
+                                 nfet mirror nf=8 (unit 47.2, one copy
+                                 6.16x6.17um, aspect 1.00), diff pair nf=11
+                                 (unit 80, 2x2 array), pfet mirror nf=4,
+                                 XMP3 nf=9, XMP4 nf=1 (held by the 1.0um
+                                 min-finger floor -- folding it cost 38% of
+                                 UGBW when measured).
+
+TOTAL WIDTH PRESERVED EXACTLY on every device (worst residual 0.0000%).
+Shape-change cost, measured: Gain +3.89% | UGBW -4.03% | PM -2.29% | Power -4.71%
+All four spec keys still PASS post-shaping.
+
+NETLIST FREEZE. From here only layout geometry changes.
+  FROZEN HAND-OFF: device_shaping/two_stage_rz_final_shaped.sp
+  Pre-layout result being defended:
+    Gain 64.817 dB | UGBW 16.107 MHz | PM 55.650 deg | Power 0.36474 mW
+  Bars: Gain >=40 | UGBW >=15 | PM [50,70] | Power <=0.5813

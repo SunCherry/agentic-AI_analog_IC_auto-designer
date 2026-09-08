@@ -1,0 +1,33 @@
+=== Annealing placement: 9 macros, 4 nets (excl. supply rails) ===
+  min_metal_spacing=0.1400um -- min_distance per macro (10x spacing x num_nets): current_mirror_XN5_XN4=1.40um, XN2=2.80um, XN3=2.80um, XC0=1.40um, XC1=1.40um, XN1=4.20um, XN0=4.20um, XL0=1.40um, XL1=1.40um
+  max canvas aspect=4.000:1  (4:1 from /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/design_constraints.json)
+  iter      0/20000  t=  50.000  cost=   4440.15  best=   4440.15
+  iter   2000/20000  t=  25.059  cost=   1101.06  best=    938.37
+  iter   4000/20000  t=  12.559  cost=    877.80  best=    722.38
+  iter   6000/20000  t=   6.295  cost=    692.29  best=    648.81
+  iter   8000/20000  t=   3.155  cost=    668.82  best=    648.81
+  iter  10000/20000  t=   1.581  cost=    620.34  best=    606.90
+  iter  12000/20000  t=   0.792  cost=    602.06  best=    600.13
+  iter  14000/20000  t=   0.397  cost=    597.99  best=    597.37
+  iter  16000/20000  t=   0.199  cost=    596.54  best=    595.84
+  iter  18000/20000  t=   0.100  cost=    594.83  best=    594.50
+
+=== Final placement ===
+  cost=594.30  hpwl=396.42um  overlap_area=0.0000um^2  symmetry_penalty=0.00  density_penalty=0.0000um (worst shortfall=0.0000um)  bbox_area=98941.25um^2
+  bbox=463.94x213.26um (aspect 2.18:1)  cell_area=85833.92um^2  utilization=86.8%
+  Overlap check: PASS (0 overlap)
+  Density/clearance check: PASS (every pair meets its required min_distance)
+  Canvas aspect check: PASS (2.18:1, within 4.00:1)
+  current_mirror_XN5_XN4         @ (  127.37,   133.84)   14.86 x  20.75                num_nets=1  min_distance=1.40um
+  XN2                            @ (  126.36,   100.82)   66.28 x   9.64  [rotated 90]  num_nets=2  min_distance=2.80um
+  XN3                            @ (  126.35,   113.26)   66.28 x   9.64  [rotated 90]  num_nets=2  min_distance=2.80um
+  XC0                            @ (  135.33,    90.19)   12.04 x   7.78                num_nets=1  min_distance=1.40um
+  XC1                            @ (  177.57,   128.46)   12.04 x   7.78                num_nets=1  min_distance=1.40um
+  XN1                            @ (  146.45,   127.13)   26.27 x   9.10  [rotated 90]  num_nets=3  min_distance=4.20um
+  XN0                            @ (  146.44,   140.45)   26.27 x   9.10  [rotated 90]  num_nets=3  min_distance=4.20um
+  XL0                            @ (  -72.46,    16.29)  196.00 x 213.22                num_nets=1  min_distance=1.40um
+  XL1                            @ (  195.49,    16.25)  196.00 x 213.22                num_nets=1  min_distance=1.40um
+
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/placement_pos.json
+  wrote /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/sweep/A4_placing.txt (placement performance report)
+  --no-render passed -- run script/render_placement.py manually for the KLayout-viewable GDS

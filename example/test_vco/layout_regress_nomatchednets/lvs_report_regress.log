@@ -1,0 +1,138 @@
+================================================================================
+LVS REPORT -- test_vco  (REGRESSION run, suffix _regress)
+================================================================================
+generated : 2026-09-07T07:25:43Z
+layout    : routed.gds   top cell 'routed'
+golden    : primitives/lvs_compare.sp -> lvs_compare.spice, .subckt vco_lc
+            (netgen rejects .sp/.cdl -- copied to .spice first)
+            NOT the frozen netlist: lvs_compare folds w to w*m (XN4 w=15 m=4
+            -> w=60 m=1) and declares the two glayout tie-off dummies.
+tool      : netgen ($HOME/.local/bin/netgen), setup sky130A_setup.tcl
+artifacts : layout_fixer_work_regress/lvs_attempt_1/  (extract.tcl, extract.log,
+            routed_extracted.spice, lvs.out, netgen.log, routed_extview.gds)
+            layout_fixer_work_regress/lvs_negctl/     (negative controls)
+budget    : MAX_SUBRETRY=5;  consumed 0 fix iterations -- matched on attempt 1
+
+--------------------------------------------------------------------------------
+VERDICT: LVS MATCH.
+  "Final result: Circuits match uniquely."
+  property errors: lvs.out = 0   netgen.log = 0
+--------------------------------------------------------------------------------
+Both conditions are required. netgen prints the match line even when property
+errors exist, so the verdict is the match line AND a zero property-error count
+on BOTH files. Verified by 'grep -ci "property error"' on each.
+
+DEVICE / NET TOTALS
+  | Quantity                | Layout (routed) | Golden (vco_lc) |
+  |-------------------------|-----------------|-----------------|
+  | sky130_fd_pr__nfet_01v8 |    18 -> 7      |     8 -> 7      |
+  | sky130_fd_pr__cap_mim_m3_1 |     2        |        2        |
+  | Number of devices       |       9         |        9        |
+  | Number of nets          |       7         |        7        |
+  ("18 -> 7" = parallel-device merge; 11 merged on the layout side, 1 on the
+  golden side. Both sides land on the same 7 nfets.)
+
+PIN CORRESPONDENCE  (all 6, "Cell pin lists are equivalent")
+  | Layout port (routed) | Schematic port (vco_lc) |
+  |----------------------|-------------------------|
+  | VDD                  | VDD                     |
+  | VSS                  | VSS                     |
+  | voutn                | voutn                   |
+  | voutp                | voutp                   |
+  | Vcont                | Vcont                   |
+  | Iref                 | Iref                    |
+
+MISMATCHES
+  None. No layout geometry was changed for LVS, so rule 2.6 (re-run DRC after
+  an LVS-driven geometry fix) does not apply -- there was no such fix.
+
+--------------------------------------------------------------------------------
+EXTRACTION NOTES
+--------------------------------------------------------------------------------
+'port makeall' applied after 'load routed' and before 'extract all'. Required:
+without it the extracted top cell has no ports and the comparison is vacuous.
+Result: '.subckt routed VDD Vcont voutn voutp VSS Iref' -- SIX ports, the
+documented signature of a correct extraction.
+
+THE COIL BLACK-BOX (extraction-only view; scratch, never delivered)
+  Magic has no inductor device, so the spiral would extract as plain wire,
+  fusing ports A and B and propagating the short into the parent -- collapsing
+  VDD + voutp + voutn into a 4-port top cell.
+  Cell signature of vco_spiral_ind was VERIFIED against the payload BEFORE any
+  edit, and matched exactly:
+    (72,20) met5   : 2 polys -- 74-pt spiral bbox (-98,-44)-(98,153); 4-pt
+                     A-lead tip (-4,154)-(4,165.22)
+    (71,20) met4   : 3 polys -- underpass (-4,0)-(4,160.22); A extension
+                     (-4,160.22)-(4,165.22); B pad (90,148)-(98,153)
+    (71,44) via4   : 340 cuts
+    (72,16) labels : A @ (0,165.22), B @ (94,153)
+  Applied in the scratch copy only: deleted the single 74-point met5 spiral,
+  added a met5 rectangle at cell-local (90,148)-(98,153). Polygon count
+  347 -> 347. All met4 landings, all 340 cuts and both labels kept.
+  THE DELIVERED GDS CONTAINS THE FULL SPIRAL -- re-verified after the fact on
+  test_vco_fixed_regress.gds: the 74-point (72,20) polygon is present and the
+  file is byte-identical to routed.gds.
+
+--------------------------------------------------------------------------------
+THE TWO FLAGGED RISKS -- both settled with evidence
+--------------------------------------------------------------------------------
+RISK 1 -- predicted MiM-cap top-plate short (route_nets.py flagged 2 DIRTY
+corridor landings: "VDD on XC0 (top_met)" and "VDD on XC1 (top_met)", reproduced
+by all five candidate placements).
+  RESOLUTION: FALSE ALARM on this build. Evidence, not inference:
+    a) The extracted top-level instantiates the caps on three DISTINCT nets:
+         XXC0_0 voutp VDD XC0
+         XXC1_0 voutn VDD XC1
+    b) Net count is 7 on BOTH sides. A VDD/voutp or VDD/voutn merge would have
+       shown 6 on the layout side.
+    c) The comparison that would catch such a merge is provably live -- see
+       negative control (b) below, which swaps exactly XC1's terminal from
+       voutn to voutp and is correctly rejected.
+  So the route_nets.py check fired structurally on the stacked-plate macro
+  geometry, as it does on any such macro, and did not correspond to a real
+  extraction-level short here. NO fix iterations were spent on it, and no
+  mimcap.py change is required by THIS run's evidence. (If a future build does
+  show the merge, the fix is a top-plate breakout to the macro edge in
+  mimcap.py, mirroring fet.py::_stretch_terminals_to_edge() -- a cell defect,
+  not a placement or routing knob.)
+
+RISK 2 -- lvs_compare.sp carries no XL0/XL1 while the layout has two
+vco_spiral_ind subcells.
+  RESOLUTION: no delta appeared, and the mechanism is NOT 'ignore class'.
+  Because the black-boxed vco_spiral_ind contains no devices, ext2spice omits
+  BOTH the subcircuit definition AND its instance calls. Confirmed: grep for
+  'spiral|XL0|XL1' in routed_extracted.spice returns nothing at all. The two
+  sides therefore agree structurally with no netgen-side treatment applied.
+  This is a netlist/extraction-view question, as flagged, not a layout defect.
+
+DUMMY-DEVICE CHECK (payload asked to verify rather than assume)
+  XDUMMY1 and XDUMMY2 are declared INSIDE '.subckt vco_lc', immediately before
+  '.ends vco_lc'. Verified by reading the file. They landed correctly this run;
+  no hand-repair was applied. physical_map.json's dummy_check reports
+  netlist_dummies: [] and unclaimed_primitive_cells: [] -- consistent.
+
+--------------------------------------------------------------------------------
+WHY THIS MATCH IS TRUSTWORTHY -- negative controls (layout_fixer_work_regress/lvs_negctl/)
+--------------------------------------------------------------------------------
+netgen returned in 0.04 s, so the verdict was bound-checked rather than taken
+on faith. Both controls perturb the GOLDEN COPY only (never the frozen netlist,
+never the layout) and both were correctly rejected:
+
+  (a) PROPERTY control -- golden XN0 w=20 -> w=25:
+        "Netlists match uniquely with property errors."
+        "Final result: Top level cell failed pin matching."
+        grep -ci "property error" = 2
+      => device widths ARE genuinely compared, and the zero-property-error
+         guard used for the real verdict is live, not vacuous.
+
+  (b) TOPOLOGY control -- golden XC1 'VDD voutn' -> 'VDD voutp':
+        "Netlists do not match."
+        "Final result: Top level cell failed pin matching."
+      => cap connectivity IS genuinely compared. This is precisely the
+         merge Risk 1 predicts, so its absence in the real run is a real
+         negative, not a blind spot.
+
+TOOLING
+  No crashes, no timeouts, no retries, no malformed netlists. Magic extraction
+  ~1.4 s, netgen ~0.04 s (each budgeted 5 min).
+================================================================================

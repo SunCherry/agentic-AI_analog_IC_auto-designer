@@ -1,0 +1,83 @@
+========================================================================
+PLACEMENT SUMMARY -- two_stage_rz_final_shaped_flat
+========================================================================
+generated   : 2026-09-08T15:45:21
+manifest    : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/primitives/manifest.json
+macros      : 9 placed  (7 rotated, 2 mirrored)
+runtime     : 14.0s
+overall     : PASS
+
+-- quality gates ---------------------------------------------------
+  overlap            : PASS   area=0.0000 um^2  (must be 0)
+  routing clearance  : PASS   worst shortfall=0.0000 um  (must be 0)
+       clearance rule: each pair must be >= max of the two macros'
+       min_distance = 10 * min_metal_spacing * num_nets
+  symmetry           : N/A   no --sym-groups supplied -- symmetry was NOT
+       constrained. Derive them from the circuit read with
+       derive_sym_groups.py. On a differential circuit an unconstrained
+       placement is a gap, not a pass.
+  canvas aspect      : PASS   1.26:1  (limit 1.33:1, excess 0.00 um)
+       limit from    : 4:3 from /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/design_constraints.json
+       NOT part of `overall` above -- an over-ratio canvas is a floorplan
+       finding (the block won't fit the shape asked for), not a routing
+       blocker the way overlap and clearance are
+
+-- wire length -----------------------------------------------------
+  total HPWL         : 265.80 um
+  nets counted       : 6  (nets touching >= 2 placed macros)
+  mean / max per net : 44.30 um  /  68.48 um
+
+-- placement density -----------------------------------------------
+  bounding box       : 94.75 x 75.30 um   = 7134.67 um^2   (aspect 1.26:1, limit 1.33:1)
+  cell area          : 4318.03 um^2
+  utilization        : 60.5%   (2816.64 um^2 free)
+       low utilization is not automatically bad here -- the clearance
+       penalty deliberately buys routing channels between macros
+
+-- cost breakdown (weight x term = contribution) --------------------
+  wire (HPWL)       :    1.000 x     265.8016 =       265.80  ( 78.8%)
+  overlap           :   50.000 x       0.0000 =         0.00  (  0.0%)
+  symmetry          :   10.000 x       0.0000 =         0.00  (  0.0%)
+  clearance         :   15.000 x       0.0000 =         0.00  (  0.0%)
+  area              :    0.010 x    7134.6668 =        71.35  ( 21.2%)
+  canvas aspect     :   10.000 x       0.0000 =         0.00  (  0.0%)
+  TOTAL             :                                337.15
+
+-- worst nets by HPWL ----------------------------------------------
+  net5                 68.48 um  ( 25.8%)  spans 4 macro(s)
+  net7                 56.83 um  ( 21.4%)  spans 4 macro(s)
+  vout                 56.50 um  ( 21.3%)  spans 3 macro(s)
+  net8                 38.63 um  ( 14.5%)  spans 2 macro(s)
+  net3                 23.74 um  (  8.9%)  spans 2 macro(s)
+  net4                 21.63 um  (  8.1%)  spans 2 macro(s)
+
+-- tightest macro pairs (gap vs required clearance) -----------------
+  current_mirror_XMP1_XMP2 <-> diff_pair_XMN1_XMN2      gap=    4.20 required=   4.20 slack=   +0.00
+  R0                       <-> XC0                      gap=    2.80 required=   2.80 slack=   +0.00
+  diff_pair_XMN1_XMN2      <-> XMP3                     gap=    4.20 required=   4.20 slack=   +0.00
+  XC0                      <-> XMP3                     gap=    2.81 required=   2.80 slack=   +0.01
+  XC0                      <-> XMN5                     gap=    2.81 required=   2.80 slack=   +0.01
+  XMN4                     <-> XMN5                     gap=    2.81 required=   2.80 slack=   +0.01
+  XMN3                     <-> XMN5                     gap=    2.82 required=   2.80 slack=   +0.02
+  diff_pair_XMN1_XMN2      <-> XMN3                     gap=    4.96 required=   4.20 slack=   +0.76
+
+-- placed macros ---------------------------------------------------
+  macro                            x         y       w       h  rot  nets  min_dist
+  -- composite macros (placed first) --
+  current_mirror_XMP1_XMP2   -370.32   -140.44   13.28    9.46  180     2      2.80
+  diff_pair_XMN1_XMN2        -383.02   -170.03   38.68   25.39  180     3      4.20
+  -- single devices --
+  R0                         -437.79   -132.57   62.80    2.00   90     2      2.80
+  XC0                        -439.09   -175.91   36.28   40.54   90     2      2.80
+  XMN3                       -376.20   -187.16   25.04   12.17  180     2      2.80
+  XMN4                       -392.79   -205.87   38.62   12.17    0     1      1.40
+  XMN5                       -424.58   -190.89   45.56   12.17    0     2      2.80
+  XMP3                       -400.01   -166.66   12.78   19.07  270     2      2.80
+  XMP4                       -402.59   -201.74    7.51    5.46  270     1      1.40
+
+-- reproducibility -------------------------------------------------
+  seed=1  iters(upper bound)=200000  two_phase=True
+  weights: w_wire=1.0  w_ov=50.0  w_sym=10.0  w_density=15.0  w_area=0.01  w_aspect=10.0
+  min_metal_spacing_um=0.14
+  max_canvas_aspect=1.3333  (4:3 from /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/design_constraints.json)
+========================================================================

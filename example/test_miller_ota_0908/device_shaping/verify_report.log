@@ -1,0 +1,16 @@
+device-shaper -- shape verification (geometry change, before vs after)
+
+  metric                before           after         delta       rel
+  Gain                  62.387          64.817        2.4299     3.89%
+  UGBW              1.6783e+07      1.6107e+07   -6.7609e+05    -4.03%
+  PM                    56.957           55.65       -1.3067    -2.29%
+  Power_mW             0.38277         0.36474     -0.018036    -4.71%
+
+  against target_spec.json (the AFTER netlist is what layout gets)
+  PM                     55.65   bar=[50, 70]   PASS
+  UGBW                  16.107   bar=15   PASS
+  Gain                  64.817   bar=40   PASS
+  Power                0.36474   bar=0.5813   PASS
+
+This is a MEASUREMENT, not a gate. A small delta is expected: folding
+changes junction perimeter, and any total-width residual shows up here.

@@ -1,0 +1,401 @@
+--- attempt 1   2026-09-04T21:40:00
+gds    : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout/routed.gds   top=routed
+knobs  : baseline (router defaults as shipped: track_multiplier=1.0 via_cost=10.0
+         via_pad_penalty=40.0 proximity_radius=2 proximity_weight=0.5 ripup_iters=5)
+total  : DRC_TOTAL=8  rects=33  rules=4   DIRTY
+  (categorization run: placement_visualization.gds top=placement_visualization
+   -> DRC_TOTAL=0 rects=0 rules=0 CLEAN. ALL violations below are
+   ROUTER-INTRODUCED, none inherited.)
+rule   : Metal4 spacing < 0.3um (met4.2)  x14  class=routing
+  box  : [191.81, 336.945, 192.11, 337.155]  net=voutn  inst=XL1  src=routes.json
+  box  : [191.81, 336.915, 192.11, 336.945]  net=voutn  inst=XL1  src=routes.json
+  box  : [191.81, 336.945, 192.125, 337.155] net=voutn  inst=XL1  src=routes.json
+  box  : [191.81, 336.915, 192.125, 336.945] net=voutn  inst=XL1  src=routes.json
+  box  : [192.435, 336.945, 192.75, 337.155] net=voutn  inst=XL1  src=routes.json
+  box  : [192.435, 336.915, 192.75, 336.945] net=voutn  inst=XL1  src=routes.json
+  box  : [192.45, 336.945, 192.75, 337.155]  net=voutn  inst=XL1  src=routes.json
+  box  : [192.45, 336.915, 192.75, 336.945]  net=voutn  inst=XL1  src=routes.json
+  box  : [192.11, 337.225, 192.12, 337.455]  net=voutn  inst=XL1  src=routes.json
+  box  : [192.12, 337.225, 192.125, 337.455] net=voutn  inst=XL1  src=routes.json
+  box  : [192.11, 337.215, 192.125, 337.225] net=voutn  inst=XL1  src=routes.json
+  box  : [192.435, 337.225, 192.44, 337.455] net=voutn  inst=XL1  src=routes.json
+  box  : [192.44, 337.225, 192.45, 337.455]  net=voutn  inst=XL1  src=routes.json
+  box  : [192.435, 337.215, 192.45, 337.225] net=voutn  inst=XL1  src=routes.json
+rule   : Metal4 > 3um spacing to unrelated m4 < 0.4um (met4.5b)  x8  class=routing
+  box  : [192.11, 337.545, 192.125, 337.555] net=voutn  inst=XL1  src=routes.json
+  box  : [192.11, 337.225, 192.12, 337.545]  net=voutn  inst=XL1  src=routes.json
+  box  : [192.12, 337.225, 192.125, 337.545] net=voutn  inst=XL1  src=routes.json
+  box  : [192.11, 337.215, 192.125, 337.225] net=voutn  inst=XL1  src=routes.json
+  box  : [192.435, 337.545, 192.45, 337.555] net=voutn  inst=XL1  src=routes.json
+  box  : [192.435, 337.225, 192.44, 337.545] net=voutn  inst=XL1  src=routes.json
+  box  : [192.44, 337.225, 192.45, 337.545]  net=voutn  inst=XL1  src=routes.json
+  box  : [192.435, 337.215, 192.45, 337.225] net=voutn  inst=XL1  src=routes.json
+rule   : Metal3 spacing < 0.3um (met3.2)  x6  class=routing
+  box  : [158.575, 266.135, 158.77, 266.435] net=voutn  inst=XC1  src=routes.json
+  box  : [158.575, 265.77, 158.77, 266.435]  net=voutn  inst=XC1  src=routes.json
+  box  : [158.275, 265.77, 158.47, 266.135]  net=voutn  inst=XC1  src=routes.json
+  box  : [158.575, 264.615, 158.77, 264.635] net=voutn  inst=XC1  src=routes.json
+  box  : [158.575, 264.615, 158.77, 265.23]  net=voutn  inst=XC1  src=routes.json
+  box  : [158.275, 264.635, 158.47, 265.23]  net=voutn  inst=XC1  src=routes.json
+rule   : MiM cap bottom plate spacing < 1.2um (capm.2b)  x5  class=routing
+  box  : [157.375, 265.77, 158.47, 266.135]  net=voutn  inst=XC1  src=routes.json
+  box  : [158.575, 264.615, 159.67, 264.635] net=voutn  inst=XC1  src=routes.json
+  box  : [157.375, 264.635, 158.47, 265.23]  net=voutn  inst=XC1  src=routes.json
+  box  : [158.575, 265.77, 159.67, 266.615] net=voutn  inst=XC1  src=routes.json
+  box  : [158.575, 264.635, 159.67, 265.23]  net=voutn  inst=XC1  src=routes.json
+delta  : baseline (no prior attempt)
+flags  : out-of-context via_stack subcell counts (top cell routed=8 is NONZERO so
+         these are NOT the out-of-context case): via_stack_2e2571cb x5 inst @3 ea,
+         via_stack_686e5d96$33 @1, via_stack_918d05dd$2 @3.
+         GDS-read layer 64/44 warnings: expected, not transcribed.
+         geometry probe: cluster A = same-net(voutn) NOTCH, routed met5(glayout)/
+         Magic-met4 via pad 192.11..192.45 x 337.215..337.555 protrudes 0.4um past
+         XL1 terminal pad top edge y=337.155 -> 0.23um step. XL1 keepout_um=0.4:
+         VIA IS INSIDE THE KEEPOUT.
+         cluster B = same-net(voutn) NOTCH, routed met4(glayout)/Magic-met3 1.50um
+         via pad 156.97..158.47 sits 0.105um from XC1 voutn port pad left edge
+         x=158.575. XC1 keepout_um=1.2 (= the capm.2b rule value):
+         VIA PAD IS INSIDE THE KEEPOUT (band 157.377..158.577).
+--- attempt 2   2026-09-04T21:47:00
+gds    : layout_fixer_work/attempt2/routed.gds   top=routed
+knobs  : --via-cost 10.0 -> 60.0   (ONLY change vs attempt 1)
+         rationale: both attempt-1 clusters are a via pad placed at the FIRST grid
+         point off a macro port landing, inside that macro's declared keepout.
+         via_pad_penalty and proximity_weight were RULED OUT by source inspection,
+         not tried: both are net-vs-net (`owner != net` / `k != current_net`) and
+         these violations are voutn against ITS OWN macro's port pad, so neither
+         knob can reach them. via-cost and track-multiplier are the only two
+         knobs that can.
+         router: total_wire 597.45 -> 723.38um, vias 16 -> 13, 6/6 nets, congestion PASS
+total  : DRC_TOTAL=18  rects=33  rules=2   DIRTY
+rule   : MiM cap bottom plate spacing < 1.2um (capm.2b)  x27  class=routing
+  box  : [140.47, 271.71, 157.28, 272.02]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [156.125, 271.23, 156.435, 271.71]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [156.125, 252.635, 156.435, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [140.47, 272.43, 157.28, 272.74]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [156.97, 253.835, 157.28, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [169.77, 272.02, 170.15, 272.055]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [157.28, 271.71, 170.15, 272.02]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [169.77, 271.675, 170.15, 271.71]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [171.485, 265.54, 171.59, 265.575]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [172.685, 263.995, 172.79, 265.195]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [157.29, 254.92, 158.47, 255.335]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.49, 253.765, 159.67, 253.835]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [157.29, 253.835, 158.47, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [171.485, 254.74, 171.59, 254.775]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [171.485, 265.195, 171.59, 265.23]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [172.685, 253.195, 172.79, 254.395]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [171.485, 254.395, 171.59, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [168.57, 272.43, 170.15, 272.74]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [157.28, 272.43, 169.77, 272.74]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [170.15, 272.43, 171.35, 272.74]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [172.685, 265.54, 172.79, 266.775]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [172.685, 265.195, 172.79, 265.23]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.49, 254.92, 159.67, 255.765]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [157.28, 253.835, 157.635, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.49, 253.835, 159.67, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [172.685, 254.74, 172.79, 255.975]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [172.685, 254.395, 172.79, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+rule   : Metal3 spacing < 0.3um (met3.2)  x6  class=routing
+  box  : [158.49, 255.335, 158.77, 255.635]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.49, 254.92, 158.77, 255.635]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.19, 254.92, 158.47, 255.335]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.49, 253.765, 158.77, 253.835]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.49, 253.765, 158.77, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+  box  : [158.19, 253.835, 158.47, 254.43]  net=voutn  inst=XC0/XC1  src=routes.json
+delta  : 8 -> 18 DRC_TOTAL, 33 -> 33 rects vs attempt 1   [worse]
+         BUT decomposes: XL1 cluster (met4.2 x14 + met4.5b x8 = 22 inst) is
+         ELIMINATED -> that cluster is genuinely ROUTING-FIXABLE, proven by knob.
+         XC cluster grew 11 -> 33 inst and MOVED XC1 -> XC0 (y 252-272): with
+         layer changes suppressed, voutn now runs a long met4(glayout)/Magic-met3
+         path past both caps, and per route_nets.py's own note a met3 run touching
+         bottom_met BECOMES the bottom plate and is measured against itself, so
+         every um alongside a cap is a fresh capm.2b.
+flags   : via_stack subcell counts unchanged (routed=18 nonzero -> in-context).
+          64/44 GDS-read warnings: expected, count only.
+--- attempt 3   2026-09-04T21:52:00
+gds    : layout_fixer_work/attempt3/routed.gds   top=routed
+knobs  : --track-multiplier 1.0 -> 1.5, --via-cost BACK to default 10.0
+         (i.e. vs attempt 2: via-cost reverted, track-multiplier introduced --
+         quantized-position lever, isolated so the effect is attributable)
+         router: total_wire 597.45 -> 627.27um (+5.0%), vias 16 -> 17,
+         6/6 nets, congestion converged with 0 congested cells on iter 0
+total  : DRC_TOTAL=12  rects=27  rules=2   DIRTY
+rule   : MiM cap bottom plate spacing < 1.2um (capm.2b)  x18  class=router-defect
+  box  : [156.655, 265.355, 157.28, 265.88]  net=voutn  inst=XC1  src=routes.json
+  box  : [156.655, 254.45, 157.28, 254.975]  net=voutp  inst=XC0  src=routes.json
+  box  : [155.695, 252.29, 156.145, 254.0]   net=voutp  inst=XC0  src=routes.json
+  box  : [155.05, 252.275, 156.145, 252.29]  net=voutp  inst=XC0  src=routes.json
+  box  : [156.25, 253.475, 157.28, 254.0]    net=voutp  inst=XC0  src=routes.json
+  (+13 more, all inside the XC0/XC1 port-landing regions; full list in
+   layout_fixer_work/attempt3_drc_violations.json)
+rule   : Metal3 spacing < 0.3um (met3.2)  x9  class=router-defect
+  box  : [156.25, 253.475, 156.445, 254.0]   net=voutp  inst=XC0  src=routes.json
+  box  : [155.95, 253.175, 156.145, 254.0]   net=voutp  inst=XC0  src=routes.json
+  box  : [155.95, 253.175, 156.145, 253.475] net=voutp  inst=XC0  src=routes.json
+  box  : [157.855, 265.39, 158.05, 265.88]   net=voutn  inst=XC1  src=routes.json
+  box  : [157.555, 265.355, 157.75, 265.88]  net=voutn  inst=XC1  src=routes.json
+  (+4 more)
+delta  : 18 -> 12 DRC_TOTAL, 33 -> 27 rects vs attempt 2   [better]
+         vs attempt 1 baseline: 8 -> 12 DRC_TOTAL, 33 -> 27 rects  [mixed:
+         fewer rects and 4 -> 2 rules, but higher error-area count]
+         XL1 CLUSTER ELIMINATED (met4.2 x14 + met4.5b x8 -> 0), same as attempt 2
+         but WITHOUT attempt 2's cap blow-up. Two independent knob families both
+         clear XL1 => XL1 cluster is confirmed ROUTING-FIXABLE.
+         Cap clusters survive both and now appear on BOTH XC0 and XC1.
+flags  : geometry probe of this GDS at the XC1 landing (GDS layer 70 = Magic met3
+         = glayout met4 = the MiM bottom plate) shows the mechanism directly:
+           via pad   (156.250,265.355)..(157.750,266.855)   1.500 x 1.500
+           stub      (157.855,265.390)..(158.800,266.330)
+           cap plate (158.575,264.615)..(160.775,266.615)
+         -> 0.105um NOTCH between via-pad right edge 157.750 and stub left edge
+            157.855 (fails met3.2's 0.300), and 0.825um from via pad to cap plate
+            (fails capm.2b's 1.200). Same 0.105um notch value as attempt 1.
+         64/44 GDS-read warnings: expected, count only.
+
+--- attempt 4   2026-09-04T21:55:00
+gds    : layout_fixer_work/attempt4/routed.gds   top=routed
+knobs  : --track-multiplier 1.5 (kept from attempt 3) + --via-cost 10.0 -> 30.0
+         (combination of the two knobs that each independently cleared XL1)
+         router: total_wire 761.10um, vias 15, 6/6 nets, congestion PASS
+total  : DRC_TOTAL=15  rects=49  rules=2   DIRTY
+rule   : MiM cap bottom plate spacing < 1.2um (capm.2b)  x22  class=router-defect
+  box  : (all in XC0/XC1 port-landing regions)  net=voutp/voutn  inst=XC0,XC1
+rule   : Metal3 spacing < 0.3um (met3.2)  x27  class=router-defect
+  box  : (all in XC0/XC1 port-landing regions)  net=voutp/voutn  inst=XC0,XC1
+delta  : 12 -> 15 DRC_TOTAL, 27 -> 49 rects vs attempt 3   [worse]
+         REJECTED. Moderate via-cost re-lengthens the met4(glayout)/Magic-met3
+         runs that touch bottom_met without buying anything at the landing.
+         XL1 still clear. Best-so-far remains attempt 3 (27 rects, 2 rules).
+flags  : 64/44 GDS-read warnings: expected, count only.
+--- attempt 5   2026-09-04T21:58:00
+gds    : layout_fixer_work/attempt5/routed.gds   top=routed
+knobs  : --track-multiplier 1.5 -> 1.6, --via-cost 30.0 -> BACK to default 10.0
+         (vs attempt 3, the only change is track-multiplier 1.5 -> 1.6)
+         NOT a guess: computed from the failing gap. Grid columns are
+         x = -104.362 + 0.72*m*j. m=1.6 (pitch 1.1520um) puts a column at
+         x=158.294, so a 1.500um via pad centred there spans 157.544..159.044 and
+         OVERLAPS both cap plate left edges (XC1 158.575, XC0 158.490) -- merging
+         instead of notching.
+         router: total_wire 630.13um (+5.5% vs baseline 597.45), vias 17,
+         6/6 nets, congestion PASS
+total  : DRC_TOTAL=10  rects=23  rules=2   DIRTY
+rule   : MiM cap bottom plate spacing < 1.2um (capm.2b)  x17  class=router-defect
+  box  : [156.87, 254.525, 157.28, 254.99]   net=voutp  inst=XC0  src=routes.json
+  box  : [155.765, 252.35, 156.215, 254.075] net=voutp  inst=XC0  src=routes.json
+  box  : [156.87, 254.99, 157.28, 255.05]    net=voutp  inst=XC0  src=routes.json
+  box  : [156.39, 253.55, 157.28, 254.075]   net=voutp  inst=XC0  src=routes.json
+  box  : [157.375, 266.045, 157.89, 266.57]  net=voutn  inst=XC1  src=routes.json
+  box  : [158.575, 264.615, 159.09, 265.07]  net=voutn  inst=XC1  src=routes.json
+  (+11 more; full list in layout_fixer_work/attempt5_drc_violations.json)
+rule   : Metal3 spacing < 0.3um (met3.2)  x6  class=router-defect
+  box  : [156.39, 253.55, 156.515, 254.075] net=voutp  inst=XC0  src=routes.json
+  box  : [156.09, 253.25, 156.215, 254.075] net=voutp  inst=XC0  src=routes.json
+  box  : [156.09, 253.25, 156.215, 253.55]  net=voutp  inst=XC0  src=routes.json
+  box  : [157.77, 254.99, 157.89, 255.05]   net=voutp  inst=XC0  src=routes.json
+  box  : [158.07, 254.525, 158.19, 254.99]  net=voutp  inst=XC0  src=routes.json
+  box  : [157.77, 254.525, 157.89, 255.05]  net=voutp  inst=XC0  src=routes.json
+delta  : 49 -> 23 rects vs attempt 4, and 27 -> 23 vs attempt 3   [better]
+         BEST OF ALL ATTEMPTS. vs attempt 1 baseline: 33 -> 23 rects (-30%),
+         4 -> 2 rules, 2 violation sites -> 1 (caps only). Re-ran DRC on this
+         same GDS after attempt 6 to restore its coordinates: 10/23 reproduced
+         exactly, so this number is stable, not run-to-run noise.
+flags  : the m=1.6 prediction PARTLY held. XC1's landing chain is now genuinely
+         merged -- via pad (156.390,265.070)..(157.890,266.570), stub
+         (157.140,265.595)..(158.295,266.045), stub
+         (158.070,265.595)..(158.800,266.045), plate
+         (158.575,264.615)..(160.775,266.615): every rectangle overlaps its
+         neighbour, so attempt 3's 0.105um notch is GONE (met3.2 at XC1: 0).
+         What remains is a different, deeper defect: the router took column
+         157.140, not the predicted 158.294, because 158.294 lies inside XC1's
+         carved landing corridor and only the outermost carved cell is used. The
+         1.500um via pad and the 2.000um-tall cap plate are therefore joined by a
+         0.450um-tall stub, leaving a RE-ENTRANT NOTCH 0.685um wide above and
+         below that stub (x 157.890..158.575). capm.2b is spacing-to-self on the
+         bloated `mim_bottom` region, so a 0.685um re-entrant gap fails the
+         1.200um rule even though the shape is fully connected.
+         64/44 GDS-read warnings: expected, count only.
+
+--- attempt 6   2026-09-04T22:01:00
+gds    : layout_fixer_work/attempt6/routed.gds   top=routed
+knobs  : --track-multiplier 1.6 (kept from attempt 5) + --via-cost 10.0 -> 60.0
+         last budgeted cycle; targeted the 1.500um met3<->met4 via pad itself
+         (via cost scales x real pad um, so 60 makes that transition cost 90)
+         router: total_wire 754.29um, vias 17 -> 13, 6/6 nets, congestion PASS
+total  : DRC_TOTAL=8  rects=28  rules=2   DIRTY
+rule   : MiM cap bottom plate spacing < 1.2um (capm.2b)  x12  class=router-defect
+rule   : Metal3 spacing < 0.3um (met3.2)  x16  class=router-defect
+         (all XC0/XC1 port-landing regions; coords in
+          layout_fixer_work/attempt6_drc_violations.json)
+delta  : 23 -> 28 rects vs attempt 5   [worse]   REJECTED.
+         Suppressing the via trades a smaller cap notch for a longer
+         met4(glayout)/Magic-met3 run that touches bottom_met -- met3.2 rises
+         6 -> 16. Same trade attempt 2 showed at m=1.0, confirming it is the
+         knob's behaviour and not a grid artifact.
+flags  : 64/44 GDS-read warnings: expected, count only.
+
+=== BUDGET EXHAUSTED: 5 fix-and-recheck cycles used (attempts 2-6),
+    MAX_SUBRETRY=5 from design_constraints.json layout_fix_iterations.
+    FINAL DRC STATE: DIRTY. Best candidate = attempt 5 (10 errors / 23 rects /
+    2 rules, caps only). Step 2 (LVS) NOT RUN -- it is gated on a DRC-clean GDS.
+    CANONICAL routed.gds / routes.json / physical_map.json DELIBERATELY NOT
+    OVERWRITTEN (mtimes still 21:12/21:13), so physical_map.json is NOT stale.
+
+################################################################################
+# NEW CANDIDATE: placement U12 (aspect 1.50:1). Everything above this line is
+# the PREVIOUS fixer run on placement U7, preserved unchanged. Attempt numbering
+# restarts at 1 because this is different geometry, not a continuation.
+# MAX_SUBRETRY = 5 (layout_fix_iterations, example/test_vco/design_constraints.json
+# via .claude/reference/design_constraints.py). Steps 1 and 2 budgeted separately.
+################################################################################
+
+--- attempt 1   2026-09-04T00:00:00 (DRC baseline, U12)
+gds    : example/test_vco/layout/routed.gds   top=routed
+         sha256 38e7f584e8dbdd224fbe20cc7b1dcfe706f7d9b5d1bdfed3e26d9630b286d728
+knobs  : baseline -- router stock knobs as delivered, no re-route
+total  : DRC_TOTAL=0  rects=0  rules=0   [CLEAN]
+rule   : (none -- `drc listall why` reports 0 distinct rules, 0 instances)
+delta  : n/a (first attempt on this geometry)
+flags  : `drc listall count` reports 19 per-cell errors in standalone via_stack
+         subcells: via_stack_2e2571cb=3, $1=3, $2=3, $3=3, via_stack_686e5d96$33=1,
+         via_stack_918d05dd$2=3, $3=3.  OUT-OF-CONTEXT, not violations --
+         confirmed independently by me, not taken on trust from the payload:
+         flattened routed.gds with gdstk (20186 polygons, top cell kept `routed`)
+         and re-ran the same run_drc.py -> `drc listall count`=0 AND
+         `drc listall why`=0 rules/0 instances, i.e. BOTH metrics agree at 0 once
+         the parent geometry that completes those vias is in context.
+         Flat cross-check artifacts: scratchpad/flat/routed_flat_check.gds,
+         scratchpad/flat/drc_flat/  (scratch, not delivered).
+         NOTE: routed.gds is NOT byte-identical to sweep/gds/U12_routed_flat.gds
+         (sha 504705fc...) as the payload states -- expected, flattening rewrites
+         structure; the payload's 38e7f584 hash for routed.gds itself is correct.
+         No 64/44 GDS-read warnings surfaced in this run's log.
+         capm.2b / met3.2 at the cap landings: ABSENT on this geometry, as the
+         payload predicted for U12. met4.2/met4.5b at XL1: also absent.
+         No categorization DRC of placement_visualization.gds was needed or run:
+         categorization only decides which lever to reach for, and with 0
+         violations there is no lever to choose. (drc_work_placement left as the
+         previous run left it, deliberately NOT overwritten.)
+result : DRC GATE PASSED at attempt 1. Fix iterations consumed: 0 of 5.
+
+--- DRC re-check (delivered filename)   2026-09-04
+gds    : example/test_vco/layout/test_vco_fixed.gds   top=routed  (STILL `routed`,
+         renaming the file does not rename the top cell -- --top routed passed)
+         sha256 38e7f584... == routed.gds byte-for-byte (pure copy, no geometry edit)
+knobs  : none -- not a fix cycle, does not consume budget. Re-run only to prove
+         the DELIVERABLE passes under the name it ships as.
+total  : DRC_TOTAL=0  rects=0  rules=0   [CLEAN]
+delta  : 0 -> 0 rects vs attempt 1   [same]
+flags  : same 19 out-of-context via_stack subcell counts, 0 rules from `listall why`.
+
+################################################################################
+# STEP 2 -- LVS.  Budget counted separately from Step 1 (also 5).
+# Full artifacts per attempt in layout_fixer_work/lvs_attempt_<n>/.
+################################################################################
+
+--- LVS attempt 1   2026-09-04   MISMATCH (baseline diagnosis, no geometry touched)
+layout : routed.gds top=routed, FULL spiral, stock sky130A_setup.tcl
+schem  : primitives/lvs_compare.sp -> vco_lc.spice (copied .sp->.spice; netgen
+         rejects a .sp extension). UNMODIFIED.
+symptom: magic extract: 2x `Warning: Ports "B" and "A" are electrically shorted`
+         `.subckt routed VDD Vcont VSS Iref`  -- 4 ports, not 6
+         netgen: voutp, vtail "(no matching net)"; C0, C1, DUMMY1 "(no matching
+         instance)"; pin table shows VDD|voutn **Mismatch**, VSS|voutp **Mismatch**
+         "Final result: Top level cell failed pin matching."
+diag   : ONE root cause, not 5 bugs. sky130A.tech has no `device` line for an
+         inductor, so the drawn spiral extracts as plain wire and the coil's two
+         ports A/B land on one node; that fuses VDD+voutp+voutn in the parent and
+         everything else follows. TOOLING, not a layout connectivity defect.
+         NOT fixed by moving metal. No geometry changed.
+
+--- LVS attempt 2   2026-09-04   MATCH
+layout : EXTRACTION-ONLY coil view, scratch, NEVER delivered:
+         lvs_attempt_2/routed_lvsview.gds, top=routed
+         Precondition verified before editing, not assumed: cell vco_spiral_ind in
+         THIS gds is identical to the one the prior run's patch coords came from --
+         347 polys, hist {71/20:3, 71/44:340, 72/16:2, 72/20:2}, labels A(0,165.22)
+         B(94,153) on 72/16, bbox (-98,-44)..(98,169.22). Re-placement moved
+         instances, not cell contents, so the coordinates still apply.
+         Edit (scratch copy only): DELETED the one 74-point met5 (72/20) spiral
+         polygon bbox (-98,-44)..(98,153) area 18200.55 um2; ADDED an 8x5 met5
+         patch (90,148)..(98,153) cell-local so port B's 72/16 pin still lands on
+         real met5. KEPT all 340 via4 cuts, 3 met4 landings, the port-A met5 stub,
+         both labels. Result 347 polys again, identical layer histogram.
+schem  : primitives/lvs_compare.sp UNMODIFIED, stock sky130A_setup.tcl UNMODIFIED.
+knobs  : vs attempt 1 = the coil view ONLY. No netgen `ignore class` lines and NO
+         netlist edit were needed this time -- differs from the prior run, and the
+         reason is in lvs_report.log: THIS lvs_compare.sp already omits XL0/XL1 and
+         the vco_spiral_ind subckt, and ext2spice omits the now device-free coil
+         subcircuit, so both sides carry zero coil instances and already agree.
+measured: 0x "electrically shorted" (was 2x); 0 `equiv` in vco_spiral_ind.ext
+         EXT_BBOX 26622 44451 81452 90998 -- non-empty
+         `.subckt routed VDD Vcont voutn voutp VSS Iref` -- 6 ports
+verdict: "Netlists match uniquely." + "Final result: Circuits match uniquely."
+         property errors: 0 in lvs.out AND 0 in netgen.log (both checked -- the
+         match line alone is NOT sufficient, see the falsification control)
+         6/6 pins, "Cell pin lists are equivalent" (NOT "altered to match")
+         9 devices / 7 nets both sides; nfet 18->7 vs 8->7 (netgen merges 11
+         parallel extracted fingers/dummies); 0x "no matching"
+control: falsification run on THIS geometry, not inherited -- vco_lc_wbad.spice =
+         vco_lc.spice with XN2 w=60->42, one character, nothing else. Gives
+         "Netlists match uniquely WITH property errors" + "Property errors were
+         found" while STILL printing "Final result: Circuits match uniquely."
+         => (a) the verdict trap reproduces here, so MATCH is asserted on the match
+         line AND the absence of property errors; (b) w/l really are compared, so
+         the clean match is meaningful rather than vacuous.
+geometry: NO geometry change in Step 2. The delivered GDS keeps the FULL spiral;
+         sha256 of the deliverable is unchanged. Rule 2.6 (re-run DRC after an
+         LVS-driven geometry fix) therefore does not apply -- and DRC was re-run on
+         the delivered file anyway, DRC_TOTAL=0.
+result : LVS GATE PASSED at attempt 2. Fix iterations consumed: 1 of 5.
+
+===== RE-GATE of route-shortner output (shortening/test_vco_fixed_shortened.gds) =====
+--- attempt 1   2026-09-04T21:53  (BASELINE, does not consume budget)
+gds    : example/test_vco/layout/shortening/test_vco_fixed_shortened.gds   top=routed
+         md5=2394ebf03abb02cd5b586cea7cd02d17
+knobs  : baseline -- geometry as delivered by route-shortner, no fix applied
+total  : DRC_TOTAL=0  rects=0  rules=0   [CLEAN]
+rule   : (none -- `drc listall why` returned 0 rules / 0 instances in expanded top cell)
+delta  : n/a (first attempt of this re-gate)
+flags  : via_stack out-of-context counts = 19 in 7 standalone subcells
+         (2e2571cb x3, $1 x3, $2 x3, $3 x3, 918d05dd$2 x3, $3 x3, 686e5d96$33 x1).
+         FLATTEN-DISPROVED independently this run: flatten -dobox -> DRC_TOTAL=0,
+         `drc listall count` EMPTY, `drc listall why` 0 rules. Phantom confirmed, not a violation.
+         5x expected GDS-read warnings "layer=64 type=44" (Unnamed_* cells). Non-blocking.
+         Magic 8.3 rev610, single run, no tool retries, ~1.2 s wall.
+verdict: DRC CLEAN on baseline. 0 of 5 fix-and-recheck cycles consumed.
+         No categorization run needed (drc_work_placement not run): zero violations to
+         classify as inherited vs router-introduced.
+
+--- LVS (re-gate)  2026-09-04T21:54
+attempt 1 : NAIVE extraction, no coil view. routed_lvsview NOT used.
+            -> `.subckt routed VDD Vcont Iref VSS` = 4 ports; voutp/voutn fused into VDD;
+               2x magic "Ports B and A are electrically shorted" on vco_spiral_ind.
+            DIAGNOSIS: known TOOLING root cause (sky130A.tech has no inductor device, so a
+            drawn spiral extracts as plain wire and DC-shorts its two ports into the parent).
+            NOT a shortener regression, NOT a layout defect. No geometry touched.
+            artifacts: layout_fixer_work/lvs_regate_attempt1_noview/
+attempt 2 : + EXTRACTION-ONLY coil view (the ONLY change), rebuilt for this GDS.
+            precondition verified first: vco_spiral_ind in the shortened GDS is identical to
+            the pre-shortening cell -- 347 polys, hist {71/20:3, 71/44:340, 72/16:2, 72/20:2},
+            labels A(0,165.22) B(94,153), 74-pt spiral bbox (-98,-44)..(98,153) area 18200.55.
+            view edit (scratch only): delete 74-pt met5 72/20 spiral, add 8x5um 72/20 patch
+            (90,148)..(98,153). Result 347 polys, identical histogram.
+            measured: 0x "electrically shorted", 0 equiv lines, 6 ports.
+            netgen stock sky130A_setup.tcl, UNMODIFIED lvs_compare.sp.
+            -> "Circuits match uniquely" + 0 property errors (lvs.out AND netgen.log)
+               + 0 "no matching". 6/6 pins, 9/9 devices, 7/7 nets.  [MATCH]
+            artifacts: layout_fixer_work/lvs_attempt_3/
+control   : vco_lc_wbad.spice (XN2 w=60->42, scratch copy; lvs_compare.sp NOT edited)
+            -> "match uniquely" STILL printed + "Property errors were found."
+            Confirms (a) the verdict trap reproduces on THIS geometry, (b) w/l really are
+            compared, so the clean match is meaningful not vacuous.
+VSS check : extracted netlist pre- vs post-shortening differs by EXACTLY ONE LINE, and it is
+            the top-cell PORT ORDER only:  "VSS Iref" -> "Iref VSS".
+            All 7 instance lines, all subckts, all net names byte-identical.
+            The 4 released VSS bulk landings (XN0-XN3) + relocated VSS label changed
+            port declaration order, ZERO connectivity. "Safe by construction" now MEASURED.
+verdict   : LVS MATCH. 1 of 5 fix-and-recheck cycles consumed (attempt 1 = diagnosis,
+            no geometry changed). NO GEOMETRY CHANGED IN THE WHOLE RE-GATE, so rule 2.6
+            (re-run DRC after an LVS-driven geometry fix) does not apply.
+            Delivered GDS md5 2394ebf03abb02cd5b586cea7cd02d17 -- unchanged from hand-off.

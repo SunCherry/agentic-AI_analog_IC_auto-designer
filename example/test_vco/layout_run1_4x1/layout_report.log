@@ -1,0 +1,151 @@
+================================================================================
+LAYOUT REPORT -- test_vco (vco_lc), aspect-4:1 re-placement run
+report_dir : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/layout
+generated  : 2026-09-04  by layout-fixer (Step 3 finalize)
+NOTE: OVERWRITES the previous (1:1) run's layout_report.log; the byte-identical
+archived copy is preserved at example/test_vco/layout_aspect1x1/layout_report.log.
+================================================================================
+
+GATE STATUS
+  DRC : PASS (clean)   fix iterations: 0 of 5   -> drc_report.log
+  LVS : MATCH          fix iterations: 1 of 5   -> lvs_report.log
+  MAX_SUBRETRY = 5 per gate, = design_constraints.json's layout_fix_iterations,
+  read via `python .claude/reference/design_constraints.py example/test_vco
+  --key layout_fix_iterations`. Applied independently to Step 1 and Step 2.
+
+DELIVERABLES
+  fixed GDS       : layout/test_vco_fixed.gds
+                    top cell `routed` -- renaming the FILE did not rename the
+                    CELL; re-read with gdstk after copying to confirm. Every
+                    downstream tool must still be given --top routed.
+                    sha256 3b381cc34b103a1a3987c7840c818743a9d37128aae0d5f55265ebe32cf2f0fd
+                    (byte-identical to shortening/routed_shortened.gds)
+  physical_map    : layout/shortening/physical_map.json  <-- SHIP THIS ONE
+                    the shortener's map, consistent with the shortened geometry.
+                    layout/physical_map.json is the PRE-shortening map and was
+                    deliberately left in place, unmodified, as the shortener's
+                    own input. Do not ship it.
+  bookkeeper      : layout_fixer_work/bookkeeper.log  (RUN 3 section)
+  DRC report      : drc_report.log
+  LVS report      : lvs_report.log
+
+--------------------------------------------------------------------------------
+DEVICE COUNT BY KIND  (from the shipped physical_map.json)
+--------------------------------------------------------------------------------
+  | Kind  | Count | Instances                          |
+  |-------|-------|------------------------------------|
+  | nfet  |   6   | XN0 XN1 XN2 XN3 XN4 XN5            |
+  | pfet  |   0   | --                                 |
+  | cap   |   2   | XC0 XC1  (sky130_fd_pr__cap_mim_m3_1) |
+  | res   |   0   | --                                 |
+  | bjt   |   0   | --                                 |
+  | ind   |   2   | XL0 XL1  (vco_spiral_ind, drawn spiral) |
+  | TOTAL |  10   |                                    |
+  Two further tie-off devices (XDUMMY1, XDUMMY2) exist as real silicon inside the
+  glayout-generated cells and are declared in lvs_compare.sp; they are not
+  placement objects and so do not appear in physical_map.json's device list.
+
+--------------------------------------------------------------------------------
+TOTAL PLACEMENT AREA
+--------------------------------------------------------------------------------
+  bounding box over physical_map.json's `devices`, computed with
+  .claude/reference/generate_grid.py's overall_bbox() (not re-derived):
+    (10.000, 10.000) .. (437.900, 270.322) um
+    extent 427.900 x 260.322 um
+    AREA = 111391.75 um2
+    aspect = 1.644 : 1   (within the relaxed max_canvas_aspect of 4:1)
+  The top cell's own GDS bbox is identical to this, so no device sits outside the
+  placement box and no routing extends past it.
+
+--------------------------------------------------------------------------------
+DISTINCT GDS LAYERS ACTUALLY DRAWN  (read from the delivered GDS, flattened --
+not the PDK's layer list).  22 polygon layers, 20160 polygons.
+--------------------------------------------------------------------------------
+  | layer/dt | polys | what                                    |
+  |----------|-------|-----------------------------------------|
+  |  64/44   |    10 | glayout pwell glayer (unmapped in sky130A.tech; Magic drops it) |
+  |  65/20   |  2505 | diff                                     |
+  |  66/20   |    63 | poly                                     |
+  |  66/44   |  5760 | licon                                    |
+  |  67/20   |  7330 | li1        (glayout glayer `met1`)        |
+  |  67/44   |  1554 | mcon                                     |
+  |  68/16   |    12 | met1 pin                                 |
+  |  68/20   |  1769 | met1       (glayout glayer `met2`)        |
+  |  68/44   |    19 | via                                      |
+  |  69/16   |     4 | met2 pin                                 |
+  |  69/20   |    54 | met2       (glayout glayer `met3`)        |
+  |  69/44   |     6 | via2                                     |
+  |  70/20   |    37 | met3       (glayout glayer `met4`; MiM bottom plate) |
+  |  70/44   |   135 | via3                                     |
+  |  71/20   |   163 | met4       (glayout glayer `met5`)        |
+  |  71/44   |   680 | via4                                     |
+  |  72/16   |     4 | met5 pin   (coil ports A / B)             |
+  |  72/20   |     4 | met5       (the two drawn spirals + stubs) |
+  |  89/44   |     2 | (marker)                                  |
+  |  93/44   |    18 | (marker)                                  |
+  |  94/20   |     9 | (marker)                                  |
+  |  95/20   |    22 | (marker)                                  |
+  label layers present: 236/0 x10 (INSTANCE_LABEL_LAYER, extraction-inert),
+  68/5 x13, 69/5 x6, 71/5 x8 (net labels), 72/16 x4 (coil port pins).
+  Reminder for anyone reading a Magic rule name against a router file: the
+  router/glayout names are offset by one from the process layers -- glayout met2
+  is met1, met3->met2, met4->met3, met5->met4, and glayout met1 is li1.
+
+--------------------------------------------------------------------------------
+ROUTING, AS DELIVERED
+--------------------------------------------------------------------------------
+  total wirelength 600.11 um (675.13 routed -> 663.78 measured by the shortener
+  on its own input -> 600.11 after shortening, -9.6%), 25 vias, 27 corners.
+  Nets rewired by route-shortner: VSS, Vcont, voutn. Left unchanged: VDD, voutp,
+  vtail (and Iref, which has no routed segment -- it is a single-terminal net).
+  | Net   | segments | vias |
+  |-------|----------|------|
+  | Iref  |    0     |  0   |
+  | VDD   |   20     |  4   |
+  | VSS   |   20     |  7   |
+  | Vcont |   17     |  0   |
+  | voutn |   16     |  7   |
+  | voutp |   31     |  5   |
+  | vtail |    9     |  2   |
+
+--------------------------------------------------------------------------------
+PHYSICAL_MAP VALIDITY  (asserted, not assumed)
+--------------------------------------------------------------------------------
+  The map shipped is the one built FROM the final geometry: its `layout` field
+  reads `routed_shortened.gds` and its `route_shortening` block records
+  source_gds=routed.gds, source_map=physical_map.json, nets_changed=[VSS, Vcont,
+  voutn]. Non-degeneracy checks, all passed:
+    devices with a null position     : 0 of 10
+    devices with a null rotation_deg : 0 of 10  (e.g. XC0 rotation_deg=90)
+    nets traced                      : 7 of 7, every one source="router"
+                                       (6 carry segments; Iref legitimately has 0)
+  physical_map_from_placement.py was deliberately NOT re-run: it reads the
+  canonical routes.json, which is the PRE-shortening routing, so it would have
+  produced a map describing geometry that no longer exists. A stale map is worse
+  than none. extract_physical_info.py was likewise not run -- it is only for
+  layout-extractor Path A and would have silently produced nulls on this
+  placer/router layout.
+
+--------------------------------------------------------------------------------
+PER-ITERATION HISTORY  (append-only; both phases)
+--------------------------------------------------------------------------------
+  DRC-1  routed_shortened.gds        baseline, no knob        DRC_TOTAL=0  CLEAN
+  DRC-1b placement_visualization.gds attribution baseline     DRC_TOTAL=0  CLEAN
+         -> inherited set empty, introduced set empty; no lever needed
+  DRC-g1 bound check      SRC_BBOX == gdstk bbox, non-empty            PASS
+  DRC-g2 flatten re-check FLAT_BBOX == SRC_BBOX, FLAT_DRC_TOTAL=0      PASS
+         -> the 19 via_stack subcell counts do not survive expansion
+  DRC-g3 negative control injected met1 0.05 um gap -> met1.2 x2 seen  PASS
+         -> the checker is live; the 0 is real
+  LVS-1  no coil view                MISMATCH: 4 ports, pin matching failed
+         -> root cause: Magic has no inductor device; coil extracts as wire and
+            the A/B short propagates into the parent. Not a layout bug.
+  LVS-2  extraction-only coil view rebuilt from the shortened geometry
+         MATCH: 6/6 pins, 9/9 devices, 7/7 nets, 0 property errors
+         -> falsified on this run (XN2 w 60->42 produces property errors), so the
+            match is meaningful and the verdict trap is accounted for
+  DRC-f  test_vco_fixed.gds (delivered file, delivered name, top=routed)
+         DRC_TOTAL=0  CLEAN
+  No geometry was modified at any point in this run. The delivered GDS is
+  byte-identical to route-shortner's output.
+================================================================================

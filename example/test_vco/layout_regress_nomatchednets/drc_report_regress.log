@@ -1,0 +1,98 @@
+================================================================================
+DRC REPORT -- test_vco  (REGRESSION run, suffix _regress)
+================================================================================
+generated : 2026-09-07T07:24:57Z
+gds       : example/test_vco/layout/routed.gds
+top cell  : routed          <-- NOT the filename stem; passed as --top everywhere
+pdk       : sky130A (via .claude/reference/pdk_config.py); PDK_ROOT=$HOME/pdk/manual
+tool      : Magic 8.3 rev 610, via .claude/skills/router/script/run_drc.py
+report dir: example/test_vco/layout/   (= <design_dir>)
+scratch   : example/test_vco/layout/layout_fixer_work_regress/drc_work
+            (pre-existing drc_work_placement/ and drc_work_routed/ NOT touched)
+budget    : MAX_SUBRETRY=5 (design_constraints.json: layout_fix_iterations)
+consumed  : 0 fix iterations -- clean on the baseline run
+
+--------------------------------------------------------------------------------
+VERDICT: DRC CLEAN.  DRC_TOTAL = 0, violation rectangles = 0, violated rules = 0.
+--------------------------------------------------------------------------------
+
+ERRORS BY RULE CATEGORY
+  | Category   | Rule | Count | Fixable? |
+  |------------|------|-------|----------|
+  | spacing    | --   |   0   |   n/a    |
+  | width      | --   |   0   |   n/a    |
+  | enclosure  | --   |   0   |   n/a    |
+  | other      | --   |   0   |   n/a    |
+  'drc listall why' returned an empty list on the expanded top cell.
+  drc_violations.json: {"drc_total": 0, "violations": {}}
+
+VIOLATIONS BY NET  (led with NETS: this is a router hand-off, so any violation
+would be net geometry, not a device defect)
+  | Rank | Net   | Violation count | Rule categories |
+  |------|-------|-----------------|-----------------|
+  |  --  | none  |        0        |      none       |
+  Nets carrying routed metal: VDD, VSS, Vcont, voutn, voutp, vtail (+ Iref,
+  single-macro pin, label only). All zero.
+
+VIOLATIONS BY DEVICE
+  | Rank | Device | Violation count | Rule categories |
+  |------|--------|-----------------|-----------------|
+  |  --  | none   |        0        |      none       |
+  All 10 macros (XC0 XC1 XL0 XL1 XN0 XN1 XN2 XN3 XN4 XN5) clean.
+
+SPACING VIOLATIONS (pairwise)
+  | Rule | Between | Location (um) | Fix applied/suggested |
+  |------|---------|---------------|-----------------------|
+  |  --  |   --    |      --       |  none required        |
+
+MODIFICATIONS APPLIED
+  None. No geometry was changed. The delivered GDS is byte-identical to the
+  router's routed.gds (md5 5cf3029967e6726fad9bca9d0aebf467 on both).
+
+--------------------------------------------------------------------------------
+WHY THIS ZERO IS TRUSTWORTHY -- bound-checked from both sides
+--------------------------------------------------------------------------------
+A DRC "0" is indistinguishable from an empty cell or a dead check
+(environment.md's three false-pass modes), so both were excluded explicitly.
+
+1. NON-EMPTY CELL. SRC_BBOX = 26817 44077 106237 103220 internal units
+   = 397.10 x 295.72 um -- matches the payload's independently measured size.
+2. FLATTEN RE-CHECK. 'flatten -dobox -nolabels routed_flat' (the accepted flag
+   form; the rejected form silently leaves an empty cell).
+   FLAT_BBOX identical to SRC_BBOX. FLAT_DRC_TOTAL = 0, and ZERO CELLCOUNT
+   lines -- so the 19 subcell errors do not survive expansion.
+3. NEGATIVE CONTROL. Two met1 rectangles injected 0.05 um apart into a
+   flattened copy at internal (110000,50000)-(110100,50100) and
+   (110110,50000)-(110210,50100). Result:
+       NEG_DRC_TOTAL: 2
+       Metal1 spacing < 0.14um (met1.2)  x2
+   The rule engine is live and would have reported a real spacing violation.
+
+ATTRIBUTION BASELINE (inherited vs router-introduced)
+  Pre-routing baseline drc_work_placement/ on placement_visualization.gds was
+  already DRC_TOTAL=0 / 0 rules. Routed GDS is also 0. Therefore:
+    inherited violations        : 0
+    router-introduced violations: 0
+  Nothing to classify as placement-fixable / routing-fixable / router-defect /
+  intrinsic. No knob was touched, no re-route was run.
+
+REGRESSION RESULT WORTH NAMING
+  Earlier runs of this stack inherited 29 well/latch-up violations from the
+  generated primitives. CONFIRMED GONE, not assumed: neither the placement DRC
+  log nor the routed DRC log contains any well, tap, nwell, or latch-up rule
+  line -- both 'drc listall why' listings are empty outright.
+
+WARNINGS (non-blocking; no errors present, so nothing takes precedence)
+  - 5x "Unknown layer/datatype in boundary, layer=64 type=44" on cells
+    Unnamed_a319e946, Unnamed_fe6ee434, Unnamed_9bb2e723, Unnamed_70e20656,
+    Unnamed_c05d91ed. Expected: glayout's internal pwell glayer, correctly
+    dropped by Magic (environment.md).
+  - 1x "CIF file read warning: Input off lambda grid by 2/5; snapped to grid",
+    plus "units rescaled by factor of 5 / 1". Routine for glayout output.
+  - 19 out-of-context errors counted inside via_stack subcells only
+    (via_stack_2e2571cb and its $1..$4 copies, 3 each; via_stack_918d05dd$2, 3;
+    via_stack_686e5d96$33, 1). These vanish on flatten -- geometry completing
+    them lives in the parent. Not violations of the assembled layout.
+  - No tool crashes, no timeouts, no retries. Magic wall time ~1.3 s per run
+    (budgeted 5 min; this design is 10 macros, well under the baseline scale).
+================================================================================

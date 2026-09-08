@@ -1,0 +1,186 @@
+================================================================================
+spec_analysis.log -- test_vco (cross-coupled NMOS LC VCO, sky130A)
+schematic-agent step 3. Consumer: step 4 (testbench audit) and schematic-sizing.
+Baseline column = the Step-4 pre-layout run, reproduced twice, testbench/vco_lc_pre_results.txt
+================================================================================
+
+--- 3a  PER-KEY READ ----------------------------------------------------------
+
+KEY 1  OscFreq          Direction RANGE   Value [3.4, 3.6]  Units GHz
+  baseline 2.72465 GHz  ->  BELOW the window by 0.675 GHz (-19.9% relative to 3.4)
+  Circuit expression:
+      f0 = 1 / (2*pi*sqrt(L_diff * C_diff))
+      L_diff = 2 * 3.9860 nH  = 7.972 nH   (the two coils are in series differentially)
+      C_diff = C_node / 2                  (the two half-tanks are in series differentially)
+    Back-solving the measured f0 gives C_diff = 428 fF, i.e. C_node = 856 fF, and that
+    number reconciles device-by-device with the netlist:
+      XC0 MiM 16x16 um   carea=2.00 fF/um^2 * 256 + cperim  ~ 524 fF   (61%)
+      coil Cpb           (the output-side half of C_sub)      146 fF   (17%)
+      XN2 varactor       Cox ~8.32 fF/um^2 * (40 * 0.5)      ~166 fF   (19%)
+      XN0/XN1 Cgd+Cdb+Cgs and wiring                          ~20 fF   ( 2%)
+                                                        total ~856 fF   <- matches
+    So the C budget is UNDERSTOOD, not guessed, and the dominant term is the fixed MiM cap.
+  Governing devices: XC0/XC1 (w,l = plate dimensions) primary; XN2/XN3 (w) secondary;
+    XL0/XL1 fixed (TG5, not tunable).
+  What must change: C_node must fall to 550 fF for 3.4 GHz, 519 fF for 3.5 GHz,
+    490 fF for 3.6 GHz -- a drop of 306..366 fF. The MiM pair alone holds 524 fF, so
+    the required drop is available inside ONE knob without touching anything else.
+  PLAUSIBLE. Aim for the middle of the window (3.5 GHz), not an edge: RANGE keys have
+    a two-sided bar and the varactor drags f0 down again when TuningRange is chased.
+
+KEY 2  TuningRange      Direction FLOOR   Value 600          Units MHz
+  baseline 226.43 MHz   ->  2.65x SHORT (f_lo 2.67404, f_hi 2.90047 GHz)
+  Circuit expression:
+      TR = f(Vcont=VDD) - f(Vcont=0) ;  TR/f0 ~= (1/2) * dC_var / C_tank
+    Baseline: TR/f0 = 8.31% -> dC_var/C_tank = 16.6% -> dC_var ~= 142 fF of real swing
+    out of C_node = 856 fF. The varactor already swings ~85% of its own 166 fF; the
+    problem is NOT that the varactor is weak, it is that it owns only 19% of the tank.
+  Required: 600 MHz at 3.5 GHz is TR/f0 = 17.1% -> dC_var/C_tank = 34.3%. At the
+    shrunken C_node = 519 fF that is dC_var >= 178 fF.
+  Governing devices: XN2/XN3 `w` primary (dC_var scales ~linearly with gate area);
+    XC0/XC1 `w,l` equally important but with the OPPOSITE sign -- shrinking the MiM
+    raises the varactor's FRACTION without touching the varactor at all.
+  THIS IS THE KEY INSIGHT OF THE WHOLE ANALYSIS: shrinking the MiM cap moves OscFreq UP
+    and TuningRange UP SIMULTANEOUSLY. The two keys that look like the hardest pair are
+    actually aligned on the primary knob, and only the varactor width trades between them.
+  PLAUSIBLE. dC_var 142 -> 178 fF is a 1.25x scale on the varactor; even at constant
+    varactor width the MiM shrink alone takes dC_var/C_tank from 16.6% to 27%.
+
+KEY 3  OutputPower      Direction FLOOR   Value 10           Units dBm
+  baseline 8.66583 dBm  ->  1.334 dB short (A1 = 0.8576 V; the floor needs A1 >= 1.0000 V,
+    from dBm = 10*log10(A1^2 / (2*50) / 1e-3), i.e. exactly x1.166 in amplitude)
+  Circuit expression:
+      A1 ~= (4/pi) * I_tail * R_tank,eff        (current-limited regime)
+      R_p,coil = (w0 * L_diff)^2 / R_s,diff = (2*pi*2.7247e9 * 7.972n)^2 / 18.45 = 1010 ohm
+    But (4/pi)*I*R_p,coil = 2.05 V while the measurement is 0.858 V, so the loaded
+    R_tank,eff is only ~421 ohm -- the coil is NOT the dominant loss. Roughly half the
+    tank Q is being eaten by the rest of the tank, principally the MOS varactors'
+    channel resistance in series with their gate capacitance (l=0.5 um is a long,
+    low-Q channel) and the MiM cap's own rm3+via3 series R.
+  Governing devices: XN4/XN5 (`w` ratio -> I_tail) -- BLOCKED by the Power ceiling;
+    XN0/XN1 (`w`,`l` -> gm, must satisfy gm*R_tank > 1 with margin);
+    and, indirectly but decisively, XC0/XC1.
+  THE FREE LUNCH: R_p,coil scales as w0^2, so moving f0 from 2.7247 to 3.5 GHz raises it
+    by x1.650 AT ZERO EXTRA CURRENT. That is +2.17 dB if the loss ratio holds -- more than
+    the 1.33 dB needed. OutputPower is therefore expected to be carried by the OscFreq fix
+    rather than by current, which is the only reason it does not collide with Power.
+  PLAUSIBLE, but CONDITIONAL -- it depends on the tank's non-coil losses not scaling up
+    as fast as R_p does. Must be verified by simulation at every iteration, never assumed.
+
+KEY 4  Power            Direction CEILING Value 3.0          Units mW
+  baseline 2.87729 mW   ->  PASSES, margin 4.1% (0.123 mW)
+  Circuit expression:
+      Power = VDD * mean(i(vdd)) = 1.8 V * 1.5985 mA
+      i(vdd) = I_tail + Iref = 300uA*(XN4.w/XN5.w) + 300uA = 1.20 + 0.30 = 1.50 mA nominal
+      (measured 1.60 mA; the excess is the tail transistor's large-signal modulation --
+      an averaged switching current, which is exactly why the deck averages over 40
+      periods instead of reading a DC op point.)
+  Governing devices: XN4.w / XN5.w ONLY. Iref itself is 300 uA fixed IN THE TESTBENCH
+    (`iref VDD Iref dc={iref_val}`) and is NOT a device parameter -- the sizer cannot
+    touch it, and must not try.
+  THE BINDING CONSTRAINT OF THIS DESIGN. 4.1% margin means the tail mirror ratio is
+    effectively frozen upward: any widening of XN4 relative to XN5 breaks this key.
+  Note XN0/XN1 and XN2/XN3 sizing is POWER-NEUTRAL: the cross-coupled pair only steers
+    a current the tail already sets, and a varactor carries no DC current at all.
+
+--- 3b  TENSIONS AND OVER-CONSTRAINT ------------------------------------------
+
+  T1  OscFreq  vs  TuningRange   -- ALIGNED on the primary knob, opposed on the secondary.
+      XC0/XC1 shrink:  f0 UP, TR UP.        (both keys improve together)
+      XN2/XN3 widen:   f0 DOWN, TR UP.      (a real trade)
+      Two knobs, two keys, opposite signature on one of them -> the system is SOLVABLE,
+      not over-constrained. Expected recipe: shrink MiM to place f0, then widen the
+      varactor for TR and shrink the MiM again to put f0 back.
+
+  T2  OutputPower  vs  Power     -- the classic oscillator collision, DEFUSED here.
+      The textbook lever for OutputPower is I_tail, and Power has only 4.1% headroom,
+      so that lever is unavailable. It is not needed: the x1.65 rise in R_p that comes
+      free with the OscFreq fix covers the 1.33 dB gap. IF that turns out not to hold in
+      simulation, this pair IS over-constrained at Iref=300uA and the finding is a
+      re-spec question for the user (raise the Power ceiling, or lower the OutputPower
+      floor), NOT something to size around.
+
+  T3  OutputPower  vs  TuningRange -- second-order but real and adverse.
+      Widening XN2/XN3 adds low-Q channel resistance in parallel with the tank, which
+      lowers R_tank,eff and hence amplitude. So the TuningRange fix mildly fights the
+      OutputPower fix. Watch OutputPower whenever the varactor width moves.
+
+  T4  start-up margin -- NOT A SPEC KEY, but a hard precondition for all four.
+      gm(XN0,XN1) * R_tank,eff > 1 must hold or the circuit stops oscillating and every
+      key becomes meaningless (the measurement returns garbage, not a bad number).
+      Shrinking the tank C raises R_p, which helps; shrinking XN0/XN1 hurts.
+      TREAT A NON-OSCILLATING ITERATION AS AN INVALID POINT, NOT A POOR SCORE.
+
+  OVER-CONSTRAINED KEYS: none flagged. All four are reachable on this topology by the
+  argument above, and the user has independently confirmed a jointly-satisfying point
+  exists. The one key with no independent knob is Power, and it currently passes.
+
+--- 3c  WHAT MUST BE SIMULATED AND SAVED --------------------------------------
+
+  ANALYSIS: transient only. There is NO .ac analysis for this design and there cannot
+  usefully be one -- an oscillator has no stable small-signal operating point to sweep
+  about (its DC solution is the unstable symmetric one). Three `tran 2p 60n` runs are
+  required, not one, because TuningRange is defined across a Vcont sweep:
+      Vcont = 0        -> f_lo
+      Vcont = VDD      -> f_hi
+      Vcont = VDD/2    -> OscFreq, OutputPower, Power  (the nominal point)
+  DO NOT substitute a .op for Power: the op point solves the symmetric non-oscillating
+  state and reports the wrong current.
+
+  MUST BE SAVED / MEASURED per iteration:
+      t1, t2         zero-crossings of vdiff, 40 periods apart, TD>=30n  -> OscFreq
+      tlo1/tlo2, thi1/thi2   the same at the two Vcont endpoints          -> f_lo, f_hi, TuningRange
+      vrms  = RMS(vdiff) over exactly [t1,t2]   -> A1 = sqrt(2)*vrms      -> OutputPower
+      iavg  = AVG(i(vdd)) over exactly [t1,t2]  -> Power = |iavg| * VDD
+      vdiff, v(voutp), v(voutn) waveform                                   -> waveform hand-off
+  The integer-period window is not cosmetic: an average over a non-integer number of
+  periods leaks tank ripple straight into both iavg and vrms.
+
+  SETTLING: measurements start at TD=30n out of a 60n run, i.e. the first half of the
+  transient is discarded as start-up. At ~2.7-3.6 GHz that is 80-110 periods of settling
+  and 40 periods of measurement. If sizing lowers the tank Q enough that start-up takes
+  longer, this window must be re-checked, not silently trusted.
+
+  OP-POINT EVIDENCE the sizer should read (step 4b's probe splice): vgs/vds/vth/gm/id of
+  XN0, XN1, XN4, XN5 at the symmetric op point, to confirm the tail is in saturation and
+  to bound gm for the start-up condition. NOTE that op-point values for XN0/XN1 describe
+  the UNSTABLE symmetric state, not the limit cycle -- they are a saturation/headroom
+  check and a gm estimate, NOT a prediction of amplitude.
+
+  EXPLICITLY NOT USABLE: .claude/reference/compute_fidelity.py. Its extractor registry
+  contains only "ac"; called on this design it raises NotImplementedError. Spec values
+  are parsed from testbench/vco_lc_pre_results.txt instead (step 4c's script).
+
+--- 3d  SIZING KNOBS, IN PRIORITY ORDER ---------------------------------------
+
+  1. XC0/XC1  w,l  (TG3, tied)   -- MiM plate. Moves OscFreq UP and TuningRange UP and,
+       through R_p, OutputPower UP. Power-neutral. THE PRIMARY KNOB.
+       Range: the PDK subckt has NO w/l bins at all (see FLOW NOTE), so the electrical
+       limit is soft; the practical floor is a drawable plate (>= ~2x2 um).
+  2. XN2/XN3  w    (TG4, tied)   -- varactor width. TuningRange UP, OscFreq DOWN,
+       OutputPower slightly DOWN. Power-neutral. THE SECONDARY KNOB.
+       Range: nfet_01v8 bin wmax = 100 um per copy at nf=1; past that fold with nf/m.
+  3. XN0/XN1  w,l  (TG1, tied)   -- gm for start-up margin and switching sharpness.
+       Power-neutral (steers the tail current, does not set it). Keep l at 0.15 (Lmin);
+       widening adds tank C, so this is a margin knob, not a performance knob.
+  4. XN4/XN5  w    (TG2, UNTIED -- ratio is a knob, resolved as open_question Q2)
+       -- the ONLY lever on Power, and it currently has 4.1% margin. Effectively
+       one-directional: may be lowered, must not be raised without re-checking Power.
+  NOT KNOBS: XL0/XL1 and everything inside vco_spiral_ind (frozen, TG5); Iref
+       (a testbench source); VDD (a testbench param).
+
+--- FLOW NOTES (for the user's "where does this flow break" question) ----------
+  N1  sky130_fd_pr__cap_mim_m3_1 is a plain .subckt with `w=1 l=1 mf=1` defaults and NO
+      binning statement, so run_erc_check.py's `check_model_bin_width` finds no wmax for
+      it and cannot guard it. The sizer can legally emit a plate size that is not
+      physically drawable, and nothing upstream of DRC will object. It also takes `mf`,
+      not `m` -- the netlist's `m=1` on XC0/XC1 is handled by ngspice's generic subckt
+      multiplier, not by the model.
+  N2  Iref (300 uA) and VDD (1.8 V) live in the TESTBENCH, so the two quantities that
+      most directly set Power are outside the sizer's reach by construction. That is
+      correct -- they are measurement conditions, not device parameters -- but it means
+      Power has exactly ONE device knob (the XN4/XN5 width ratio) and no other.
+  N3  There is no phase-noise key. The Ocean source measured PhaseNoise via hbnoise;
+      ngspice has neither harmonic balance nor pnoise, so it is absent from the spec
+      rather than present and unmeasurable. Correct call, and worth stating: this
+      toolchain cannot close an oscillator's most important spec at all.

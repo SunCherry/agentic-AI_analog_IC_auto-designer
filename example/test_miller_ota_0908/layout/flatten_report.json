@@ -1,0 +1,37 @@
+{
+  "original": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/device_shaping/two_stage_rz_final_shaped.sp",
+  "flatten": {
+    "mode": "already_flat",
+    "expanded_instances": [],
+    "nested_unexpanded": [],
+    "top_subckt": "two_stage_rz",
+    "path": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/two_stage_rz_final_shaped_flat.sp"
+  },
+  "erc": {
+    "exit_code": 0,
+    "counts": {
+      "error": 0,
+      "warning": 0,
+      "info": 0
+    },
+    "findings": []
+  },
+  "equivalence": {
+    "status": "match",
+    "report": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/equivalence/netgen_equivalence.out",
+    "command": "/Users/cherrysun/.local/bin/netgen -batch lvs /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/equivalence/flattened.spice two_stage_rz /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/equivalence/original.spice two_stage_rz /Users/cherrysun/pdk/manual/sky130A/libs.tech/netgen/sky130A_setup.tcl /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/equivalence/netgen_equivalence.out",
+    "top_flat": "two_stage_rz",
+    "top_original": "two_stage_rz",
+    "netgen_exit": 0,
+    "tail": "\nContents of circuit 1:  Circuit: 'two_stage_rz'\nCircuit two_stage_rz contains 11 device instances.\n  Class: sky130_fd_pr__cap_mim_m3_1 instances:   1\n  Class: sky130_fd_pr__pfet_01v8 instances:   4\n  Class: sky130_fd_pr__res_generic_po instances:   1\n  Class: sky130_fd_pr__nfet_01v8 instances:   5\nCircuit contains 10 nets.\nContents of circuit 2:  Circuit: 'two_stage_rz'\nCircuit two_stage_rz contains 11 device instances.\n  Class: sky130_fd_pr__cap_mim_m3_1 instances:   1\n  Class: sky130_fd_pr__pfet_01v8 instances:   4\n  Class: sky130_fd_pr__res_generic_po instances:   1\n  Class: sky130_fd_pr__nfet_01v8 instances:   5\nCircuit contains 10 nets.\n\nCircuit 1 contains 11 devices, Circuit 2 contains 11 devices.\nCircuit 1 contains 10 nets,    Circuit 2 contains 10 nets.\n\n\nFinal result: \nCircuits match uniquely.\n.\nLogging to file \"/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/layout/equivalence/netgen_equivalence.out\" disabled\nLVS Done."
+  },
+  "size_original": [
+    11,
+    10
+  ],
+  "size_flat": [
+    11,
+    10
+  ],
+  "verdict": "PASS -- ERC clean and equivalent"
+}

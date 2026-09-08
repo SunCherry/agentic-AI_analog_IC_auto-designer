@@ -1,0 +1,88 @@
+{
+  "ok": true,
+  "decomposition": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/circuit_decomposition.yaml",
+  "netlist": "/Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/designs/test_miller_ota_0908/sizing/two_stage_rz_final.sp",
+  "confirmed_by_user": false,
+  "severities": [
+    "high"
+  ],
+  "shape_devices": [
+    "XMP3",
+    "XMN5",
+    "XMP2",
+    "XMN2",
+    "XMN4",
+    "XMN3",
+    "XMP4"
+  ],
+  "pinned_devices": {
+    "XMP1": 1,
+    "XMN1": 1
+  },
+  "matched_entries": [
+    {
+      "index": 1,
+      "ref": "XMP3, XMN5, XC0 @ vout (common_source_stage + rc_compensation_network)",
+      "severity": "high",
+      "spec_keys": [
+        "PM",
+        "UGBW",
+        "Gain"
+      ],
+      "devices": [
+        "XMP3",
+        "XMN5"
+      ]
+    },
+    {
+      "index": 2,
+      "ref": "net5 (XMP2, XMN2 drains / XMP3 gate / R0 node 1)",
+      "severity": "high",
+      "spec_keys": [
+        "PM",
+        "UGBW",
+        "Gain"
+      ],
+      "devices": [
+        "XMP2",
+        "XMN2",
+        "XMP3"
+      ]
+    },
+    {
+      "index": 3,
+      "ref": "net7 bias spine (XMN4, XMN3, XMN5 gates + XMP4)",
+      "severity": "high",
+      "spec_keys": [
+        "Power",
+        "UGBW",
+        "Gain"
+      ],
+      "devices": [
+        "XMN4",
+        "XMN3",
+        "XMN5",
+        "XMP4"
+      ]
+    }
+  ],
+  "entries_without_devices": [
+    {
+      "index": 0,
+      "ref": "R0 + XC0 (rc_compensation_network), net8",
+      "severity": "high",
+      "spec_keys": [
+        "PM",
+        "UGBW"
+      ],
+      "devices": []
+    }
+  ],
+  "spec_keys": [
+    "Gain",
+    "PM",
+    "Power",
+    "UGBW"
+  ],
+  "selection_source": "parasitic_sensitivity severity=high"
+}

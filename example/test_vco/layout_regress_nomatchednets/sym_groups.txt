@@ -1,0 +1,21 @@
+symmetry groups derived from the circuit read
+  manifest      : example/test_vco/layout/primitives/manifest.json
+  decomposition : /Users/cherrysun/Documents/agentic-AI_analog_IC_auto-designer/example/test_vco/circuit_decomposition.yaml
+  axis          : shared free axis
+
+-- 4 mirror pair(s) ------------------------------------------
+  XN0                      <-> XN1                     
+      tie group TG1_xcp (cross_coupled_pair), identical w+l+m+nf
+  XN2                      <-> XN3                     
+      tie group TG4_varactor_pair (none), identical w+l+m+nf
+  XC0                      <-> XC1                     
+      same cell single_cap:12.040x7.780, differential nets voutp/voutn
+  XL0                      <-> XL1                     
+      same cell inductor:196.000x213.220, differential nets voutp/voutn
+
+-- differential nets identified (re-derived from tie-group device pairs) --
+  voutn <-> voutp
+
+-- considered and dropped -------------------------------------------
+  XN5/XN4                  TG2_tail_mirror: status `ratio_conflict` -- circuit read declined to tie these
+  XC0/XC1                  TG3_mim_tank_caps: ratio_carrier is not `none` -- may be ratioed, not asserted as a mirror from the tie group alone

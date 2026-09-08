@@ -1,0 +1,298 @@
+{
+  "pdk": "sky130A",
+  "geometry": {
+    "sd_column_um": 0.33,
+    "poly_extension_um": 0.13,
+    "contact_um": 0.17,
+    "mcon_poly_enclosure_um": 0.08,
+    "mcon_diff_enclosure_um": 0.06,
+    "source": "glayout get_grule() on sky130_mapped"
+  },
+  "groups": [
+    {
+      "w_unit": 47.2,
+      "l": 0.4,
+      "nf": 8,
+      "counts": {
+        "XMN4": 5,
+        "XMN3": 2,
+        "XMN5": 6
+      },
+      "errors": {
+        "XMN4": 0.0,
+        "XMN3": 0.0,
+        "XMN5": 0.0
+      },
+      "grids": {
+        "XMN4": [
+          5,
+          1,
+          1.6078158520622325
+        ],
+        "XMN3": [
+          2,
+          1,
+          0.6915251201880772
+        ],
+        "XMN5": [
+          3,
+          2,
+          0.4038430477362964
+        ]
+      },
+      "device_box": [
+        6.16,
+        6.17
+      ],
+      "device_penalty": 0.001622060371868055,
+      "array_penalty": 0.9010613399955353,
+      "max_total_error": 0.0,
+      "totals_before": {
+        "XMN4": 236.0,
+        "XMN3": 94.4,
+        "XMN5": 283.20000000000005
+      },
+      "unit_ceiling": 47.2,
+      "candidates_considered": 39,
+      "id": "tg1_current_mirror",
+      "pattern": "current_mirror",
+      "members": [
+        "XMN4",
+        "XMN3",
+        "XMN5"
+      ],
+      "tied_m": false,
+      "w_max": 100.0,
+      "before": {
+        "XMN4": [
+          47.2,
+          0.4,
+          5.0,
+          1.0
+        ],
+        "XMN3": [
+          47.2,
+          0.4,
+          2.0,
+          1.0
+        ],
+        "XMN5": [
+          47.2,
+          0.4,
+          6.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "w_unit": 80.0,
+      "l": 0.3,
+      "nf": 11,
+      "counts": {
+        "XMN1": 4,
+        "XMN2": 4
+      },
+      "errors": {
+        "XMN1": 0.0,
+        "XMN2": 0.0
+      },
+      "grids": {
+        "XMN1": [
+          2,
+          2,
+          0.036877335014180446
+        ],
+        "XMN2": [
+          2,
+          2,
+          0.036877335014180446
+        ]
+      },
+      "device_box": [
+        7.532727272727272,
+        7.26
+      ],
+      "device_penalty": 0.036877335014180446,
+      "array_penalty": 0.036877335014180446,
+      "max_total_error": 0.0,
+      "totals_before": {
+        "XMN1": 320.0,
+        "XMN2": 320.0
+      },
+      "unit_ceiling": 80.0,
+      "candidates_considered": 61,
+      "id": "tg2_differential_pair",
+      "pattern": "differential_pair",
+      "members": [
+        "XMN1",
+        "XMN2"
+      ],
+      "tied_m": true,
+      "w_max": 100.0,
+      "before": {
+        "XMN1": [
+          40.0,
+          0.3,
+          8.0,
+          1.0
+        ],
+        "XMN2": [
+          40.0,
+          0.3,
+          8.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "w_unit": 14.4,
+      "l": 0.4,
+      "nf": 4,
+      "counts": {
+        "XMP1": 1,
+        "XMP2": 1
+      },
+      "errors": {
+        "XMP1": 0.0,
+        "XMP2": 0.0
+      },
+      "grids": {
+        "XMP1": [
+          1,
+          1,
+          0.17201218713509348
+        ],
+        "XMP2": [
+          1,
+          1,
+          0.17201218713509348
+        ]
+      },
+      "device_box": [
+        3.8600000000000003,
+        3.25
+      ],
+      "device_penalty": 0.17201218713509348,
+      "array_penalty": 0.17201218713509348,
+      "max_total_error": 0.0,
+      "totals_before": {
+        "XMP1": 14.4,
+        "XMP2": 14.4
+      },
+      "unit_ceiling": 14.4,
+      "candidates_considered": 64,
+      "id": "tg3_current_mirror",
+      "pattern": "current_mirror",
+      "members": [
+        "XMP1",
+        "XMP2"
+      ],
+      "tied_m": false,
+      "w_max": 100.0,
+      "before": {
+        "XMP1": [
+          14.4,
+          0.4,
+          1.0,
+          1.0
+        ],
+        "XMP2": [
+          14.4,
+          0.4,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "w_unit": 60.0,
+      "l": 0.4,
+      "nf": 9,
+      "counts": {
+        "XMP3": 2
+      },
+      "errors": {
+        "XMP3": 0.0
+      },
+      "grids": {
+        "XMP3": [
+          1,
+          2,
+          0.6892898951601875
+        ]
+      },
+      "device_box": [
+        6.926666666666667,
+        6.9
+      ],
+      "device_penalty": 0.0038572853997578733,
+      "array_penalty": 0.6892898951601875,
+      "max_total_error": 0.0,
+      "totals_before": {
+        "XMP3": 120.0
+      },
+      "unit_ceiling": 60.0,
+      "candidates_considered": 63,
+      "id": "free_XMP3",
+      "pattern": "standalone",
+      "members": [
+        "XMP3"
+      ],
+      "tied_m": false,
+      "w_max": 100.0,
+      "before": {
+        "XMP3": [
+          40.0,
+          0.4,
+          3.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "w_unit": 1.4,
+      "l": 0.15,
+      "nf": 1,
+      "counts": {
+        "XMP4": 1
+      },
+      "errors": {
+        "XMP4": 0.0
+      },
+      "grids": {
+        "XMP4": [
+          1,
+          1,
+          0.7175386336841043
+        ]
+      },
+      "device_box": [
+        1.66,
+        0.81
+      ],
+      "device_penalty": 0.7175386336841043,
+      "array_penalty": 0.7175386336841043,
+      "max_total_error": 0.0,
+      "totals_before": {
+        "XMP4": 1.4
+      },
+      "unit_ceiling": 1.4,
+      "candidates_considered": 64,
+      "id": "free_XMP4",
+      "pattern": "standalone",
+      "members": [
+        "XMP4"
+      ],
+      "tied_m": false,
+      "w_max": 100.0,
+      "before": {
+        "XMP4": [
+          1.4,
+          0.15,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  ]
+}

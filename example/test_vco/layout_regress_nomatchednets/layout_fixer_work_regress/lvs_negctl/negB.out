@@ -1,0 +1,99 @@
+
+Circuit 1 cell sky130_fd_pr__nfet_01v8 and Circuit 2 cell sky130_fd_pr__nfet_01v8 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__nfet_01v8 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__nfet_01v8         |Circuit 2: sky130_fd_pr__nfet_01v8         
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__nfet_01v8 and sky130_fd_pr__nfet_01v8 are equivalent.
+
+Circuit 1 cell sky130_fd_pr__cap_mim_m3_1 and Circuit 2 cell sky130_fd_pr__cap_mim_m3_1 are black boxes.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell sky130_fd_pr__cap_mim_m3_1 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: sky130_fd_pr__cap_mim_m3_1      |Circuit 2: sky130_fd_pr__cap_mim_m3_1      
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_pr__cap_mim_m3_1 and sky130_fd_pr__cap_mim_m3_1 are equivalent.
+Flattening unmatched subcell XN0 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_a319e946 in circuit routed (0)(1 instance)
+Flattening unmatched subcell current_mirror_XN5_XN4 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_9bb2e723 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XC0 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_a58330e8 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XN3 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_c05d91ed in circuit routed (0)(1 instance)
+Flattening unmatched subcell XN1 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_70e20656 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XC1 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_b1a60056 in circuit routed (0)(1 instance)
+Flattening unmatched subcell XN2 in circuit routed (0)(1 instance)
+Flattening unmatched subcell Unnamed_fe6ee434 in circuit routed (0)(1 instance)
+
+Class routed (0):  Merged 11 parallel devices.
+Class vco_lc (1):  Merged 2 parallel devices.
+Subcircuit summary:
+Circuit 1: routed                          |Circuit 2: vco_lc                          
+-------------------------------------------|-------------------------------------------
+sky130_fd_pr__nfet_01v8 (18->7)            |sky130_fd_pr__nfet_01v8 (8->7)             
+sky130_fd_pr__cap_mim_m3_1 (2)             |sky130_fd_pr__cap_mim_m3_1 (2->1) **Mismat 
+Number of devices: 9 **Mismatch**          |Number of devices: 8 **Mismatch**          
+Number of nets: 7                          |Number of nets: 7                          
+---------------------------------------------------------------------------------------
+NET mismatches: Class fragments follow (with fanout counts):
+Circuit 1: routed                          |Circuit 2: vco_lc                          
+
+---------------------------------------------------------------------------------------
+Net: voutn                                 |Net: voutn                                 
+  sky130_fd_pr__nfet_01v8/(1|3) = 1        |  sky130_fd_pr__nfet_01v8/(1|3) = 1        
+  sky130_fd_pr__nfet_01v8/2 = 2            |  sky130_fd_pr__nfet_01v8/2 = 2            
+  sky130_fd_pr__cap_mim_m3_1/2 = 1         |                                           
+                                           |                                           
+Net: voutp                                 |Net: voutp                                 
+  sky130_fd_pr__nfet_01v8/2 = 2            |  sky130_fd_pr__nfet_01v8/2 = 2            
+  sky130_fd_pr__cap_mim_m3_1/2 = 1         |  sky130_fd_pr__cap_mim_m3_1/2 = 1         
+  sky130_fd_pr__nfet_01v8/(1|3) = 1        |  sky130_fd_pr__nfet_01v8/(1|3) = 1        
+                                           |                                           
+Net: VDD                                   |Net: VDD                                   
+  sky130_fd_pr__cap_mim_m3_1/1 = 2         |  sky130_fd_pr__cap_mim_m3_1/1 = 1         
+---------------------------------------------------------------------------------------
+DEVICE mismatches: Class fragments follow (with node fanout counts):
+Circuit 1: routed                          |Circuit 2: vco_lc                          
+
+---------------------------------------------------------------------------------------
+Instance: XC0_0//Unnamed_a58330e8_0/sky130 |Instance: sky130_fd_pr__cap_mim_m3_1:C0    
+  1 = 2                                    |  1 = 1                                    
+  2 = 4                                    |  2 = 4                                    
+                                           |                                           
+Instance: XC1_0//Unnamed_b1a60056_0/sky130 |(no matching instance)                     
+  1 = 2                                    |                                           
+  2 = 4                                    |                                           
+---------------------------------------------------------------------------------------
+Netlists do not match.
+Port matching may fail to disambiguate symmetries.
+
+Subcircuit pins:
+Circuit 1: routed                          |Circuit 2: vco_lc                          
+-------------------------------------------|-------------------------------------------
+voutp                                      |voutn **Mismatch**                         
+voutn                                      |voutp **Mismatch**                         
+VDD                                        |VDD                                        
+Vcont                                      |Vcont                                      
+Iref                                       |Iref                                       
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists for routed and vco_lc altered to match.
+Device classes routed and vco_lc are equivalent.
+
+Final result: Top level cell failed pin matching.

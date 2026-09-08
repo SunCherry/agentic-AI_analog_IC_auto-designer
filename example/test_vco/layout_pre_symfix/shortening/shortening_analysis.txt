@@ -1,0 +1,16 @@
+=== route-shortner: test_vco_fixed.gds ===
+  PDK sky130A; routing layers 68/20(met2), 69/20(met3), 70/20(met4), 71/20(met5)
+  7 net(s), 9 macro(s), 19 via(s)
+
+net    term  wirelen  vias  corners  bound   mst     excess  ratio
+-----  ----  -------  ----  -------  ------  ------  ------  -----
+voutp  5     169.55   6     8        112.09  137.11  57.46   1.51x
+voutn  5     139.65   3     16       83.07   103.48  56.58   1.68x
+VSS    7     94.79    5     12       63.74   90.53   31.05   1.49x
+VDD    4     170.38   3     6        146.76  156.35  23.63   1.16x
+Vcont  4     41.25    0     6        24.47   25.62   16.77   1.69x
+vtail  3     30.29    2     2        26.78   26.79   3.51    1.13x
+Iref   0     0.00     0     0        0.00    0.00    0.00    -
+
+  bound = terminal-bbox half-perimeter (a true lower bound); mst = Manhattan MST over the terminals
+  excess = wirelen - bound: the wire that is provably detour, in um. Ranked worst first.
