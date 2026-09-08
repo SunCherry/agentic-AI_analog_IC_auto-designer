@@ -1,274 +1,178 @@
 ---
 name: device-shaper
 description: >-
-  Choose the finger count (`nf`) for the MOS devices a design's parasitics
-  actually depend on, and measure what that choice costs -- before any layout
-  exists. Sweeps Nf only on the devices `circuit_decomposition.yaml` flags
-  `severity: high`, simulates every candidate, and picks the smallest Nf past
-  the point where folding stops helping; the curve is not monotonic, so this is
-  a measurement, not a rule of thumb. Then levels every device's drawn extent so
-  none reaches layout as a long thin sliver, and finally rewrites `m` into the
-  finger count for STANDALONE primitives only -- never inside a current_mirror
-  or differential_pair -- so they draw compact, into a separate geometry-only
-  netlist that deliberately does not simulate. Writes one report and a `_shaped`
-  hand-off netlist. Runs ONCE after `schematic-sizing`, never loops back, never
-  changes W/L or total width, and needs a PDK with a parasitic coefficient
-  table (`--pdk`).
+  Decide how every device is DRAWN -- unit width, finger count `nf`, copy count
+  `m` -- from four geometric principles: build each tie group from one unit
+  device, make that unit as large as the PDK's model bins allow, make one copy
+  square, and make the array of copies square. Total width `w * m` is preserved;
+  any residual is bounded and reported. Pure geometry, so it needs no parasitic
+  table and runs on ANY PDK whose design rules can be read -- including sky130A,
+  where the old Nf sweep refused to run. Then simulates before and after and
+  states what the shape change cost. Runs ONCE after `schematic-sizing`, never
+  loops back, never changes `W`/`L`.
 ---
 # Device Shaper
 
-**How many fingers should each device be drawn with, and does the sizing still
-hold once that choice's parasitics are real?** `nf` is the one geometry
-parameter no sizing loop touches; left unset it is whatever a default happens to be.
+**How should each device be drawn?** Sizing decides how much silicon a device
+needs. This decides what shape that silicon takes: how wide one unit is, how
+many fingers it is split into, and how many copies sit side by side.
 
-- **Never changes `W`/`L` or total width** — `../schematic-sizing/SKILL.md` owns sizing.
-- **Runs once, no loop back**: sizing converges → this runs → hand-off to `layout-agent`.
-- **No verdict on the sizing**, no re-sizing demand — only the chosen `nf` and its cost.
-- **Only flagged devices are swept**; the rest keep the netlist's `nf`. Sweeping
-  everything burns simulations and buries the result that matters.
+- **Never changes `W`/`L` or total width** — `../schematic-sizing/SKILL.md` owns
+  sizing. This is a *re-expression*: same total, different shape.
+- **Runs once, no loop back**: sizing converges → this runs → hand-off to
+  `../../agents/layout-agent.md`.
+- **No verdict on the design.** It reports the geometry it chose and what that
+  cost. Acting on a shortfall is the caller's call.
 
-**Preconditions**, all owned elsewhere (folder layout, PDK tables: `reference.md`):
-`circuit_decomposition.yaml` **with `parasitic_sensitivity`** (schematic-agent
-step 2c) · converged `sizing/<design>_final.sp` + its testbench · that
-iteration's result JSON · the target spec, **the harder one if sizing used
-one** · a PDK with a parasitic table (one without is **refused by name**).
+## The four principles
 
-## Step 1 — pick the devices to sweep
+They are applied in this order, and the order is the whole design.
 
-```
-python .claude/skills/device-shaper/script/select_shape_devices.py \
-    <design_dir>/circuit_decomposition.yaml <design_dir>/sizing/<design>_final.sp \
-    -o <design_dir>/device_shaping/shape_devices.json
-```
-
-Recovers MOS names from every `severity: high` entry. **`ref` is prose, not a
-device list** — a token enters only if it matches a real MOS instance, so nets,
-passives and English words can't. **Only `ref` is scanned**; `why` names devices
-as supporting argument and over-selects.
-
-Act on both outputs:
-- **`NOTE: ... names no MOS device`** — expected; a passive branch or bare node
-  has nothing to fold. The sensitivity is real, so carry it to the report.
-- **`WARNING: confirmed_by_user: false`** — the ranking is provisional. Say so.
-
-`--severity high,medium` widens; `--devices` overrides the yaml when a `ref`'s
-wording misses one. No `parasitic_sensitivity` section → the script **stops**;
-that section is schematic-agent's, not yours to guess around.
-
-## Step 2 — sweep the finger counts
-
-```
-python .claude/skills/device-shaper/script/sweep_fingers.py \
-    <design_dir>/sizing/<design>_final.sp <design_dir>/testbench/<deck> \
-    --ideal-specs <the converged sizing iteration's result JSON> \
-    --pdk <the design's PDK> --fingers 1,2,4,8 --drop-threshold 0.05 \
-    --parasitic-headroom 0 \
-    --shape-devices <design_dir>/device_shaping/shape_devices.json \
-    --target-spec <design_dir>/sizing/harder_target_spec.json \
-    --work-dir <design_dir>/device_shaping/sweep --save-artifacts \
-    --report-md <design_dir>/device_shaping/shaping_report.md
-```
-
-- **`--shape-devices` restricts the sweep**; every other MOS pins at its netlist
-  `nf`. Omitting it sweeps everything — don't, unless nothing was flagged and you say so.
-- **Target the spec sizing was tuned to**, else the shortfall math uses the wrong
-  bar. **`--parasitic-headroom 0` with a harder target** — the script's 10pp
-  buffer plays the same role and stacking double-counts (standalone default `0.10`).
-
-**Selection rule.** Among Nf that simulate: prefer those meeting the target; in
-that set (or all, if none qualify) find the best worst-case drop, then take the
-**smallest Nf within 3pp** (`NF_IMPROVEMENT_TOLERANCE`) of it — beyond that,
-folding buys <3pp and costs routing complexity.
-
-**The curve is not monotonic**; the optimum is usually a middle value, and
-folding past it can cost an order of magnitude more (`reference.md` for why).
-Every Nf is really simulated, via a clamp-retry loop for devices folded past
-their model bin — a large jump is a real circuit, not a crash. **Trust the sweep
-over any assumption that more folding means less parasitic impact.**
-
-**Swept / Pinned / Clamped differ**: swept = Step 1's flagged; pinned = the rest,
-held on purpose; clamped = the retry loop had to *reduce* one. **Only clamped is
-a problem.**
-
-**If no Nf meets the target**, selection returns the best by drop alone —
-**informational, not a pass**. **Check `unmeasured` first**: the sweep
-re-simulates only the AC metrics its reader extracts and carries the ceiling
-metric forward unchanged, so any key outside that set returns unmeasured and
-pins `all_met=False` at every Nf — **which reads exactly like a failed design**.
-Which keys: `reference.md`. Name them.
-
-**Two independent measurements, both reported, neither a gate:**
-
-| Question | How |
-|---|---|
-| Is the drop significant? | default **5%**, as `(target − annotated) / target` — **not** from the un-annotated result |
-| Does it still meet the target? | independently, via `check_target()` |
-
-They disagree, and that is the information: a spec can miss the target while
-dropping under 5%, or drop past 5% and still clear it. Say which is which.
-
-**State the shortfall** (spec, ideal, annotated, `rel_drop`, met or not) and stop
-there — don't derive a stricter target, tell `schematic-sizing` to re-run, or
-call it a failed cycle; that call is the caller's. **A non-zero exit signals a
-shortfall, not a failed run.**
-
-## Step 3 — write the shaped netlist
-
-```
-python .claude/skills/device-shaper/script/write_shaped_netlist.py \
-    <design_dir>/sizing/<design>_final.sp \
-    --nf <name>=<nf>,<name>=<nf> --out-dir <design_dir>/device_shaping
-```
-
-**The finger count reaches the design solely through this netlist.** Pass `nf`
-for swept devices only — pinned ones already carry theirs (`--nf-json <sweep
-result.json>` reads a map instead).
-
-| input | lands in `device_shaping/` as | renamed |
+| # | Principle | Why |
 |---|---|---|
-| `sizing/<design>_final.sp` | `<design>_final_shaped.sp` | yes — the suffix marks the hand-off |
-| any `.include`d sub-circuit | same basename | no — existing references use it |
+| 1 | **Use a unit device** | Every member of a tie group is one physical device repeated. A mirror's legs differ only in how many copies they have — that is what makes them matchable, and it is the same rule `../circuit-decomposition/SKILL.md` already enforces on `w`/`l`. |
+| 2 | **Maximize the unit** | Bigger unit → fewer copies → less perimeter, fewer junctions, less wiring between copies. Bounded above by the PDK's widest model bin. |
+| 3 | **Square device** | One copy as tall as it is wide. A long thin device wastes area, stretches every net crossing it, and matches badly because edge effects dominate. |
+| 4 | **Square array** | The copies tile into a block that should also be square, for the same reasons one device should be. |
 
-One flat folder, so design-local `.include`s become **bare basenames** resolving
-as siblings (full-depth recursion). An include pointing **outside** the design
-tree keeps its target, but a **relative** one is made absolute first — it
-resolved from `sizing/` and would silently fail from `device_shaping/`.
+**Across all four: total width `w * m` is preserved.** Where an exact
+re-expression does not exist under the copy cap, the residual is bounded by
+`--max-total-error` (default 2%) and **reported per device**, never absorbed
+silently.
 
-Writes the chosen `nf` and nothing else — **not** the sweep's parasitic
-annotation (`ad`/`as`/`pd`/`ps`/`nrd`/`nrs`, series `Rg`), which exists to
-*measure* a finger count and would have layout count it twice. `W`/`L`/`m` pass
-through. A `--nf` name in no file → `WARNING: never found`, non-zero exit.
+### The geometry
 
-## Step 4 — level device extents (every device, not just the flagged)
-
-An unflagged device keeps whatever `nf` the netlist carried; drawn as a long thin
-sliver it costs area, stretches every net crossing it, and is invisible upstream.
+One copy alternates `nf` gate columns with `nf + 1` source/drain columns:
 
 ```
-python .claude/skills/device-shaper/script/level_device_lengths.py \
-    <design_dir>/device_shaping/<design>_final_shaped.sp \
-    --tie-groups <design_dir>/circuit_decomposition.yaml \
-    [--factor 3.0] [--powers-of-two] [--min-finger-width UM] [--apply]
+height = w_unit / nf + 2 * poly_extension
+width  = nf * l + (nf + 1) * sd_column        sd_column = contact + 2 * enclosure
 ```
 
-**"Length" is drawn extent, not `l`** — `l` is channel length, unchangeable by
-folding, and on a passive `l` *is* the value:
+`sd_column` and `poly_extension` come from the PDK's own `get_grule()`, never
+hardcoded. Squareness is scored as `|log(height / width)|`, so 2:1 and 1:2 cost
+the same — neither orientation is better.
+
+## Step 1 — shape
 
 ```
-extent = w / nf          (per-finger width)
-```
-
-`nf` splits `w` and never adds any, so raising it shrinks extent proportionally
-while **total width `w * m`, topology and every electrical parameter stay put** —
-which is why this is safe once `W`/`L` are frozen.
-
-**The rule.** Mean extent over all MOS devices → flag every device above
-`--factor` × mean (default **3.0**) → fold each to the `nf` landing **nearest
-the mean**.
-
-- **Nearest, searched — not `round(w / mean)`**, which is measurably worse
-  (`w=47.2`, mean 32.5: it gives `nf=1`, off by 14.7; `nf=2` is off by 8.9).
-  Ties → smaller `nf`.
-- **Mean computed ONCE**, before any folding — otherwise processing order changes
-  the answer and each fold chases the mean down.
-- **Folding only increases `nf`** — current `nf` is the floor, so Step 2's
-  measurement is never undone.
-- **Matched devices fold together** (`--tie-groups`): a flag on any member folds
-  the group. Without it a diff pair's halves fold apart and it is no longer
-  matched; the script says so when absent.
-- **Passives reported, never folded** — no `nf`, and changing `l` changes the value.
-
-**This can override a *measured* `nf` with a geometric one**: **re-simulate after
-`--apply`** and report swept-then-leveled devices separately, with both numbers.
-A never-swept device has no measured `nf` to override — and no measurement of
-what its new one costs. Say that too.
-
-Without `--apply` nothing is written. **No outlier is the normal outcome, not a
-skipped step** — report the mean, threshold and sorted table anyway.
-
-## Step 5 — fold `m` into `nf` for standalone primitives (layout hand-off)
-
-Last thing done to geometry. `m > 1` is `m` parallel copies and a generator draws
-each as its own row — fine inside a composed block, bad standalone. Measured on
-`example/test_miller_ota`: XMN5 (`w=43.12 nf=1 m=8`) drew as a **9.38 x 368.15um
-column**, in a floorplan of bbox 132 x 430um at 18.4% utilization.
-
-```
-python .claude/skills/device-shaper/script/fold_multipliers.py \
-    <design_dir>/device_shaping/<design>_final_shaped.sp \
+python .claude/skills/device-shaper/script/shape_devices.py \
+    <design_dir>/sizing/<design>_final.sp \
     --decomposition <design_dir>/circuit_decomposition.yaml \
-    [--out PATH] [--dry-run] [--json <design_dir>/device_shaping/multiplier_fold.json]
+    --out <design_dir>/device_shaping/<design>_final_shaped.sp \
+    --report <design_dir>/device_shaping/shaping_report.log \
+    --json <design_dir>/device_shaping/shape_plan.json
 ```
 
+`--decomposition` is **required and not optional**: the unit device is *per tie
+group*, so without the circuit read there is nothing to build a unit for. A
+netlist whose `circuit_decomposition.yaml` has no `tie_groups` stops here.
+
+**Read the report before passing it on.** Three things in it are judgment, not
+arithmetic:
+
+| Line | What it means |
+|---|---|
+| `WORST TOTAL-WIDTH RESIDUAL` | 0.0000% means every device re-expressed exactly. Anything else is silicon that changed, and its electrical cost shows up in Step 2 |
+| `<-- strip` on an array | that copy count has no square factorisation (a prime). Reported, never padded — a partly-filled row breaks the symmetry the array exists to provide. The fix is upstream: a different copy count means a different unit, which sizing chose |
+| a device whose aspect is far from 1 | usually the min-finger-width floor refusing to fold something small. That is correct behaviour — see below |
+
+### The min-finger-width floor, and why it is not optional
+
+`--min-finger-width` (default **1.0 µm**) is a floor on `w_unit / nf`. Below it a
+MOS stops behaving like a scaled version of itself: narrow-width effects shift
+Vt and drive, and the device's current is no longer what its total width says.
+
+**This is measured, not assumed.** On `example/test_miller_ota` the shaper
+squared up `XMP4` — the 1.4 µm self-bias reference — into two 0.7 µm fingers.
+That one device sets every branch current in the amplifier, and the fold cost
+**38% of UGBW (16.78 → 10.43 MHz)** with total width preserved exactly.
+Reverting `XMP4` alone recovered it to 16.11 MHz. Every other device's fingers
+were 3.6 µm or wider and cost nothing.
+
+So a small device is left deliberately un-square. **Principle 3 does not
+outrank the device still working.**
+
+### Principle 2 is a gate, not a tie-break
+
+Worth knowing, because it is not what a literal reading of "total, then array,
+then unit size" gives. Halving the unit doubles every copy count, and a bigger
+copy count almost always factors more squarely — so array squareness can be
+improved without limit by shrinking the unit. Measured on the same design's
+nfet mirror: unit 47.2 µm (`m` = 5/2/6, arrays 1×5 / 1×2 / 2×3) *loses* to unit
+7.87 µm (`m` = 30/12/36, arrays 5×6 / 3×4 / 6×6) — both exact on total width,
+the second absurd.
+
+So unit size is bucketed in halvings below the largest feasible unit and
+compared **before** array shape: within one halving of the biggest unit
+available, the squarest array wins. The full sort key is
+
 ```
-w -> w * m        nf -> nf * m        m -> 1
+(total-error bucket, unit-size bucket, array squareness, device squareness, residual)
 ```
 
-**Why `w` moves too.** `m` is the only parameter that multiplies width (total =
-`w * m`); `nf` SPLITS `w` and adds none, since BSIM4 takes `Weff = W/NF`.
-Measured on sky130: `w=40 nf=1` → 1.686mA, `w=40 nf=8` → 1.695mA **unchanged**,
-`w=40 m=8` → 13.486mA, exactly 8x. **So `m=1` without raising `w` divides the
-device's width by `m`** — the one mistake to avoid. Scaling both holds **total
-width `w*m`** and **finger extent `w/nf`** exactly; only the arrangement changes,
-`m` rows of `nf` fingers → **one** row of `nf*m`. Verify both invariants per
-device and report them.
+## Step 2 — verify
 
-**Writes `<design>_final_shaped_primitives.sp`, never in place.** The folded `w`
-is `m`× larger and routinely passes the PDK's widest model bin (`XMP3` → `w=240`
-vs sky130's 100um), so it **matches no model card and does not simulate** — it
-would silently undo `design-sheets-checker` Step 2a's model-bin fold. **Geometry
-only**: never simulate it, never hand it to sizing, never let it replace
-`<design>_final_shaped.sp`, the simulable hand-off.
+```
+python .claude/skills/device-shaper/script/verify_shaping.py \
+    --testbench <design_dir>/testbench/<deck>.spice \
+    --before <design_dir>/sizing/<design>_final.sp \
+    --after  <design_dir>/device_shaping/<design>_final_shaped.sp \
+    --out-dir <design_dir>/device_shaping/verify \
+    --report <design_dir>/device_shaping/verify_report.log \
+    --target-spec <design_dir>/spec/target_spec.json --vdd <supply>
+```
 
-**Composed blocks are skipped, not as an optimization.** A device inside a
-`current_mirror`, `differential_pair` or any pattern grouping ≥2 MOS devices
-isn't drawn device by device — a mirror takes each leg's ratio from its total
-width against the reference, a pair splits `nf * m` across halves for common
-centroid — so rewriting `m` changes a ratio the block is built on. A
-**one-device** pattern (lone common-source, self-biased reference) does fold.
-Without `--decomposition` everything counts as standalone: correct only with no
-composed blocks, and the run says so.
+The re-expression is width-preserving but **not exactly electrically neutral**,
+for two reasons worth measuring rather than assuming: `nf` changes junction area
+and perimeter (usually a small *improvement*, and the reason folding is worth
+doing), and any total-width residual lands here.
 
-Report per device: folded, skipped (naming the block), or already `m=1`.
+**This is a measurement, not a gate.** It returns no verdict on the design. A
+few percent is normal — on `test_miller_ota`: Gain +3.9%, UGBW −4.0%, PM −2.3%,
+Power −4.7%, all four keys still passing. **A double-digit delta means look for
+a small device that got folded**, and raise `--min-finger-width`.
 
-## Step 6 — the report
+State the before/after table in your report either way.
 
-**One file: `<design_dir>/device_shaping/shaping_report.md`**, written by Step
-2's `--report-md`, carrying results *and* recommendation. **Don't pass
-`--nf-out` or `--stricter-target-json`** — each writes another file naming a
-finger count, another place to disagree with the report. `sweep/result.json` is
-raw data, not a report.
+## Hand-off
 
-**`--report-md` REWRITES, it does not merge**, destroying the hand-written
-sections. **Write it LAST**, or drop the flag on re-runs; if lost, rebuild from
-`sweep/result.json`, not memory, and say so.
+| file | goes to |
+|---|---|
+| `device_shaping/<design>_final_shaped.sp` | `layout-agent` — **the frozen netlist**, and what `verify-agent` simulates, so LVS and the spec measurement stay on one netlist |
+| `device_shaping/shaping_report.log` | the shape decisions and every residual |
+| `device_shaping/verify_report.log` | what the shape change cost |
 
-Scripted: per-Nf table, selection `reasoning`, swept/pinned lists, per-spec
-ideal-vs-annotated with `rel_drop`. **Add by hand:**
+**There is no `_primitives.sp` any more.** The old skill wrote a second,
+geometry-only netlist that folded `m` into `nf` for standalone devices and
+deliberately did not simulate. `layout-agent` already records that it never uses
+it: `build_fet()` honours `m` directly via `multipliers`. One netlist reaches
+layout, and it simulates.
 
-- **Performance drop analysis** — the script ranks *which* specs dropped, not
-  *why*. Per flagged spec, 2–4 sentences: how much, which named instances carry
-  the parasitic, and why that node is more sensitive than a similar one elsewhere
-  (dominant pole, zero, matched ratio, startup margin) — grounded in op-point
-  data and the circuit read. **Never leave the placeholder in.**
-- **High-severity entries with no MOS device** (Step 1's NOTE) + the specs they
-  threaten: the parasitics this skill had no lever for.
-- **The hand-off path**, and that it now carries a chosen `nf`.
-- **`confirmed_by_user: false`**, if Step 1 warned.
-- **Step 4's leveling** — mean, threshold, sorted table, which folded.
-  Distinguish: swept and left alone · swept then **overridden** (its measured
-  `nf` no longer stands — give re-simulated numbers) · never swept but folded
-  (geometric, cost unmeasured).
-- **Step 5's fold** — which folded, which skipped and their block, both
-  invariants held. State that `_primitives.sp` is **geometry-only** and won't
-  simulate while `_shaped.sp` stays the simulable hand-off; mixing them up gives
-  a netlist with no model card.
+## What this skill does not do
+
+- **Does not choose `W`/`L`.** Sizing's, and frozen by the time this runs.
+- **Does not re-size, and never asks sizing to run again.** If Step 2 shows a
+  key falling out of spec, report it — the decision is the caller's.
+- **Does not lay anything out.** It chooses `w`/`nf`/`m` and the array shape it
+  scored them against; `../placer/SKILL.md` decides where the copies actually go.
+- **Does not touch passives.** A resistor's or capacitor's `w`/`l` *is* its
+  value; reshaping it would change the circuit.
+- **Does not need a parasitic coefficient table.** The previous version measured
+  `nf` by simulating candidates against one, and on sky130A that table is empty
+  by design (`parasitic-estimation`'s `PDK_TABLES = {}`, left so rather than
+  filled with invented physics) — so the sweep refused to run by name and every
+  device reached layout at `nf=1`, unmeasured and indistinguishable in the file
+  from a chosen one. These rules are geometry, so `nf` is now always chosen, on
+  every PDK.
 
 ## Files
 
-- `script/select_shape_devices.py` — Step 1. Importable: `mos_devices(netlist)` → `{name: nf}`.
-- `script/sweep_fingers.py` — Step 2; its docstring names the shared helpers.
-- `script/write_shaped_netlist.py` — Step 3.
-- `script/level_device_lengths.py` — Step 4. `--json` dumps per-device decisions.
-- `script/fold_multipliers.py` — Step 5. `--dry-run` reports; `--decomposition` names the blocks to skip.
-- `reference.md` — PDK tables, folder layout, floor/ceiling derivations, `ideal`/`annotated`, non-goals.
+`script/shape_devices.py` — the four principles, the search, the report ·
+`script/verify_shaping.py` — before/after simulation and the spec delta.
+
+External: `../circuit-decomposition/SKILL.md` (`tie_groups` — the unit device is
+per group) · `../../reference/pdk_config.py` + `pdk_options.json` (the active
+process) · glayout `get_grule()` (the two process numbers the geometry needs) ·
+`../design-sheets-checker/script/run_erc_check.py` (`load_pdk_bin_widths` — the
+model-bin ceiling on the unit).
