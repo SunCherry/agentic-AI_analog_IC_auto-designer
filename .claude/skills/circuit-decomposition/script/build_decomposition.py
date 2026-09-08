@@ -17,6 +17,11 @@ The three passes, all in-process:
      cliques that narrow what each block's patterns could be.
   3. `detect_topology.detect()` -- per slice, the exact drain/gate/source
      signature matches.
+  4. `match_nets.candidates()` -- per slice, the NETS each matched group
+     implies: which are twins that must be routed as mirror images, which
+     are one common node the whole group shares. Matched devices with
+     unmatched wiring are still mismatched, and nothing upstream of layout
+     was recording that.
 
 Passes 2 and 3 run per slice and never on the whole deck: `.subckt`
 boundaries are invisible to `detect_topology.parse_devices()`, and net
@@ -25,7 +30,7 @@ that do not exist in the circuit.
 
 **Evidence goes to stdout, conclusions go to the file.** The per-block
 scan -- device table, shared-net groups, affinity cliques, detector
-findings -- is printed for `../SKILL.md` Step 2 to work from in the same
+findings, net-match candidates -- is printed for `../SKILL.md` Step 2 to work from in the same
 turn, and is NOT written into `circuit_decomposition.yaml`. That file is a
 reference `schematic-agent` and `schematic-sizing` read: which patterns
 exist, and which devices share a tunable parameter. Persisting the raw
@@ -34,9 +39,11 @@ data that no consumer reads. The scan is cheap and deterministic -- re-run
 this command to see it again, or `--scan-json PATH` to keep a copy for
 auditing.
 
-The file therefore comes out with `hierarchy` filled in and `patterns`,
-`unmatched_devices`, `tie_groups`, `open_questions` as empty stubs for
-Steps 2-3 to author against `../pattern-table.md`. Key meanings for every
+The file comes out with `hierarchy` filled in, `tie_groups` +
+`tunable_parameters` DERIVED by `build_tunables` from `../pattern-table.md`'s
+own rules (plus the `.sp.j2` template rendered from them), and `patterns`,
+`unmatched_devices`, `matched_nets`, `open_questions` as empty stubs for
+Steps 2-4 to author. Key meanings for every
 section are in `../SKILL.md` (`../output-schema.yaml` is cited there too but
 does not exist -- see that file's "Files and references").
 
@@ -61,6 +68,8 @@ sys.path.insert(0, str(SCRIPT_DIR.parent.parent.parent / "reference"))
 import scan_hierarchy as hier  # noqa: E402
 import group_devices as grp  # noqa: E402
 import detect_topology as topo  # noqa: E402
+import match_nets as nets  # noqa: E402
+import build_tunables as tunables  # noqa: E402
 
 try:
     import yaml
@@ -118,13 +127,14 @@ def compact(group: dict) -> dict:
     return out
 
 
-def build(netlist: Path, top_name: str | None, threshold: float, work: Path) -> tuple[dict, dict]:
+def build(netlist: Path, top_name: str | None, threshold: float, work: Path) -> tuple[dict, dict, dict]:
     result = hier.analyze(netlist, top_name)
     blocks, tree = result['blocks'], result['tree']
     hier.write_slices(result, work)
     paths = instance_paths(tree)
 
     scan: dict[str, dict] = {}
+    parsed: dict[str, tuple] = {}
     for name, block in blocks.items():
         label = 'TOP_DECK' if name == '__TOP__' else name
         slice_path = work / f"{label}.sp"
@@ -143,7 +153,9 @@ def build(netlist: Path, top_name: str | None, threshold: float, work: Path) -> 
             'net_groups': [compact(g) for g in grp.net_groups(devices, edges)],
             'cliques': [compact(g) for g in grp.cliques(devices, edges, threshold)],
             'detector': {'findings': findings, 'unclassified': unclassified},
+            'net_matches': nets.candidates(devices, findings),
         }
+        parsed[label] = (devices, findings)
 
     hierarchy = {
         # One diagram, the ASCII tree -- it reads inline for both an agent
@@ -167,6 +179,17 @@ def build(netlist: Path, top_name: str | None, threshold: float, work: Path) -> 
     if result['other_roots']:
         hierarchy['other_roots'] = result['other_roots']
 
+    # Tie groups and the tunable-variable registry are DERIVED, not authored:
+    # `build_tunables` applies pattern-table.md's own "Tie group" rules to the
+    # detector's findings. They used to be stubs an agent filled in by hand,
+    # which is how a current mirror once reached sizing as three independent
+    # free widths. See that module's docstring.
+    # The top block by NAME -- `TOP_DECK` only when the deck has loose devices
+    # outside any .subckt; a design whose top IS a .subckt is labelled with it.
+    top_label = result['top'] if result['top'] in parsed else 'TOP_DECK'
+    top_devices, top_findings = parsed.get(top_label, ([], []))
+    tie_groups, tunable_list, binding = tunables.derive(top_devices, top_findings)
+
     doc = {
         'schema': 'circuit-decomposition/v1',
         'netlist': str(netlist),
@@ -174,13 +197,16 @@ def build(netlist: Path, top_name: str | None, threshold: float, work: Path) -> 
         'generated': datetime.date.today().isoformat(),
         'confirmed_by_user': False,
         'hierarchy': hierarchy,
+        # DERIVED by build_tunables.py from pattern-table.md's rules.
+        'tie_groups': tie_groups,
+        'tunable_parameters': tunable_list,
         # Stubs -- SKILL.md Steps 2-3 fill these in.
         'patterns': [],
         'unmatched_devices': [],
-        'tie_groups': [],
+        'matched_nets': [],
         'open_questions': [],
     }
-    return doc, {'blocks': scan, 'mermaid': '\n'.join(hier.mermaid(tree, blocks))}
+    return doc, {'blocks': scan, 'mermaid': '\n'.join(hier.mermaid(tree, blocks))}, binding
 
 
 HEADER = """\
@@ -191,9 +217,18 @@ HEADER = """\
 # here. Key meanings: .claude/skills/circuit-decomposition/SKILL.md
 #
 #   `hierarchy` is machine-written -- re-run the script rather than editing.
-#   `patterns`, `unmatched_devices`, `tie_groups`, `open_questions` are
+#   `tie_groups` and `tunable_parameters` are DERIVED by build_tunables.py
+#   from pattern-table.md's own "Tie group" rules -- machine-written, like
+#   `hierarchy`. Re-run the script rather than editing them, and do not
+#   "correct" a mirror into per-leg free widths: one shared unit w/l with a
+#   per-leg integer m IS the mirror rule, and `tunable_template` is rendered
+#   straight from them.
+#
+#   `patterns`, `unmatched_devices`, `matched_nets`, `open_questions` are
 #   AUTHORED against pattern-table.md, and are empty until SKILL.md's
 #   judgment steps have run. Empty means "not done yet", never "none found".
+#   `matched_nets` is the layout half of a tie group: the wiring that must
+#   match for the matched devices to stay matched.
 """
 
 
@@ -206,24 +241,42 @@ def main():
     parser.add_argument("--keep-work", default=None, help="keep the per-block .sp slices here instead of a temp dir")
     parser.add_argument("--scan-json", default=None,
                         help="also save the printed scan evidence as JSON (auditing; not a deliverable)")
+    parser.add_argument("--out-j2", default=None,
+                        help="the tunable-parameter netlist template "
+                             "(default: <design_dir>/<top>_tunable.sp.j2, beside --out)")
     args = parser.parse_args()
 
     netlist = Path(args.netlist).resolve()
     out = Path(args.out).resolve()
     if out.exists():
         prior = yaml.safe_load(out.read_text()) or {}
-        if prior.get('patterns') or prior.get('tie_groups'):
-            sys.exit(f"{out} already holds authored patterns/tie_groups -- refusing to overwrite "
-                     f"the judgment steps' work. Move it aside first if you really mean to re-scan.")
+        if prior.get('patterns') or prior.get('matched_nets') or prior.get('open_questions'):
+            sys.exit(f"{out} already holds authored patterns/matched_nets/open_questions -- refusing to "
+                     f"overwrite the judgment steps' work. Move it aside first if you really mean to "
+                     f"re-scan. (`tie_groups` and `tunable_parameters` are DERIVED and are safe to "
+                     f"regenerate -- they are not what this guard protects.)")
 
     work = Path(args.keep_work).resolve() if args.keep_work else Path(tempfile.mkdtemp(prefix="decomp_"))
     try:
-        doc, scan = build(netlist, args.top, args.threshold, work)
+        doc, scan, binding = build(netlist, args.top, args.threshold, work)
     finally:
         if not args.keep_work:
             shutil.rmtree(work, ignore_errors=True)
 
     out.parent.mkdir(parents=True, exist_ok=True)
+
+    # The template is the OTHER half of this skill's output: the netlist with
+    # every tunable replaced by its variable. schematic-sizing renders it
+    # instead of writing values into a literal netlist through a side-car map.
+    j2_path = Path(args.out_j2).resolve() if args.out_j2 else \
+        out.parent / f"{doc['top']}_tunable.sp.j2"
+    j2_path.parent.mkdir(parents=True, exist_ok=True)
+    j2_path.write_text(tunables.J2_HEADER + tunables.render_template(netlist, binding))
+    doc['tunable_template'] = str(j2_path)
+    print(f"tunable template -> {j2_path}")
+    for g in doc['tie_groups']:
+        print(f"  {g['id']:28s} {g['devices']} tied={g['tied']} carrier={g['ratio_carrier']}")
+
     # default_flow_style=None keeps leaf lists inline (`devices: [XMN3, XMN4]`)
     # while anything holding a nested collection stays block-style. Purely
     # block style ran the file ~2x longer with one device name per line.
@@ -249,13 +302,15 @@ def main():
             print(f"  [{where}] {', '.join(g['devices'])} (cohesion {g['cohesion']}) -> test {tests}")
             for link in g['links']:
                 print(f"      {link}")
+        for line in nets.format_lines(block['net_matches']):
+            print(line)
 
     if args.scan_json:
         Path(args.scan_json).write_text(json.dumps(scan, indent=2))
         print(f"\n  wrote {args.scan_json} (scan evidence, for auditing only)")
     print(f"\n  wrote {out}")
-    print("  patterns / unmatched_devices / tie_groups are empty stubs -- "
-          "SKILL.md Steps 2-3 author them from the scan above.")
+    print("  patterns / unmatched_devices / matched_nets are empty stubs -- "
+          "SKILL.md Steps 2-4 author them from the scan above.")
 
 
 if __name__ == "__main__":

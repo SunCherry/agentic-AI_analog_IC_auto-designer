@@ -10,7 +10,7 @@ and compare against `target_spec.json` -- see ../SKILL.md's
 
 This script does ONE iteration and returns/prints a JSON result; it does
 NOT decide what to try next -- the caller reasons over this result (plus
-`book_keeper.md`'s history) to pick the next iteration's W/L values. A script
+`book_keeper.log`'s history) to pick the next iteration's W/L values. A script
 measures, the caller decides.
 
 Also computes total DC power (`specs["power_mw"]`, via
@@ -36,7 +36,7 @@ reporting NOT MET without ever naming the cause.
 
 Usage:
   python run_sizing_iteration.py <design_dir> <design>_tuning.sp <testbench.spice>
-      --netlist-basename two_stage_rz.sp --groups structure_groups.json
+      --netlist-basename two_stage_rz.sp --groups <design_dir>
       [--set MN1_W=45.2,MN1_L=0.2] --pdk sky130A --iter 3
       [--target-spec target_spec.json] [--attrs gm,gds,id,vds,vgs,vdsat,cgg]
       [--json out.json]
@@ -412,7 +412,7 @@ def run_iteration(design_dir, tuning_netlist, testbench_path, netlist_basename,
     **`save_artifacts=False` (the default) leaves nothing on disk.** The
     simulation runs in a temp directory, auto-deleted on return, and the
     iteration's record is the returned `result` dict -- which the caller writes
-    into `book_keeper.md` (../SKILL.md's "Logging"). That is the run's history;
+    into `book_keeper.log` (../SKILL.md's "Logging"). That is the run's history;
     these files are not.
 
     `save_artifacts=True` persists the rendered netlist, the augmented deck and
@@ -446,7 +446,7 @@ def _run_iteration_in_dir(iter_dir, tuning_netlist, testbench_path, netlist_base
                            values, groups_path, pdk, iter_tag, attrs, target_spec,
                            timeout, supply_nets=("VDD",), vdd_value=None,
                            analysis="ac", supply_volts=None, pdk_root=None):
-    groups, fixed = load_groups(groups_path)
+    groups, template = load_groups(groups_path)
     text = open(tuning_netlist).read()
 
     # A group whose members already disagree is a hand edit that broke a
@@ -461,7 +461,24 @@ def _run_iteration_in_dir(iter_dir, tuning_netlist, testbench_path, netlist_base
             "\nSet each variable to re-synchronise its members before iterating.")
 
     if values:
-        text, _ = apply_values(text, values, groups, fixed)
+        # `m` outside a ratio carrier is templated only so the PDK-bin fold can
+        # write it. The loop must not: moving a standalone device's copy count
+        # is a layout decision (device-shaper's and the fold's), not a sizing
+        # lever, and CLAUDE.md's Key Rules say so. Refusing here is what makes
+        # that rule enforced rather than merely documented.
+        frozen = [v for v in values
+                  if groups.get(v, {}).get("tunable_by", "sizing") != "sizing"]
+        if frozen:
+            raise SystemExit(
+                "these variables are templated but FROZEN for sizing: %s.\n"
+                "`m` is a sizing lever only where a pattern names it "
+                "`ratio_carrier` (a current mirror's legs, a resistor ladder, a "
+                "capacitor bank). Elsewhere only fold_wide_devices.py may write "
+                "it, to fit a PDK model bin.\nTunable here: %s"
+                % (", ".join(sorted(frozen)),
+                   ", ".join(sorted(v for v in groups
+                                    if groups[v].get("tunable_by", "sizing") == "sizing"))))
+        text, _ = apply_values(text, values, groups, template)
         with open(tuning_netlist, "w") as f:   # the netlist IS the state
             f.write(text)
 
@@ -616,7 +633,7 @@ def main():
     ap.add_argument("tuning_netlist", help="<design_name>_tuning.sp -- read AND written")
     ap.add_argument("testbench")
     ap.add_argument("--netlist-basename", required=True)
-    ap.add_argument("--groups", required=True, help="structure_groups.json")
+    ap.add_argument("--groups", required=True, metavar="DESIGN_DIR", help="design dir holding circuit_decomposition.yaml")
     ap.add_argument("--set", default=None, help="comma-separated VAR=VALUE overrides")
     ap.add_argument("--pdk", default=_guideline_pdk())
     ap.add_argument("--iter", required=True)
@@ -649,7 +666,7 @@ def main():
                           "testbench/opinfo.txt under <out_root>/iter_<n>/, for "
                           "an iteration worth debugging. Default is a temp dir, "
                           "auto-deleted on exit -- the run's history lives in "
-                          "book_keeper.md, not in these files. The result is "
+                          "book_keeper.log, not in these files. The result is "
                           "unaffected either way.")
     args = ap.parse_args()
 

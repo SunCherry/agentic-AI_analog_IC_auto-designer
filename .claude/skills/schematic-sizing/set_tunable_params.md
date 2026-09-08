@@ -1,138 +1,91 @@
 # Setting tunable parameters, per structure
 
-**Input: a partial netlist** -- the device lines of ONE structure and nothing
-else, every device involved included. **Output: which tunable variables that
-structure gets, and what each one starts at.**
+**The registry that used to live here has moved.** It is now
+`../circuit-decomposition/pattern-table.md`'s **Tie group** field — one row per
+pattern — and it is no longer a description of a judgment call. It is read by
+`../circuit-decomposition/script/build_tunables.py`, which derives every tie
+group and every variable from it. Changing a row there changes what sizing may
+move.
 
-Some structures cannot be sized one device at a time. Sizing one half of
-a matched pair breaks the symmetry the design depends on; sizing a mirror's
-branches independently loses the ratio. Both are silent defects, not errors, so
-each structure gets a stated rule below, and `setup_sizing.py` records it in
-`structure_groups.json` -- the map `edit_netlist.py` writes values through, so a
-group moves as one by construction rather than by discipline.
+This file is kept as the explanation of *why* it works that way, because the
+failure it prevents is silent.
 
-**This is a registry.** Each structure is one row in the table plus one section.
-To add a structure, add both -- see "Adding a structure".
+## Why this moved
 
-## The registry
+Some structures cannot be sized one device at a time. Sizing one half of a
+matched pair breaks the symmetry the design depends on; sizing a mirror's
+branches independently loses the ratio. Both are silent defects, not errors.
 
-| # | Structure | Recognized by | Shared variables | Per-device variable | Never tunable |
-|---|---|---|---|---|---|
-| 1 | **current mirror** | one device with `drain == gate` (the reference), plus every other device sharing its `(model, gate, source, bulk)` | `<ref>_W`, `<ref>_L` -- reference and every branch | `<branch>_M` per branch -- the mirror ratio | reference `m` (forced to literal `1`), `nf` |
-| 2 | **matched group** (differential pair, and any set that must move together) | same `model`, same `source` **and** `bulk`, identical original `w`/`l`/`m`/`nf` | `<first>_W`, `<first>_L` -- every member | -- | `m`, `nf` (both keep their original, already-identical value) |
+The rules were written down twice — here in prose for an agent to apply, and
+again as a detector inside `setup_sizing.py` writing `structure_groups.json`.
+Two sources for one fact drift, and they did. On `test_miller_ota`:
 
-**Starting values:**
+| | said |
+|---|---|
+| `circuit_decomposition.yaml` | nfet mirror `XMN4`/`XMN3`/`XMN5` is one group, `tied: [w, l]`, `ratio_carrier: m` |
+| `structure_groups.json` | six independent variables — `MN3_W`, `MN3_L`, `MN4_W`, `MN4_L`, `MN5_W`, `MN5_L` |
 
-| Structure | Variable | Seeded from |
-|---|---|---|
-| current mirror | `<ref>_W` | the reference's own **per-copy** `w`, never `w * m` |
-| current mirror | `<ref>_L` | the reference's own `l` |
-| current mirror | `<branch>_M` | `max(1, round(branch_w * branch_m / (ref_w * ref_m)))` -- the golden netlist's own branch-to-reference total-width ratio |
-| matched group | `<first>_W` / `<first>_L` | the group's own (identical) `w` / `l` |
+The loop believed the JSON and tuned the three legs to `w = 47.2 / 85 / 100 µm`
+— three different unit devices on one gate net, which is not a mirror and
+cannot be laid out as one. Nothing failed; the numbers met the spec. It was
+only visible by reading the netlist.
 
-**Two rules that hold across every structure:**
+So the rule moved into code, and the *grouping moved into the netlist itself*.
 
-- **Detection order is table order.** Structure 1 claims its devices first; only
-  the devices left over are considered for structure 2. A device belongs to one
-  structure.
-- **Variables are named after one member** -- the reference for a mirror, the
-  first line encountered for a matched group -- with `_W` / `_L` / `_M`
-  suffixed to the instance name minus a leading `X` (`XMN1` -> `MN1_W`).
+## How it works now
 
-## 1. Current mirror
-
-Partial netlist in (reference first here, but line order does not matter):
+`circuit-decomposition` emits `<top>_tunable.sp.j2` — the netlist with each
+tunable replaced by `{{ VAR }}`:
 
 ```
-XMN4 net7 net7 VSS VSS sky130_fd_pr__nfet_01v8 l=0.15 w=47.2 nf=1 m=5
-XMN3 net3 net7 VSS VSS sky130_fd_pr__nfet_01v8 l=0.15 w=34.2 nf=1 m=3
-XMN5 vout net7 VSS VSS sky130_fd_pr__nfet_01v8 l=0.15 w=43.1 nf=1 m=8
+XMN3 net3 net7 VSS VSS ...nfet l={{ MN4_L }} w={{ MN4_W }} nf=1 m={{ MN3_M }}
+XMN4 net7 net7 VSS VSS ...nfet l={{ MN4_L }} w={{ MN4_W }} nf=1 m={{ MN4_M }}
+XMN5 vout net7 VSS VSS ...nfet l={{ MN4_L }} w={{ MN4_W }} nf=1 m={{ MN5_M }}
 ```
 
-Variables out: `MN4_W`, `MN4_L` (all three devices), `MN3_M`, `MN5_M`. The
-reference's `m` goes in the group file's `fixed` block, pinned to 1.
+**Tying is now structural rather than clerical.** The three legs share the
+literal placeholder, so one value writes all three on every render. There is no
+per-device value to forget, and no second file to disagree with the first.
 
-- **Detection is topological, not value-based.** `drain == gate` identifies the
-  reference. It deliberately does **not** require the family's `w`/`l`/`m` to
-  match, because a real mirror often expresses its ratio through
-  independently-sized devices -- as the example above does. A value-matching rule
-  would never group those three.
-- **One shared `W`/`L` makes every finger in the family the same physical unit
-  device**, which is the standard layout technique for mirror matching. What a
-  real design varies branch-to-branch is the **ratio**, so that -- and not an
-  independently sized `w` -- is the branch variable.
-- **The reference's `m` is forced to `1`**: it is the one-copy unit the rest of
-  the family counts in.
-- **Seed `<ref>_W` from per-copy `w`, never `w * m`.** A binned model is valid
-  only up to some `w_max` per copy; the total can land past it, and then no model
-  card matches and the iteration measures nothing. Per-copy is valid by
-  construction -- the netlist already used it. Each variable's own `w_max` is
-  read from the PDK's model cards at the moment it is checked
-  (`setup_sizing.width_bounds()`), never cached.
-- **So the starting point does not reproduce the original bias currents.** A
-  smaller unit shifts the family's equilibrium, and a downstream device can land
-  in triode. **Expected, not a bug** -- re-establish the family's bias (`id`
-  across reference and branches, `vds` vs `vdsat`) before chasing any spec.
-- **A gate node with zero, or more than one, diode-connected member is
-  ambiguous** and is left alone -- it falls through to structure 2.
-- `--no-auto-mirror` disables detection entirely.
+- **`m` is a real sizing variable wherever a pattern names it `ratio_carrier`**
+  (`current_mirror`, `cascode_current_mirror`, `resistor_ladder`,
+  `capacitor_bank`), and frozen everywhere else. Each variable carries
+  `tunable_by: sizing | fold`.
+- **`nf` is never templated** — `device-shaper` chooses it after sizing
+  converges.
+- **There is no "ratio conflict".** Legs written with different `w` do not
+  defeat a shared `w`: one shared *unit* `w`/`l` times a per-leg integer `m`
+  reproduces any ratio to within one unit, and is also how the mirror is drawn.
 
-## 2. Matched group
+## What still needs your judgment
 
-Partial netlist in:
+**The seed moves the bias point, and that is expected.** Re-expressing a family
+on one unit device changes each leg's total width by up to one unit —
+`ratio_seed` records exactly how much, and Step 1 prints
+`<-- seed moved this leg` for anything past a few percent. On
+`test_miller_ota`: `XMN3` 102.6 → 94.4 µm (−8.0%), `XMN5` 345 → 330.4 µm
+(−4.2%). **Re-establish the family's bias** (`id` across reference and legs,
+`vds` vs `vdsat`) before chasing any spec.
 
-```
-XMN1 net4 Vin net3 VSS sky130_fd_pr__nfet_01v8 l=0.15 w=40 nf=1 m=8
-XMN2 net5 Vip net3 VSS sky130_fd_pr__nfet_01v8 l=0.15 w=40 nf=1 m=8
-```
+**Review the derived groups against the circuit read.** Detection is still a
+heuristic over wiring: a mirror whose reference is not diode-connected is
+missed, and two unrelated devices that share a rail can be over-grouped. A
+structure the read names but the Step 1 report does not is exactly the case to
+check.
 
-Variables out: `MN1_W`, `MN1_L` (both devices). No per-device variable.
-
-- **The differential pair is the canonical case, not the only one** -- a
-  PTAT/CTAT branch pair, a comparator's latch halves, the legs of a delay cell.
-  Which symmetry a design depends on is a circuit question; breaking any of them
-  mid-loop is the same defect.
-- **`gate` and `drain` are deliberately NOT required to match** -- those are
-  exactly the terminals that differ between a pair's two halves. Only
-  `source`/`bulk` (the shared tail or rail node) must match.
-- **One shared variable is structural prevention**, not a discipline to
-  remember: `--set MN1_W=45` writes both halves, because it addresses the
-  variable rather than a device. The failure it prevents is real -- sizing one
-  half without the other, caught only by re-synchronizing by hand every
-  iteration. `edit_netlist.check_groups()` reports a pair that has drifted apart
-  anyway, which a hand edit can still do.
-- `--no-auto-group` falls back to one variable per instance. **If you use it,
-  merge the members by hand in `structure_groups.json`** -- put them in one
-  variable's `members` list -- or that failure is back.
-
-## Reviewing what the script decided
-
-**Every detection is a heuristic over wiring and values, so review the printed
-report before the first iteration.** `setup_sizing.py` lists every family
-and group it found, with each branch's starting `M`. Cross-check it against the
-confirmed circuit read in `<design_dir>/circuit_decomposition.yaml`.
-
-- **Read this file on mismatch, not only on detection.** A structure the circuit
-  read names but the report does *not* is exactly the case to check.
-- Structure 1 can miss a mirror whose reference is not diode-connected.
-  Structure 2 can **over-group** two unrelated devices that coincidentally share
-  size and rail connections, or **under-group** a topology it does not recognize.
-
-## Interaction with the fold
-
-A structure folds as **one unit**: a single factor multiplies every member's `m`
--- reference and branches together, both halves of a pair together -- so totals
-and the mirror ratio survive. Folding one member and not its partner is the
-symmetry break the shared variable exists to prevent. See `SKILL.md`'s Step 2a.
+**Seeding stays per-copy, never `w * m`.** A binned model is valid only up to
+some `w_max` per copy; a total can land past it, and then no model card matches
+and the iteration measures nothing. `setup_sizing.width_bounds()` reads each
+bound from the PDK's model cards at the moment it checks, never cached.
 
 ## Adding a structure
 
-1. Add a row to **The registry**, and a row per new variable to **Starting
-   values**. State what is never tunable.
-2. Add a numbered section: one partial netlist in, the variables out, then
-   bullets for the detection rule and the seeding rule.
-3. Place the row in detection order -- earlier rows claim their devices first.
-4. Implement the detector in `script/setup_sizing.py` alongside
-   `_find_mirror_families()` / `_build_groups()`, have it emit the group into
-   `structure_groups.json`, and have it print what it found so the review step
-   above still works.
+1. Add a row to `../circuit-decomposition/pattern-table.md` — the pattern, its
+   **Tie group** field, its **Matched nets** field.
+2. Add its detector to `../../reference/detect_topology.py`.
+3. Add its row to `TIE_RULES` in
+   `../circuit-decomposition/script/build_tunables.py`. A pattern absent from
+   that table gets `DEFAULT_RULE` — untied, its own free `w`/`l` — which is
+   what the table's `none` rows mean, so a `none` pattern needs no row.
+
+Do not add a detector here. There is one place these rules live.

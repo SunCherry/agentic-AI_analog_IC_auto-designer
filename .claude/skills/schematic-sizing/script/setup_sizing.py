@@ -108,7 +108,7 @@ one independent variable per instance.
 
 Usage:
   python setup_sizing.py <golden.sp> -o <design>_tuning.sp
-      --groups-out structure_groups.json [--no-auto-group] [--no-auto-mirror]
+      --design-dir <design_dir>
 """
 import argparse
 import json
@@ -117,7 +117,8 @@ import re
 import sys
 
 from netlist_devices import parse_devices
-from edit_netlist import apply_values
+from edit_netlist import load_groups
+import tunables as _T
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  "..", "..", "parasitic-estimation", "script"))
@@ -172,6 +173,13 @@ def _um(raw):
 
     Counts (`m`, `nf`) must NOT come through here -- they are dimensionless."""
     return _um_val(raw)
+
+# How far a branch's true total-width ratio may sit from the nearest integer
+# M before the family is judged un-tieable -- see _mirror_family_starting_values()'s
+# ratio-conflict guard. 10% is well inside real mirror ratios (1:1, 1:2, 1:4 land
+# on 0%) and well outside the case it exists to catch (0.435x and 1.462x, which
+# miss by 130% and 32%).
+MIRROR_RATIO_TOL = 0.10
 
 TUNABLE_KINDS = ("mos", "res", "cap")
 TUNABLE_PARAMS = ("w", "l")
@@ -339,12 +347,58 @@ def _mirror_family_starting_values(family):
             continue
         branch_total = br_w * br_m
         branch_m[br["name"]] = max(1, round(branch_total / ref_total)) if ref_total else 1
+
+    # RATIO-CONFLICT GUARD. A tied family expresses every branch as
+    # `shared_W * integer_M`, so the only branch-to-reference total-width
+    # ratios it can reproduce are (near-)integers. Where the golden netlist's
+    # ratio is NOT one, the `round()` above silently snaps it to the nearest
+    # integer -- and `max(1, ...)` snaps everything below 0.5 up to 1.0 -- which
+    # rewrites the mirror's current ratios into something the designer never
+    # asked for. That is not a seed that the tuning loop later corrects: the
+    # ratio IS the circuit's current budget, and it is gone before iteration 1.
+    #
+    # Real case (`test_miller_ota` TG3, the NMOS bias family): reference XMN4
+    # total 236um, branches XMN3 102.6um (ratio 0.435) and XMN5 344.96um
+    # (ratio 1.462). Rounding gives M=1 for BOTH, collapsing 0.435/1.000/1.462
+    # to 1/1/1 -- every leg at w=47.2 -- destroying the tail-current and
+    # stage-2-load budget, and unfreezing `m`, which is a layout lever.
+    # `circuit-decomposition` independently flags exactly this as
+    # `status: ratio_conflict` ("Do not tie and do not absorb the ratio into w").
+    #
+    # So refuse the family rather than mis-seed it. Its devices fall through to
+    # ordinary grouping and get sized as free w/l tunables, which is what the
+    # decomposition prescribes.
+    offenders = []
+    for br in family["branches"]:
+        _, br_w_raw = _param_lookup(br["params"], "w")
+        _, br_m_raw = _param_lookup(br["params"], "m")
+        br_w = _um(br_w_raw) if br_w_raw is not None else None
+        if br_w is None or not ref_total:
+            continue
+        br_m = _si_val(br_m_raw) if br_m_raw is not None else 1.0
+        want = (br_w * br_m) / ref_total
+        got = float(branch_m[br["name"]])
+        if want > 0 and abs(got - want) / want > MIRROR_RATIO_TOL:
+            offenders.append(f"{br['name']} wants {want:.4g}x the reference, "
+                             f"nearest integer M is {got:g} ({abs(got - want) / want:.0%} off)")
+    if offenders:
+        return {"conflict": (
+            f"branch/reference total-width ratios are not integer-expressible: "
+            f"{'; '.join(offenders)}. A shared W with integer M cannot reproduce "
+            f"them, and rounding would rewrite the family's current ratios.")}
+
     return {"seed_w": seed_w, "seed_l": ref_l, "branch_m": branch_m}
 
 
 def build_sizing_setup(netlist_path, auto_group=True, auto_mirror=True):
     """Return `(tuning_netlist_text, groups, fixed, seeds, skipped,
-    reported_groups, mirror_report)`.
+    reported_groups, mirror_report, mirror_conflicts)`.
+
+    `mirror_conflicts` -- families that ARE mirrors topologically but whose
+    branch ratios a shared W + integer M cannot express, so they were left
+    untied on purpose. Each is `(reference, [branches], reason)`. Never let
+    this list pass silently: an untied conflicted family and a design with no
+    mirrors at all produce identical output otherwise.
 
     **No template and no value file.** The netlist itself carries the values
     from here on (`edit_netlist.py`); this step only works out WHICH devices
@@ -367,10 +421,20 @@ def build_sizing_setup(netlist_path, auto_group=True, auto_mirror=True):
     reference_names, reference_seed_wl, branch_starting_m = set(), {}, {}
     claimed, mirror_report = set(), []
 
+    mirror_conflicts = []
     for family in families:
         ref = family["reference"]
         s = _mirror_family_starting_values(family)
         if s is None:
+            continue
+        if s.get("conflict"):
+            # Topologically a mirror, but not one a shared W + integer M can
+            # express. Left UNTIED on purpose; its devices fall through to
+            # ordinary grouping as free w/l tunables. Reported loudly rather
+            # than skipped quietly -- a silently-dropped family looks exactly
+            # like a design with no mirrors.
+            mirror_conflicts.append(
+                (ref["name"], [b["name"] for b in family["branches"]], s["conflict"]))
             continue
         ref_prefix = _var_prefix(ref["name"])
         claimed.add(ref["name"])
@@ -431,7 +495,8 @@ def build_sizing_setup(netlist_path, auto_group=True, auto_mirror=True):
         if not touched:
             skipped.append(f"{d['name']} ({d['kind']}, no w=/l= param found on its line -- not tuned)")
 
-    return text, groups, fixed, seeds, skipped, reported_groups, mirror_report
+    return (text, groups, fixed, seeds, skipped, reported_groups, mirror_report,
+            mirror_conflicts)
 
 
 def width_bounds(netlist_text, groups, pdk_root=None, pdk="sky130A"):
@@ -487,41 +552,46 @@ def width_bounds(netlist_text, groups, pdk_root=None, pdk="sky130A"):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("netlist", help="the golden .sp")
+    ap.add_argument("netlist", help="the golden .sp (checked against the read)")
     ap.add_argument("-o", "--out", required=True,
                     help="output <design_name>_tuning.sp -- the loop's working netlist")
-    ap.add_argument("--groups-out", required=True,
-                    help="output structure_groups.json")
-    ap.add_argument("--no-auto-group", action="store_true",
-                     help="disable matched-pair grouping -- one independent "
-                          "variable per MOS instance instead")
+    ap.add_argument("--design-dir", required=True,
+                    help="design dir holding circuit_decomposition.yaml -- the "
+                         "tunable registry and the .sp.j2 template come from "
+                         "the circuit read, not from a detector here")
     ap.add_argument("--pdk", default=_guideline_pdk(),
                     help="PDK whose model bins are checked against the seeds")
     ap.add_argument("--pdk-root", default=None,
                     help="PDK root; defaults to $PDK_ROOT")
-    ap.add_argument("--no-auto-mirror", action="store_true",
-                     help="disable current-mirror family detection -- reference "
-                          "and branches each get independent variables instead")
     args = ap.parse_args()
 
-    text, groups, fixed, seeds, skipped, reported_groups, mirror_families = \
-        build_sizing_setup(args.netlist, auto_group=not args.no_auto_group,
-                           auto_mirror=not args.no_auto_mirror)
+    # This step no longer DETECTS anything. `circuit-decomposition` derived the
+    # tie groups and the variables from pattern-table.md's own rules and wrote
+    # the template; a second detector here was the drift that put three
+    # independent widths on one current mirror. All that is left to do is seed
+    # the working netlist from the registry and check the seeds against the PDK.
+    groups, template = load_groups(args.design_dir)
+    seeds = _T.seeds(groups)
 
-    # Seed the working netlist: a mirror family's re-seeded reference W/L and
-    # each branch's starting M only reach the design through this write.
-    tuning_text, _ = apply_values(text, seeds, groups, fixed)
+    tuning_text = _T.render(template, seeds, groups)
 
-    for path in (args.out, args.groups_out):
-        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w") as f:
         f.write(tuning_text)
-    with open(args.groups_out, "w") as f:
-        json.dump({"groups": groups, "fixed": fixed}, f, indent=2)
 
+    sizing_only = _T.sizing_vars(groups)
+    fold_only = [v for v in groups if v not in sizing_only]
     print(f"Wrote {args.out} (the loop's working netlist -- values live here)")
-    print(f"Wrote {args.groups_out} ({len(groups)} tunable variables)")
-    print(f"\nTunable: {sorted(groups)}")
+    print(f"Registry: {len(groups)} variable(s) from {args.design_dir}")
+    print(f"Template: {template}")
+    print(f"\nTunable by SIZING: {sorted(sizing_only)}")
+    if fold_only:
+        print(f"Templated but FROZEN for sizing (the PDK-bin fold writes these): "
+              f"{sorted(fold_only)}")
+    print("\nTie groups in force (shared variable -> the devices it writes):")
+    for var, spec in sorted(groups.items()):
+        if len(spec["members"]) > 1:
+            print(f"  {var:12s} {spec['param']:3s} -> {spec['members']}")
 
     bounds = width_bounds(tuning_text, groups, pdk_root=args.pdk_root, pdk=args.pdk)
     over = [(v, seeds[v], b["max"]) for v, b in bounds.items()
@@ -534,29 +604,28 @@ def main():
             print(f"  {var}={val:g} > {mx:g}um per copy -- fold the total into "
                   f"copies (w={val / need:g}, m={need}) in the golden netlist first.")
 
-    if mirror_families:
-        print("\nCurrent-mirror families auto-detected (reference m forced to 1, "
-              "shared W/L, each branch's own independent M -- review this, it's a "
-              "topological heuristic, see this script's docstring):")
-        for ref_name, prefix, seed_w, seed_l, branches in mirror_families:
-            print(f"  {prefix}_W={seed_w:g} {prefix}_L={seed_l:g} <- reference {ref_name} (m=1, fixed)")
-            for br_name, m_var, starting_m in branches:
-                print(f"    branch {br_name}: w/l <- {prefix}_W/{prefix}_L, {m_var}={starting_m:g} (tunable)")
-    elif not args.no_auto_mirror:
-        print("\nNo current-mirror families detected.")
+    # The ratio groups, read back from the circuit read rather than
+    # re-detected here. `ratio_seed` says what each leg's total width was as
+    # written and what it becomes at the shared unit width -- a leg that moved
+    # more than a few percent has shifted its starting bias point, and the loop
+    # should be told rather than left to discover it in iteration 1.
+    import yaml as _yaml
+    decomp = _T.find_decomposition(args.design_dir)
+    tie_groups = (_yaml.safe_load(decomp.read_text()) or {}).get("tie_groups", [])
+    ratio_groups = [g for g in tie_groups if g.get("ratio_carrier") == "m"]
 
-    if reported_groups:
-        print("\nMatched-pair groups auto-detected (share ONE variable pair -- "
-              "review this, it's a heuristic, see this script's docstring):")
-        for shared_prefix, member_names in reported_groups:
-            print(f"  {shared_prefix}_W/{shared_prefix}_L <- {', '.join(member_names)}")
-    elif not args.no_auto_group:
-        print("\nNo matched-pair groups detected (every MOS device got its own variable).")
-
-    if skipped:
-        print("\nNot tuned (by design -- see this script's docstring):")
-        for s in skipped:
-            print(f"  - {s}")
+    if ratio_groups:
+        print("\nRatio groups (ONE shared unit device, per-leg integer m -- this "
+              "is the mirror rule, from pattern-table.md):")
+        for g in ratio_groups:
+            print(f"  {g['id']}: unit={g.get('unit_device')} "
+                  f"tied={g.get('tied')} <- {g['devices']}")
+            for inst, r in (g.get("ratio_seed") or {}).items():
+                was, now = r.get("w_total_as_written"), r.get("w_total_seeded")
+                drift = (now - was) / was * 100 if was else 0.0
+                flag = "   <-- seed moved this leg" if abs(drift) > 2.0 else ""
+                print(f"    {inst}: total {was:g} -> {now:g} um "
+                      f"(m={r.get('m_seed')}, {drift:+.1f}%){flag}")
 
 
 if __name__ == "__main__":

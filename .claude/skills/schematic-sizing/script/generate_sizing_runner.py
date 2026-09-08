@@ -243,7 +243,10 @@ DESIGN_NAME      = {design_name!r}
 DESIGN_DIR       = os.path.normpath(os.path.join(_HERE, ".."))
 NETLIST_BASENAME = {netlist_basename!r}
 TUNING_NETLIST   = os.path.join(_HERE, {tuning_name!r})   # read AND written
-GROUPS           = os.path.join(_HERE, "structure_groups.json")
+# The tunable registry + .sp.j2 template come from the circuit read, one
+# directory up. There is no structure_groups.json any more -- see
+# script/tunables.py for why two sources for one fact was the bug.
+GROUPS           = DESIGN_DIR
 TESTBENCH        = os.path.join(DESIGN_DIR, "testbench", {testbench_basename!r})
 SPEC             = os.path.join(DESIGN_DIR, "spec", "target_spec.json")
 PDK              = {pdk!r}

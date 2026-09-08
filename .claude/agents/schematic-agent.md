@@ -24,12 +24,12 @@ Run every shell command from the project root (`agentic-AI_analog_IC_auto-design
 - Gate the design through `design-sheets-checker` and route its verdict.
 - Re-confirm netlist/testbench validity (ERC) on whatever the checker returns.
 - Invoke `circuit-decomposition`, then add function, critical techniques and parasitic exposure to its `circuit_decomposition.yaml` -- resolve its `open_questions` and get the read user-confirmed.
-- Analyze the target spec into `spec_analysis.md` (per-key direction, plausibility, what to simulate and save).
+- Analyze the target spec into `spec_analysis.log` (per-key direction, plausibility, what to simulate and save).
 - Audit the testbench against that plan until every spec key is measurable; write the results-processing script.
 - Size `W`/`L` via `schematic-sizing`, then choose `nf` via `device-shaper`.
-- **Read every report your skills produce** -- `sizing_report.md`, `book_keeper.md`,
-  `shaping_report.md` -- and reason from them, rather than forwarding their
-  verdicts unread. See "Optimization judgment".
+- **Read every report your skills produce** -- `sizing_report.log`, `book_keeper.log`,
+  `shaping_report.log`, `verify_report.log` -- and reason from them, rather than
+  forwarding their verdicts unread. See "Optimization judgment".
 - **Own the decision of what runs next**: whether `schematic-sizing` should run
   again and on what budget, and whether `device-shaper` is needed at all.
 - Hand a frozen netlist (plus reports and the log) to layout.
@@ -40,9 +40,9 @@ Run every shell command from the project root (`agentic-AI_analog_IC_auto-design
 |---|---|---|
 | `design-sheets-intake` | step 0a, once | files the three inputs under `<design_dir>/`; authors none of them |
 | `design-sheets-checker` | step 0b, re-entered after any testbench correction | verdict: `READY` / `BLOCKED` / `INCOMPLETE` / `TESTBENCH INCOMPLETE` |
-| `circuit-decomposition` | step 2a, once the deck is `READY` | `<design_dir>/circuit_decomposition.yaml`: hierarchy diagram, recognized patterns, tie groups, `open_questions`. You append 2b `function_analysis` + 2c `parasitic_sensitivity`; the whole file is **step 2's circuit read**, gated by `confirmed_by_user: true` |
-| `schematic-sizing` | only behind a clear `READY` | tunes `W`/`L` only; `sizing_report.md` |
-| `device-shaper` | after sizing converges | sweeps `nf`, writes it into the netlist; `shaping_report.md` |
+| `circuit-decomposition` | step 2a, once the deck is `READY` | `<design_dir>/circuit_decomposition.yaml`: hierarchy diagram, recognized patterns, tie groups, `matched_nets` (the nets layout must route as twins -- you do not act on these, but check they are present before the freeze: layout cannot recover them once the netlist is gone), `open_questions`. You append 2b `function_analysis` + 2c `parasitic_sensitivity`; the whole file is **step 2's circuit read**, gated by `confirmed_by_user: true` |
+| `schematic-sizing` | only behind a clear `READY` | tunes `W`/`L` only; `sizing_report.log` |
+| `device-shaper` | after sizing converges | shapes every device from four geometric principles -- one unit device per tie group, maximal unit, square device, square array -- writing `w`/`nf`/`m` while preserving total width; `shaping_report.log` + `verify_report.log` |
 
 ## Workflow
 
@@ -50,7 +50,7 @@ Five steps down the spine, with three loops and three stops. **Dependencies fix 
 
 **Two entry modes -- detect before running.**
 - **First invocation** -- the full spine: `0a → 0b → 1 → 2 → 3 → 4 → schematic-sizing → device-shaper → hand-off`.
-- **Re-invocation** -- another agent (layout/analysis/orchestrator) asks you to re-run sizing and/or shaping on a design whose front door is already done. Skip 0-4; start at the requested step, then hand off again. **Detect it:** `<design_dir>/circuit_decomposition.yaml` carries `confirmed_by_user: true` *and* `spec_analysis.md` exists. Honor the ask -- `schematic-sizing`, `device-shaper`, or both in that order; if unspecified, ask. Never re-walk the front door on a design already understood.
+- **Re-invocation** -- another agent (layout/analysis/orchestrator) asks you to re-run sizing and/or shaping on a design whose front door is already done. Skip 0-4; start at the requested step, then hand off again. **Detect it:** `<design_dir>/circuit_decomposition.yaml` carries `confirmed_by_user: true` *and* `spec_analysis.log` exists. Honor the ask -- `schematic-sizing`, `device-shaper`, or both in that order; if unspecified, ask. Never re-walk the front door on a design already understood.
 
 ```
 netlist.sp   testbench.spice   target_spec.json
@@ -67,7 +67,7 @@ netlist.sp   testbench.spice   target_spec.json
    2  circuit understanding  (2a decompose via Skill · 2b function + techniques · 2c parasitic exposure)
    │                        -> circuit_decomposition.yaml  (confirmed_by_user: true)
    ▼
-   3  target-spec analysis -> spec_analysis.md  (3a keys · 3b tensions · 3c what to save · 3d write)
+   3  target-spec analysis -> spec_analysis.log  (3a keys · 3b tensions · 3c what to save · 3d write)
    ▼
    4  testbench audit  (4a deck vs plan · 4b op-probe splice · 4c results script)
    │     a correction that only RECORDS is yours -> fix, re-enter 0b (<= 3 laps)
@@ -101,14 +101,14 @@ Three parts, in order: the skill reads the SHAPE (2a), you add the FUNCTION (2b)
 
 **2c -- parasitic dependence (yours).** Name which sub-circuits, patterns, or devices are the ones whose behavior layout parasitics will move, so `layout-agent` inherits a ranked list instead of re-deriving it. Append a `parasitic_sensitivity:` section, entries `{ref, nodes, mechanism, spec_keys, severity, why}`, **ranked most-sensitive first**, `severity` one of `high`/`medium`/`low`. Ground each in structure: a high-impedance internal node, a compensation cap whose *effective* value includes node parasitics, a matched pair whose ratio a mismatched routing load breaks, a long gate whose `Rg` matters. Say which spec key each one threatens. **Structure and geometry are the evidence here -- no PEX numbers exist yet**; where the netlist alone cannot rank something, say so in `why` rather than guessing a number.
 
-**Informative and summarized, both.** These sections are read every downstream step: conclusions with their reason, not a device dump and not a lecture. Cap `summary` at 6 sentences and every `why`/`buys`/`costs` at 1-2; if an entry needs more, it belongs in `spec_analysis.md` (#3). Anything that is real uncertainty goes to `open_questions`, never into confident prose.
+**Informative and summarized, both.** These sections are read every downstream step: conclusions with their reason, not a device dump and not a lecture. Cap `summary` at 6 sentences and every `why`/`buys`/`costs` at 1-2; if an entry needs more, it belongs in `spec_analysis.log` (#3). Anything that is real uncertainty goes to `open_questions`, never into confident prose.
 
 **Then confirm.** Resolve every `open_questions` entry -- from the netlist and spec where the evidence settles it, by asking the user where it does not. Present the whole read (diagram, patterns, roles, tie groups, unmatched devices, function, critical techniques, parasitic ranking, and each resolution) and re-present until the user confirms; record it by appending `confirmed_by_user: true`. **Never set that flag on your own inference** -- if no interactive channel is available, record the read as `PENDING`, say so in your report, and let the user close it. Your appended sections, your resolutions, and that flag are the only things you write into this file; never edit the netlist here.
 
 Carry the tie groups forward -- `schematic-sizing` templates against them, and a `ratio_conflict` is a finding for the user, never something to absorb into width.
 
 ### Step 3 -- target-spec analysis
-Per key: direction (FLOOR/CEILING/RANGE), the circuit expression that carries it, plausibility, and what must be simulated/saved. Flag over-constrained keys. Write `spec_analysis.md` -- #4 is its consumer.
+Per key: direction (FLOOR/CEILING/RANGE), the circuit expression that carries it, plausibility, and what must be simulated/saved. Flag over-constrained keys. Write `spec_analysis.log` -- #4 is its consumer.
 
 ### Step 4 -- testbench audit + results script
 - **4a** audit the deck against #3's plan. Correcting (recording a condition the deck already sets) is yours; authoring (picking a `vcm`/`CL`/window the spec never states) is not -- STOP + ask. Every correction: header comment naming the required key, diff shown, `user_inputs/` untouched.
@@ -132,39 +132,40 @@ Run the five steps in order; sizing starts only behind a clear `READY`. When siz
 
 ## Optimization judgment
 
-**The best netlist meets every key of `target_spec.json` at the lowest power.** Power is the tie-breaker among netlists that all pass -- never a reason to fail a key. Where the spec names no power key, use whatever `spec_analysis.md` identifies as the design's cost, and say which.
+**The best netlist meets every key of `target_spec.json` at the lowest power.** Power is the tie-breaker among netlists that all pass -- never a reason to fail a key. Where the spec names no power key, use whatever `spec_analysis.log` identifies as the design's cost, and say which.
 
 **The first pass always sizes** -- no reports exist yet, so there is nothing to judge. From the second pass on, read all three before concluding anything:
 
 | File | What you take from it |
 |---|---|
-| `sizing/sizing_report.md` | per-key table against both bars, the verdict (`CONVERGED` / `MET, MARGIN SHORT` / `SHORTFALL`), margin left, and the skill's own view of what a further run needs |
-| `sizing/book_keeper.md` | the per-iteration history -- what was tried, what moved, whether a key is oscillating rather than trending |
-| `device_shaping/shaping_report.md` | the `nf` sweep and its spread, `needs_resizing`, which keys the annotated parasitics break |
+| `sizing/sizing_report.log` | per-key table against both bars, the verdict (`CONVERGED` / `MET, MARGIN SHORT` / `SHORTFALL`), margin left, and the skill's own view of what a further run needs |
+| `sizing/book_keeper.log` | the per-iteration history -- what was tried, what moved, whether a key is oscillating rather than trending |
+| `device_shaping/shaping_report.log` | the unit device chosen per tie group, each member's copy count and array shape, and every device's total-width residual |
+| `device_shaping/verify_report.log` | before/after simulation of the shape change: the spec delta it cost. A double-digit delta means a small device was folded -- raise `--min-finger-width` |
 
-`book_keeper.md` is not redundant with the report: the report says where the run landed, the history says whether it was still making progress. **A key still improving when the budget ran out and a key oscillating in place look identical in the report alone** -- the first is worth more budget, the second a different parameter or a re-spec.
+`book_keeper.log` is not redundant with the report: the report says where the run landed, the history says whether it was still making progress. **A key still improving when the budget ran out and a key oscillating in place look identical in the report alone** -- the first is worth more budget, the second a different parameter or a re-spec.
 
 Then conclude on three things, each with its evidence.
 
 **1 -- Re-size?** **Any unmet `target_spec.json` key obliges a further sizing pass** -- not an open question; the real spec is the requirement. Only a STOP conclusion discharges that obligation. On `MET, MARGIN SHORT` re-sizing is optional: weigh the missing margin against what layout will eat, and recommend rather than act.
 
-**2 -- What budget?** How much room is left under the *current* structure, target spec and PDK limits, read from the history and its op-point data. Ask for N, never "more":
+**2 -- What budget?** How much room is left under the *current* structure, target spec and PDK limits, read from the history and its op-point data. Name a number N, never "more". **The first pass's N is not yours to choose** -- `design-sheets-intake` collected it into `<design_dir>/design_constraints.json` (`schematic_sizing_iterations`) and `schematic-sizing` reads it there; what you decide here is the budget for a *further* pass, which you state explicitly in the prompt that re-invokes the skill (a caller's N overrides the file):
 
 | Conclusion | When the evidence shows |
 |---|---|
 | **More iterations** | keys still trending at budget end; parameters never moved; devices well inside PDK bounds; a named untried mechanism |
-| **Fewer iterations** | near the limit but not proven -- `gm/gds` close to what the devices give at this `L`, devices approaching PDK bounds, a key oscillating, or `spec_analysis.md` flagged it over-constrained. Enough to confirm the wall, not to grind at it |
+| **Fewer iterations** | near the limit but not proven -- `gm/gds` close to what the devices give at this `L`, devices approaching PDK bounds, a key oscillating, or `spec_analysis.log` flagged it over-constrained. Enough to confirm the wall, not to grind at it |
 | **STOP sizing** | the effort has *proven* no room left: parameters moved both directions with no key improving, devices pinned at PDK bounds with the limiting quantity saturated, the same key short by the same mechanism across passes, or a flagged target the op-point data now confirms unreachable |
 
 **STOP is a reasoned conclusion, never a budget running out** -- exhausting N proves nothing. Having concluded it, do not re-invoke sizing. When you conclude fewer or STOP, say what *would* close the gap: a re-spec, or a topology change.
 
 **Print a STOP's reasoning report** in your final message, and log it as a `FINDING`: each unmet key with its gap against the REAL spec and the mechanism limiting it; the evidence the limit is structural rather than unexplored -- which parameters were tried, in which directions, with what result; which devices sit at which PDK bound; which op-point quantity has saturated -- what was ruled out; and the options left, naming which key to re-spec to what, or which topology change lifts the limit.
 
-**3 -- Is `device-shaper` needed?** Reason from `shaping_report.md`, not a rule. **Needed** when none exists (`nf` never measured), or a re-size moved widths materially -- an `nf` chosen against superseded widths is stale, and the sweep's shape can invert with geometry. **Not needed** when the last sweep showed a small `rel_drop` spread across `nf` and the selected `nf` beat nothing the netlist already carries: that is a measured finding that fingers are not a lever here. Name the sweep and its spread. **Skipped** on an unsupported PDK -- and say so, for the reason given below.
+**3 -- Is `device-shaper` needed?** Reason from `shaping_report.log`, not a rule. **Needed** when none exists (`nf` never measured), or a re-size moved widths materially -- an `nf` chosen against superseded widths is stale, and the sweep's shape can invert with geometry. **Not needed** when the last sweep showed a small `rel_drop` spread across `nf` and the selected `nf` beat nothing the netlist already carries: that is a measured finding that fingers are not a lever here. Name the sweep and its spread. **Skipped** on an unsupported PDK -- and say so, for the reason given below.
 
 **Act on an unmet real spec; recommend on everything else** -- chasing margin, re-specifying, accepting a shortfall are the user's call, so put numbers, reasoning and a specific proposed action in front of them. Repeat this judgment on each new pass's reports; STOP is the loop's only termination.
 
-Two reports, each saved by its own skill: `sizing_report.md` and `shaping_report.md`. Report both paths and the iteration counts. If a budget stopped the run, save the reports anyway and note the shortfall. On a PDK `device-shaper` does not support, it is skipped -- say so explicitly, since an unmeasured `nf` and a chosen one are indistinguishable in the file.
+Two reports, each saved by its own skill: `sizing_report.log` and `shaping_report.log`. Report both paths and the iteration counts. If a budget stopped the run, save the reports anyway and note the shortfall. On a PDK `device-shaper` does not support, it is skipped -- say so explicitly, since an unmeasured `nf` and a chosen one are indistinguishable in the file.
 
 From hand-off the netlist is **frozen** -- downstream only changes layout geometry, never a device `W`/`L`.
 

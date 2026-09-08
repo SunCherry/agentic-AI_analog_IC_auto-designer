@@ -29,7 +29,7 @@ header states the per-multiplier, per-finger and true total width outright.
 
 Usage:
   python finalize_netlist.py <design>_tuning.sp -o <design>_final.sp
-      --groups structure_groups.json  [--nf N]
+      --groups <design_dir>  [--nf N]
 """
 import argparse
 import os
@@ -116,7 +116,7 @@ def _header(source_name, nf_used, breakdown):
 
 def finalize_netlist(tuning_path, groups_path, nf=None):
     """Return `(final_text, nf_used, rounded_values)`."""
-    groups, fixed = load_groups(groups_path)
+    groups, template = load_groups(groups_path)
     text = open(tuning_path).read()
 
     desync = check_groups(text, groups)
@@ -128,7 +128,7 @@ def finalize_netlist(tuning_path, groups_path, nf=None):
                       for v, seen in desync))
 
     rounded = round_tunables(read_values(text, groups))
-    text, _ = apply_values(text, rounded, groups, fixed)
+    text, _ = apply_values(text, rounded, groups, template)
     if nf is not None:
         text = inject_nf(text, nf)
     breakdown = compute_width_breakdown(text)
@@ -139,7 +139,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("tuning_netlist", help="<design_name>_tuning.sp")
-    ap.add_argument("--groups", required=True, help="structure_groups.json")
+    ap.add_argument("--groups", required=True, metavar="DESIGN_DIR", help="design dir holding circuit_decomposition.yaml")
     ap.add_argument("-o", "--out", required=True,
                     help="<design_name>_final.sp -- the hand-off")
     ap.add_argument("--nf", type=int, default=None,

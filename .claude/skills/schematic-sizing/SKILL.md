@@ -3,7 +3,7 @@ name: schematic-sizing
 description:
   Sizes a fixed-topology golden netlist to its target spec, any circuit
   class. Works out which devices set each spec from the netlist, circuit
-  read and `spec_analysis.md`, then tunes `W`/`L` over real ngspice
+  read and `spec_analysis.log`, then tunes `W`/`L` over real ngspice
   iterations -- reasoning from op-point evidence and a logged history,
   never searching. Judges a target unreachable and says so. Ends with a
   finalized `.sp` and a report of every spec against both the real and the
@@ -20,7 +20,7 @@ Five preconditions, and producing none of them is this skill's job:
 2. the design is validated -- ERC-clean, device parameters valid, and it
    simulates;
 3. a confirmed circuit read exists in `circuit_decomposition.yaml`;
-4. `spec_analysis.md` exists, with each key's direction and plausibility;
+4. `spec_analysis.log` exists, with each key's direction and plausibility;
 5. the testbench measures every spec key and takes the op-probe splice.
 
 Then, and only then -- before any layout, DRC, LVS or PEX. **This is the last
@@ -30,13 +30,14 @@ frozen for layout.
 ## The workflow
 
 ```
-   Step 1   setup_sizing.py           -> <d>_tuning.sp + structure_groups.json
+   Step 1   setup_sizing.py           -> <d>_tuning.sp  (seeded from the read's
+            .sp.j2 template -- this step DETECTS nothing any more)
    Step 1a  generate_sizing_runner.py -> run_sizing_<d>.py   (UNRESOLVED = STOP)
             compute_harder_target.py  -> harder_target_spec.json
-            ASK THE USER for N iterations
+            READ N iterations from design_constraints.json (Loop budget)
    Step 2   THE TUNING LOOP -- you decide, the runner measures
             (Step 2a folds any w over the PDK max first)  <-- log it, then re-read
-   Step 3   finalize_netlist.py       -> <d>_final.sp + sizing_report.md
+   Step 3   finalize_netlist.py       -> <d>_final.sp + sizing_report.log
 ```
 
 **Three exits are stops, not laps**: `UNRESOLVED` from Step 1a, a spec key no
@@ -53,11 +54,10 @@ Everything lands under `<design_dir>/sizing/`, never outside the user's tree
   run_sizing_<d>.py        the runner (Step 1a) -- resolved facts in CONFIG,
                            plus a hand-written measure() hook
   harder_target_spec.json  the bar Step 2 tunes against
-  <d>_tuning.sp            THE LOOP'S STATE -- real W/L; every --set writes
-                           straight into it (Step 2a folds m= here too)
-  structure_groups.json    which instances share a variable / carry a tunable M
-  book_keeper.md           THE RECORD -- budget N at its head, one entry per iteration
-  sizing_report.md         what the loop achieved, and the margin left
+  <d>_tuning.sp            THE LOOP'S STATE -- real W/L; every --set re-renders
+                           the template into it (Step 2a folds m= here too)
+  book_keeper.log          THE RECORD -- budget N at its head, one entry per iteration
+  sizing_report.log        what the loop achieved, and the margin left
   <d>_final.sp             THE HAND-OFF, promoted at Step 3 -- TOP LEVEL ONLY
   <sub>.sp                 each tuned sub-circuit, under its ORIGINAL name
   <d>_<analysis>.png       the converged response, if a figure was wanted
@@ -73,12 +73,12 @@ sub-circuit names alone means the top level's `.include` lines resolve inside
 `sizing/` exactly as they did in `netlist/`, with no rewriting.
 
 **Nothing persists by itself.** An iteration runs in a temp dir and hands back a
-result; **you** turn it into a `book_keeper.md` entry, and an iteration never
+result; **you** turn it into a `book_keeper.log` entry, and an iteration never
 logged is a measurement that no longer exists. `--save-artifacts` (or `--json
 <path>`) keeps an iteration's rendered files for debugging; `_final.sp` comes
 from `finalize_netlist.py` at Step 3.
 
-**Two logs, no overlap.** `book_keeper.md` is the per-iteration tuning record.
+**Two logs, no overlap.** `book_keeper.log` is the per-iteration tuning record.
 `<design_dir>/operations.log` is the design's file-level record across the whole
 schematic stage: one row `by sizing` per artifact as it is first written --
 never per iteration.
@@ -117,26 +117,43 @@ first iteration.
 > call it sized; the naming contract above is what its fix must satisfy, not a
 > description of current behaviour.
 
-## Step 1: tunable parameters and the working netlist
+## Step 1: seed the working netlist (the variables are already decided)
 
 ```
 python script/setup_sizing.py <netlist.sp>
     -o <design_dir>/sizing/<design_name>_tuning.sp
-    --groups-out <design_dir>/sizing/structure_groups.json
+    --design-dir <design_dir>
     --pdk <pdk>
 ```
 
-Two files out, one holding values: the tuning `.sp` the loop edits directly (no
-template to render, no value store that can disagree with it), and
-`structure_groups.json` for the one thing a `.sp` cannot say -- which instances
-move together.
+One file out. **This step no longer decides which devices share a variable** --
+`circuit-decomposition` did, deriving `tie_groups` and `tunable_parameters`
+from `pattern-table.md`'s own rules and rendering `<top>_tunable.sp.j2`, the
+netlist with each tunable as `{{ VAR }}`. Step 1 loads that registry, renders
+it at its seeds, and checks the seeds against the PDK's model bins.
 
-**The script templates every drawn size; which ones you move is a circuit
-question.** What belongs in a `--set` comes from `circuit_decomposition.yaml`
-and `spec_analysis.md`'s expression per key; a device analysis never implicates
-is a variable to leave alone. **Know which parameters you expect to matter, and
-why, before the first iteration** -- a loop that moves everything moves nothing
-in particular. Review the printed tuned/skipped list against that reading.
+**Why the detector here was removed.** It was a second answer to a question
+the circuit read already answers, and the two drifted: on `test_miller_ota`
+the read had the nfet mirror as one group (`tied: [w, l]`, `ratio_carrier: m`)
+while `structure_groups.json` gave `XMN3`/`XMN4`/`XMN5` six independent
+variables. The loop believed the JSON and sized three different unit devices
+onto one gate net -- not a mirror, and not layout-able as one. There is now
+one source, and **tying is structural**: members share the placeholder, so a
+group is rewritten from one value on every render and cannot come apart.
+
+**Read the printed report before the first iteration.** It lists:
+
+| Line | What to do with it |
+|---|---|
+| `Tunable by SIZING` | the variables `--set` may move |
+| `Templated but FROZEN for sizing` | `m` outside a ratio carrier -- the PDK-bin fold writes these, you do not |
+| `Tie groups in force` | one variable -> the devices it writes. Check it against the circuit read |
+| `Ratio groups` + `<-- seed moved this leg` | a mirror leg whose total width shifted when it was re-expressed on the shared unit device. **That moves its bias current**, so expect iteration 1 to sit off the golden operating point, and re-establish the family's bias before chasing a spec |
+
+**Which variables you move is still a circuit question.** What belongs in a
+`--set` comes from `circuit_decomposition.yaml` and `spec_analysis.log`'s
+expression per key; a device analysis never implicates is a variable to leave
+alone. A loop that moves everything moves nothing in particular.
 
 **Microns everywhere from Step 1 on** -- tuning netlist, PDK bound and every
 `--set` share one unit (`--set <dev>_W=45` is 45um). Step 3 renders bare microns
@@ -195,7 +212,7 @@ refuses to overwrite an existing runner without `--force`, because your
 Each key's `Direction` is a field in `target_spec.json` (validated upstream), so
 nothing here classifies a key on its own. A legacy flat spec declares nothing,
 so `CEILING_METRICS` supplies the direction and everything else defaults to
-FLOOR; where that is wrong, `spec_analysis.md`'s `CEILING*` marking is the
+FLOOR; where that is wrong, `spec_analysis.log`'s `CEILING*` marking is the
 override.
 
 | `Direction` | met when | what the harder target does |
@@ -231,9 +248,25 @@ that cleared neither, and those call for different decisions from the caller.
 
 ## Loop budget
 
-**Ask the user how many tuning iterations this run may spend, and do not start
-without an answer.** There is no default. Record it as **N iterations** at the
-head of `book_keeper.md` before the first iteration.
+**N comes from the design's `design_constraints.json`, collected once by
+`design-sheets-intake` (its Step 7) -- read it, do not ask for it again:**
+
+```
+python .claude/reference/design_constraints.py <design_dir> \
+    --key schematic_sizing_iterations
+```
+
+Three ways N is settled, in precedence order -- the first that applies wins:
+
+| Case | Do |
+|---|---|
+| the caller named an N in the prompt that invoked you | **the caller's N wins, file or no file** -- `schematic-agent` sizes a second run on a budget it reasoned from the first (its "What budget?" step), and that is deliberate. Say that you overrode the file, and with what |
+| the command prints a number (exit 0) | that is N. Say it came from `design_constraints.json` when you announce it |
+| the command prints `UNRESOLVED` (exit 2) | the file is absent or silent on this key -- **ask the user for N**, then record the answer back with `--write --set schematic_sizing_iterations=<n>` so the next run reads it instead of asking |
+
+**Do not start without an answer**, whichever case supplied it. Record
+it as **N iterations** at the head of `book_keeper.log`, with its source, before
+the first iteration.
 
 **Nothing enforces N** -- no script reads it or stops on it. It is a convention
 you honour by counting your own entries; a loop that assumes something will stop
@@ -250,9 +283,9 @@ one you are looking at.
 
 **One iteration, in order:**
 
-1. **Which key is short, and what carries it** -- `spec_analysis.md`'s
+1. **Which key is short, and what carries it** -- `spec_analysis.log`'s
    expression and the instances it names, not a guess from the device list.
-2. **What has already been tried** -- the recent `book_keeper.md` entries, not
+2. **What has already been tried** -- the recent `book_keeper.log` entries, not
    just the last one. This is how you avoid repeating a direction that already
    failed, and how you spot oscillation: a spec bouncing around the same range
    without progress means change *which* parameter you move, not push harder on
@@ -291,7 +324,7 @@ op-point data for the *reasoning* behind the next change, not just pass/fail:
   as the *speed* keys moving)? If `gm/gds` is already at what the devices give
   at this `L` and supply, **the target may be out of reach -- say so rather than
   spending the rest of the budget.**
-- **Which quantity to read for which key is `spec_analysis.md`'s answer, not
+- **Which quantity to read for which key is `spec_analysis.log`'s answer, not
   this list's** -- these bullets interpret a device's numbers, they do not map
   spec keys to devices.
 
@@ -316,7 +349,7 @@ parasitics will eat. At stop, which bar was cleared decides the verdict:
 |---|---|
 | every harder key met | **CONVERGED** -- the intended outcome |
 | every real key met, one or more harder keys short | **MET, MARGIN SHORT** -- a qualified success. Name each key that fell inside the margin and by how much; it is the one most likely to fail post-layout |
-| any real key short | **SHORTFALL** -- the gap per key against the REAL spec, and whether `spec_analysis.md` predicted it |
+| any real key short | **SHORTFALL** -- the gap per key against the REAL spec, and whether `spec_analysis.log` predicted it |
 
 Report the best iteration honestly in all three cases. **Never a false success
 -- and never call a run that met the real spec a failure because it missed the
@@ -335,12 +368,12 @@ that width, so this step resolves the refusal instead of walking into it.
 ```
 python .claude/skills/schematic-sizing/script/fold_wide_devices.py tuning
     <design_dir>/sizing/<design_name>_tuning.sp
-    --groups <design_dir>/sizing/structure_groups.json
+    --groups <design_dir>
     --pdk <pdk> --apply
 ```
 
 Without `--apply` it reports and writes nothing; with it, it rewrites the tuning
-netlist's `w=` and every member's `m=` together and prints the `book_keeper.md`
+netlist's `w=` and every member's `m=` together and prints the `book_keeper.log`
 line. **Never fold by hand.**
 
 - **The fold moves the operating point** -- the same total width in more,
@@ -355,7 +388,7 @@ line. **Never fold by hand.**
 `fold_wide_devices.py netlist` folds the golden netlist to *half* the model bin,
 so a device enters the loop with room to be tuned up before it needs a fold.
 
-## Logging: `book_keeper.md`
+## Logging: `book_keeper.log`
 
 **One entry per iteration, and the only place a result survives** -- the
 simulation ran in a temp dir and is gone, and the tuning netlist holds only the
@@ -386,12 +419,12 @@ needs: rounding, a provenance header, the width breakdown.
 
 ```
 python script/finalize_netlist.py <design_dir>/sizing/<design_name>_tuning.sp
-    --groups <design_dir>/sizing/structure_groups.json
+    --groups <design_dir>
     -o <design_dir>/sizing/<design_name>_final.sp
 ```
 
 Downstream resolves the hand-off by that exact filename, so `<d>_final.sp` is a
-contract. **Check the converged `book_keeper.md` entry against the tuning
+contract. **Check the converged `book_keeper.log` entry against the tuning
 netlist first** -- a later exploratory iteration may have moved it past the
 values that converged. It refuses to promote a netlist whose groups have
 desynchronised (one half of a pair edited without the other). Log the render in
@@ -407,14 +440,28 @@ desynchronised (one half of a pair edited without the other). Log the render in
   (see "Working folder" -> Naming). The hand-off is `<d>_final.sp` *plus* the
   sub-circuit files it includes; shipping the top file alone does not close, as
   its `.include` lines have nothing to resolve against. Log every promoted file
-  in `operations.log`, and name the full set in `sizing_report.md` so layout
+  in `operations.log`, and name the full set in `sizing_report.log` so layout
   knows what it received.
+- **Promote a companion testbench that points at the final netlist.** The filed
+  `testbench/<deck>.spice` still `.include`s `netlist/<design>.sp` -- the
+  **pre-sizing** netlist -- and promotion does not change that. Run as filed
+  after sizing, it silently measures the *un-sized* circuit: on
+  `test_miller_ota` the filed deck gave 32.29 dB / 11.46 MHz against the sized
+  netlist's 44.80 dB / 17.00 MHz, with no error to signal the difference.
+  So write `sizing/<design>_tb_final.spice` -- the filed deck **verbatim**, with
+  the single change of its `.include` re-pointed at `<design>_final.sp` -- and
+  name it in `sizing_report.log` as the deck that reproduces the reported
+  numbers. Leave `testbench/` and `user_inputs/` untouched: the deck is a
+  mandatory user input, and this is a promoted copy, not an edit. Every
+  downstream consumer that re-simulates the sized netlist (`device-shaper`,
+  `verify-agent`'s pre-layout leg) should use this file rather than rebuilding
+  its own copy ad hoc.
 - **Width breakdown for layout**: one header row per MOS instance --
   per-multiplier, per-finger and true total width. `w` is the width of ONE of
   `m` copies and is Nf-invariant (`nf` splits, never adds), so `w x nf` would
   overstate the device; the block keeps anyone from redoing that arithmetic wrong.
 
-**Plot the result when `spec_analysis.md` calls for one** -- a response-shaped
+**Plot the result when `spec_analysis.log` calls for one** -- a response-shaped
 spec (gain and bandwidth, a stability margin, a filter corner) is easier to
 check as a curve with its targets drawn on than as numbers:
 
@@ -427,12 +474,12 @@ python <design_dir>/sizing/plot_<design_name>.py <converged raw> [--compare <see
 Same generator/engine split as Step 1a's runner, and spec-driven rather than
 circuit-specific: every key the run can locate is marked with its target beside
 the achieved value, and a key nothing produces is left unmarked rather than
-guessed at. Reference the PNG from `sizing_report.md`.
+guessed at. Reference the PNG from `sizing_report.log`.
 
 ## Sizing report
 
 **Always save it** -- on convergence, budget exhaustion or an explicit stop --
-to `<design_dir>/sizing/sizing_report.md`. It covers the tuning loop only and
+to `<design_dir>/sizing/sizing_report.log`. It covers the tuning loop only and
 every number in it is ideal-schematic: **no parasitic figure belongs here** (this
 skill has annotated and estimated nothing). One row per key:
 
@@ -454,7 +501,7 @@ real target by a hair is the one most likely to fail once real parasitics exist.
 Also in prose: **the verdict in the three-way form** (`CONVERGED` / `MET, MARGIN
 SHORT` / `SHORTFALL`) and, when it is not `CONVERGED`, which keys fell short of
 which bar and by how much; which iteration converged (or a pointer to
-`book_keeper.md`); the margin the harder target added; where `<d>_final.sp`'s
+`book_keeper.log`); the margin the harder target added; where `<d>_final.sp`'s
 `nf` came from (sizing measures none); which budget stopped the run, how many
 iterations remained, and the best iteration achieved; and the figure, if one was
 produced.
@@ -468,7 +515,7 @@ you already had.
 
 ## The hand-off
 
-What leaves this skill: `<d>_final.sp`, `sizing_report.md`, `book_keeper.md`,
+What leaves this skill: `<d>_final.sp`, `sizing_report.log`, `book_keeper.log`,
 the plot if one was made, and `debug/iter_<n>/` if it was asked for.
 
 **From here the netlist is frozen** -- once it reaches layout, only layout
@@ -483,7 +530,7 @@ and an understood circuit (the preconditions in "When to use this") and ends at
 the hand-off netlist plus its report. No placement, routing, DRC, LVS or PEX.
 
 - **No feasibility gate here -- the question was already asked.**
-  `spec_analysis.md` carries a plausibility column per key and flags
+  `spec_analysis.log` carries a plausibility column per key and flags
   over-constrained specs. Read it before reading budget exhaustion as a sizing
   failure: a key it flagged was predicted to fail, so the target is what to
   revisit; a key it did not flag needs its gap reported honestly.
@@ -493,7 +540,7 @@ the hand-off netlist plus its report. No placement, routing, DRC, LVS or PEX.
   produces is `unmeasured`, never scored as a miss. A key no extractor covers
   needs one **registered** -- a registry entry, not a fork; a transient key
   (oscillation frequency, settling time, jitter) is untrackable until then and
-  should already have been raised in `spec_analysis.md`. A raw file the
+  should already have been raised in `spec_analysis.log`. A raw file the
   extractor cannot read is reported, not fatal: the op-point data still returns.
 - **No automated optimizer** -- parameter moves are your reasoning over the
   simulated specs and op-point data, never a gradient or genetic search.
@@ -521,7 +568,8 @@ Each file's behaviour is defined by the step that owns it; this is an index.
 | File | What it is | Defined in |
 |---|---|---|
 | `set_tunable_params.md` | the structure registry (which devices share a variable); a new topology is a new row there | its own file |
-| `script/setup_sizing.py` | the tuning `.sp` + `structure_groups.json`, with mirror-family and matched-group detection | Step 1 |
+| `script/setup_sizing.py` | seeds the tuning `.sp` from the circuit read's `.sp.j2`; checks seeds against the PDK bins. Detects nothing | Step 1 |
+| `script/tunables.py` | the tunable registry + template loader -- the replacement for `structure_groups.json` | every step |
 | `script/generate_sizing_runner.py` | writes this design's own runner | Step 1a |
 | `script/compute_harder_target.py` | the harder target spec | "The two bars" |
 | `script/run_sizing_iteration.py` | the per-iteration measurement engine the runner imports | Step 2 |

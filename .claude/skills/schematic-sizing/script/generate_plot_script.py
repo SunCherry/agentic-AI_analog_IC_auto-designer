@@ -2,7 +2,7 @@
 """Generate this design's own plot script, only when a figure is wanted.
 
 Run at `../SKILL.md`'s Step 3, and ONLY when the design actually needs a
-figure -- `spec_analysis.md` calls for one, or the user asks. Plotting is
+figure -- `spec_analysis.log` calls for one, or the user asks. Plotting is
 imperative, not a predefined step: this generator is the shared half, and it
 writes
 

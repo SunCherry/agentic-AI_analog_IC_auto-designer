@@ -1,219 +1,123 @@
 #!/usr/bin/env python3
-"""Read and write a sizing netlist's tunable values IN PLACE, through the
-structure groups -- the replacement for the old `.j2` + `params_values.json`
-pair. See ../SKILL.md's "Working folder".
+"""Read and write a sizing netlist's tunable values, through the circuit read's
+own tunable registry and Jinja2 template. A thin adapter over `tunables.py`.
 
-**The netlist is the state.** There is no separate value store to drift out of
-sync with it: `read_values()` reports what the `.sp` currently says, and
-`apply_values()` writes back into the same file. A value that is in the netlist
-is the value that simulates, always.
+WHAT CHANGED, AND WHY. This module used to own `structure_groups.json` -- its
+own detection of which devices share a variable, written at Step 1 and read by
+every step after. That was a SECOND answer to a question
+`circuit_decomposition.yaml` already answers, produced by a different detector,
+and the two drifted: on `test_miller_ota` the circuit read had the nfet mirror
+as one group (`tied: [w, l]`, `ratio_carrier: m`) while the JSON gave
+`XMN3`/`XMN4`/`XMN5` six independent variables. Sizing believed the JSON and
+produced three different unit devices on one gate net -- not a mirror, and not
+layout-able as one.
 
-**Groups are what the netlist alone cannot say.** A plain `.sp` gives every
-device its own `w=` token, so nothing stops one half of a matched pair being
-sized without the other -- the exact symmetry break
-`../set_tunable_params.md` exists to prevent. `structure_groups.json` records
-which instances share a variable; setting that variable writes every member,
-by construction. Written once at Step 1, and read by every step after it.
+The registry and the template now come from `circuit-decomposition`, which
+derives them from `pattern-table.md`'s own rules. **Tying is structural:**
+devices that share a parameter share the `{{ VAR }}` in the template, so a
+group is rewritten from one value on every render and cannot come apart.
 
-Group file shape (values live in the netlist, never here):
-
-    {
-      "groups": {
-        "MP1_W": {"param": "w", "members": ["XMP1", "XMP2"]},
-        "MP2_M": {"param": "m", "members": ["XMP2"]}
-      },
-      "fixed": {"XMN4": {"m": 1}}
-    }
-
-`fixed` is what must NOT move -- a mirror reference's `m`, pinned to the unit
-it counts in.
+WHAT IS UNCHANGED: **the netlist is still the state.** No value store sits
+beside it. `read_values()` reports what the `.sp` says now; `apply_values()`
+merges a change into that and re-renders.
 
 Usage (standalone -- the loop calls these as functions):
-  python edit_netlist.py <netlist.sp> --groups structure_groups.json
-  python edit_netlist.py <netlist.sp> --groups g.json --set MN1_W=45.2 --apply
+  python edit_netlist.py <netlist.sp> --design-dir <design_dir>
+  python edit_netlist.py <netlist.sp> --design-dir <d> --set MN1_W=45.2 --apply
 """
 import argparse
-import json
 import os
-import re
 import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
-from netlist_devices import parse_devices  # noqa: E402
-
-sys.path.insert(0, os.path.join(_HERE, "..", "..", "parasitic-estimation", "script"))
-from estimate_parasitics import _um_val  # noqa: E402
-
-
-def load_groups(path):
-    """`(groups, fixed)` from a structure_groups.json."""
-    d = json.load(open(path))
-    return d.get("groups", {}), d.get("fixed", {})
+import tunables as _T  # noqa: E402
+from tunables import (  # noqa: F401,E402  -- re-exported, same names as before
+    TunablesError, fmt as _fmt, read_values, render, seeds,
+)
 
 
-def _token_re(key):
-    return re.compile(rf'(?i)(\b{re.escape(key)}\s*=\s*)(\S+)')
+def load_groups(where):
+    """`(registry, template_path)` for a design.
+
+    `where` is the design dir, or `circuit_decomposition.yaml` itself. The old
+    signature returned `(groups, fixed)`; `fixed` is gone -- a mirror
+    reference's `m` is no longer pinned by a side-car, it is simply a variable
+    the template renders like any other."""
+    return _T.load(where)
 
 
-def _fmt(v):
-    """A netlist reads `4`, not `4.0`; `m` is a count and must stay whole."""
-    return f"{int(round(v))}" if abs(v - round(v)) < 1e-9 else f"{v:g}"
+def check_groups(netlist_text, registry):
+    """Variables whose members disagree. Empty for anything rendered from the
+    template; non-empty means the `.sp` was hand-edited off it."""
+    return _T.check_consistency(netlist_text, registry)
 
 
-def read_values(netlist_text, groups):
-    """`{var: value}` read out of the netlist itself, in MICRONS for `w`/`l`
-    and as a plain count for `m`.
+def apply_values(netlist_text, values, registry, template_path):
+    """Write `{var: value}` into the netlist by RE-RENDERING the template.
+    Returns `(new_text, changes)` with `changes` as `[(var, old, new)]`.
 
-    A group's value is its FIRST member's -- members are kept identical by
-    `apply_values()`, so any of them answers. A member that disagrees is
-    reported by `check_groups()`, not silently averaged here."""
-    by_name = {d["name"].lower(): d for d in parse_devices(netlist_text)}
-    out = {}
-    for var, spec in groups.items():
-        param = spec["param"].lower()
-        for inst in spec["members"]:
-            d = by_name.get(inst.lower())
-            if not d:
-                continue
-            raw = next((v for k, v in d["params"].items() if k.lower() == param), None)
-            if raw is None:
-                continue
-            out[var] = float(raw) if param == "m" else _um_val(raw)
-            break
-    return out
+    Every member of a variable is rewritten from one value, always -- a caller
+    cannot set one half of a matched pair, because it never addresses a device.
+    Raises KeyError on an unknown variable, so a typo costs an error rather
+    than an iteration that silently measured no change."""
+    current = _T.read_values(netlist_text, registry)
+    merged = dict(_T.seeds(registry))
+    merged.update(current)
 
-
-def check_groups(netlist_text, groups):
-    """Every group whose members do NOT already agree, as
-    `[(var, {instance: value})]`. Empty when the netlist is consistent.
-
-    Run after anything edits the netlist by hand: a desynchronised pair is the
-    defect groups exist to prevent, and it is invisible in the `.sp` itself."""
-    by_name = {d["name"].lower(): d for d in parse_devices(netlist_text)}
-    bad = []
-    for var, spec in groups.items():
-        param = spec["param"].lower()
-        seen = {}
-        for inst in spec["members"]:
-            d = by_name.get(inst.lower())
-            if not d:
-                continue
-            raw = next((v for k, v in d["params"].items() if k.lower() == param), None)
-            if raw is None:
-                continue
-            seen[inst] = float(raw) if param == "m" else _um_val(raw)
-        if len(set(round(v, 9) for v in seen.values())) > 1:
-            bad.append((var, seen))
-    return bad
-
-
-def apply_values(netlist_text, values, groups, fixed=None):
-    """Write `{var: value}` into the netlist. Returns `(new_text, changes)`.
-
-    **Every member of a group is written, always.** That is the whole point:
-    a caller cannot set one half of a pair, because it never addresses a
-    device -- it addresses the variable the pair shares.
-
-    Raises KeyError on a variable no group defines, so a typo costs an error
-    rather than an iteration that silently measured no change."""
-    unknown = [v for v in values if v not in groups]
-    if unknown:
-        raise KeyError(
-            "no such tunable: %s -- known variables are %s (see "
-            "structure_groups.json)" % (", ".join(sorted(unknown)),
-                                        ", ".join(sorted(groups))))
-    lines = netlist_text.splitlines(keepends=True)
-    index = {d["name"].lower(): d["lineno"] - 1 for d in parse_devices(netlist_text)}
     changes = []
     for var, val in values.items():
-        spec = groups[var]
-        param = spec["param"].lower()
-        for inst in spec["members"]:
-            idx = index.get(inst.lower())
-            if idx is None:
-                continue
-            line = lines[idx]
-            new_line, n = _token_re(param).subn(
-                lambda m: f"{m.group(1)}{_fmt(val)}", line, count=1)
-            if n == 0:      # the device carries no such token yet -- add it
-                new_line = line.rstrip("\n") + f" {param}={_fmt(val)}\n"
-            if new_line != line:
-                lines[idx] = new_line
-                changes.append(f"{inst}.{param} -> {_fmt(val)}")
-    text = "".join(lines)
-    if fixed:
-        text = _reassert_fixed(text, fixed)
-    return text, changes
+        if var not in registry:
+            raise KeyError(
+                "no such tunable: %s -- known variables are %s (from "
+                "circuit_decomposition.yaml's tunable_parameters)"
+                % (var, ", ".join(sorted(registry))))
+        old, new = merged.get(var), float(val)
+        if old is None or abs(float(old) - new) > 1e-12:
+            changes.append((var, old, new))
+        merged[var] = new
 
-
-def _reassert_fixed(netlist_text, fixed):
-    """Pin every `fixed` token back to its stated value -- a mirror
-    reference's `m` is the unit the family counts in, and a fold or a hand
-    edit that moved it would rescale the whole family silently."""
-    lines = netlist_text.splitlines(keepends=True)
-    index = {d["name"].lower(): d["lineno"] - 1 for d in parse_devices(netlist_text)}
-    for inst, params in fixed.items():
-        idx = index.get(inst.lower())
-        if idx is None:
-            continue
-        for param, val in params.items():
-            line = lines[idx]
-            new_line, n = _token_re(param).subn(
-                lambda m: f"{m.group(1)}{_fmt(float(val))}", line, count=1)
-            lines[idx] = new_line if n else (
-                line.rstrip("\n") + f" {param}={_fmt(float(val))}\n")
-    return "".join(lines)
+    missing = [v for v in registry if v not in merged]
+    if missing:
+        raise TunablesError(
+            "no value for %s -- the netlist does not carry them and they have "
+            "no seed. Re-run circuit-decomposition." % ", ".join(sorted(missing)))
+    return _T.render(template_path, merged, registry), changes
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("netlist")
-    ap.add_argument("--groups", required=True)
-    ap.add_argument("--set", default=None, help="comma-separated VAR=VALUE")
-    ap.add_argument("--apply", action="store_true",
-                    help="write the netlist back (default: report only)")
+    ap.add_argument("--design-dir", required=True,
+                    help="design dir holding circuit_decomposition.yaml")
+    ap.add_argument("--set", action="append", default=[], metavar="VAR=VALUE")
+    ap.add_argument("--apply", action="store_true", help="write the netlist back")
     args = ap.parse_args()
 
-    groups, fixed = load_groups(args.groups)
+    registry, template = load_groups(args.design_dir)
     text = open(args.netlist).read()
 
-    bad = check_groups(text, groups)
-    if bad:
-        print("DESYNCHRONISED groups -- members of one variable disagree:")
-        for var, seen in bad:
-            print(f"  {var}: " + ", ".join(f"{k}={v:g}" for k, v in seen.items()))
-        print("  Set the variable to re-synchronise them.\n")
-
     if not args.set:
-        print("current values (read from the netlist):")
-        for var, val in sorted(read_values(text, groups).items()):
-            print(f"  {var:12} {val:g}   <- {', '.join(groups[var]['members'])}")
-        return 0
+        for var, val in sorted(read_values(text, registry).items()):
+            print(f"  {var:12s} = {val:g}")
+        for var, seen in check_groups(text, registry):
+            print(f"  INCONSISTENT {var}: {seen}")
+        return
 
-    values = {}
-    for pair in args.set.split(","):
-        k, _, v = pair.partition("=")
-        if k and v:
-            try:
-                values[k.strip()] = float(v)
-            except ValueError:
-                raise SystemExit(f"--set {pair}: {v!r} is not a number "
-                                 f"(units are microns; write 45, not 45u)")
-    try:
-        new_text, changes = apply_values(text, values, groups, fixed)
-    except KeyError as e:
-        raise SystemExit(str(e).strip('"'))
-    for c in changes:
-        print("  " + c)
+    updates = {}
+    for item in args.set:
+        var, _, val = item.partition("=")
+        updates[var.strip()] = float(val)
+    new_text, changes = apply_values(text, updates, registry, template)
+    for var, old, new in changes:
+        print(f"  {var}: {old} -> {new}")
     if args.apply:
         open(args.netlist, "w").write(new_text)
-        print(f"\nwrote {args.netlist}")
+        print(f"wrote {args.netlist}")
     else:
-        print("\nreport only -- pass --apply to write.")
-    return 0
+        print("(dry run -- pass --apply to write)")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

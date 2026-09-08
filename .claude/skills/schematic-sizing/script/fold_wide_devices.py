@@ -43,12 +43,12 @@ while the loop moves.
 Usage (dry-run report by default -- nothing is written without --apply):
 
   python script/fold_wide_devices.py tuning <design_dir>/sizing/<d>_tuning.sp
-      --groups <design_dir>/sizing/structure_groups.json
+      --groups <design_dir>
       [--pdk sky130A] [--apply] [--json out.json]
 
 With `--apply` it rewrites the tuning netlist in place -- the folded `w=` and
 every member's `m=` together, including a mirror branch's tunable `_M` and a
-reference's pinned unit count -- then prints the `book_keeper.md` line to log.
+reference's pinned unit count -- then prints the `book_keeper.log` line to log.
 """
 import argparse
 import json
@@ -198,17 +198,17 @@ def _m_var_for(inst, groups):
     return None
 
 
-def apply_folds(netlist_text, groups, fixed, plans):
-    """Apply every fold to the netlist. Returns `(new_text, new_fixed, changes)`.
+def apply_folds(netlist_text, groups, template, plans):
+    """Apply every fold to the netlist. Returns `(new_text, template, changes)`.
 
-    `m` is carried three different ways and all three must scale together:
-    a tunable `_M` variable (a mirror branch), a `fixed` pin (a mirror
-    reference's unit count) and a plain literal on the line. Missing any one of
-    them would change a family's ratio while claiming to preserve the total."""
+    EVERY device's `m` is a template variable now -- a ratio carrier's is
+    `tunable_by: sizing`, everything else's is `tunable_by: fold`, which exists
+    precisely so this function can write it. That collapses what used to be
+    three carriers (a `_M` variable, a `fixed` pin, and a bare literal patched
+    into the line) into one. The literal patch had to go: rendering is total,
+    so the next render would have discarded it."""
     text = netlist_text
-    new_fixed = {k: dict(v) for k, v in (fixed or {}).items()}
     changes = []
-    by_name = {d["name"].lower(): d for d in parse_devices(text)}
 
     for p in (x for x in plans if x["factor"] > 1):
         k = p["factor"]
@@ -216,41 +216,16 @@ def apply_folds(netlist_text, groups, fixed, plans):
         changes.append(f"{p['var']}: w {p['proposed_w']:g} -> {p['folded_w']:g}")
         for inst in p["members"]:
             m_var = _m_var_for(inst, groups)
-            if m_var:
-                cur = read_values(text, groups).get(m_var, 1.0)
-                updates[m_var] = cur * k
-                changes.append(f"{inst}: {m_var} {cur:g} -> {cur * k:g}")
-            elif inst in new_fixed and "m" in new_fixed[inst]:
-                old = float(new_fixed[inst]["m"])
-                new_fixed[inst]["m"] = old * k
-                changes.append(f"{inst}: m (pinned) {old:g} -> {old * k:g}")
-            else:
-                d = by_name.get(inst.lower())
-                old = 1.0
-                if d:
-                    raw = next((v for kk, v in d["params"].items()
-                                if kk.lower() == "m"), None)
-                    old = _num(raw, 1.0) or 1.0
-                text = _set_literal_m(text, inst, old * k)
-                changes.append(f"{inst}: m {old:g} -> {old * k:g}")
-        text, _ = apply_values(text, updates, groups, new_fixed)
-    return text, new_fixed, changes
-
-
-def _set_literal_m(netlist_text, inst, value):
-    """Write a plain `m=` literal on one device line (adding the token when the
-    line carries none -- an absent `m` means 1)."""
-    lines = netlist_text.splitlines(keepends=True)
-    for d in parse_devices(netlist_text):
-        if d["name"].lower() != inst.lower():
-            continue
-        idx = d["lineno"] - 1
-        line = lines[idx]
-        new_line, n = re.subn(r'(?i)(\bm\s*=\s*)(\S+)',
-                              lambda mo: f"{mo.group(1)}{_fmt(value)}", line, count=1)
-        lines[idx] = new_line if n else line.rstrip("\n") + f" m={_fmt(value)}\n"
-        break
-    return "".join(lines)
+            if not m_var:
+                # Every device carrying an `m` has a variable for it. None here
+                # means the device has no `m` at all (a resistor, a capacitor),
+                # so there is nothing to scale.
+                continue
+            cur = read_values(text, groups).get(m_var, 1.0)
+            updates[m_var] = cur * k
+            changes.append(f"{inst}: {m_var} {cur:g} -> {cur * k:g}")
+        text, _ = apply_values(text, updates, groups, template)
+    return text, template, changes
 
 
 def report(plans):
@@ -507,16 +482,18 @@ def main_template(argv):
         prog="fold_wide_devices.py tuning",
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("netlist", help="this design's <design_name>_tuning.sp")
-    ap.add_argument("--groups", required=True, help="structure_groups.json")
+    ap.add_argument("--groups", required=True, metavar="DESIGN_DIR",
+                    help="design dir holding circuit_decomposition.yaml (the "
+                         "tunable registry + .sp.j2 template)")
     ap.add_argument("--pdk", default=_guideline_pdk())
     ap.add_argument("--pdk-root", default=None)
     ap.add_argument("--apply", action="store_true",
-                    help="write the folded netlist (and any changed `fixed` pin) "
-                         "back -- default: report only, change nothing")
+                    help="write the folded netlist back -- default: report "
+                         "only, change nothing")
     ap.add_argument("--json", default=None, help="also write the plan as JSON")
     args = ap.parse_args(argv)
 
-    groups, fixed = load_groups(args.groups)
+    groups, template = load_groups(args.groups)
     text = open(args.netlist).read()
 
     desync = check_groups(text, groups)
@@ -531,22 +508,22 @@ def main_template(argv):
     plans = plan_folds(text, groups, bounds)
     if not plans:
         raise SystemExit(
-            f"no `w` variable found in {args.groups} -- this rule bounds drawn "
+            f"no `w` variable found for {args.groups} -- this rule bounds drawn "
             "MOS width, so there is nothing here to check.")
     folded, unchecked = report(plans)
 
     changes = []
     if folded and args.apply:
-        new_text, new_fixed, changes = apply_folds(text, groups, fixed, plans)
+        new_text, _, changes = apply_folds(text, groups, template, plans)
         with open(args.netlist, "w") as f:
             f.write(new_text)
-        if new_fixed != fixed:
-            with open(args.groups, "w") as f:
-                json.dump({"groups": groups, "fixed": new_fixed}, f, indent=2)
+        # Nothing to write back beside the netlist any more: the fold changes
+        # `m` VALUES, and values live in the rendered `.sp`. The registry and
+        # the template are the circuit read's, and this step never edits them.
         print("applied:")
         for c in changes:
             print(f"  {c}")
-        print(f"\n  {args.netlist} rewritten. Log in book_keeper.md, e.g.:\n"
+        print(f"\n  {args.netlist} rewritten. Log in book_keeper.log, e.g.:\n"
               "  - Folded: " + "; ".join(
                   f"{p['var']} {p['proposed_w']:g}->{p['folded_w']:g} "
                   f"(m x{p['factor']}, total unchanged)"
@@ -582,7 +559,7 @@ def main():
           "  fold_wide_devices.py netlist  <netlist.sp> [--pdk sky130A] "
           "[--max-w UM] [--out PATH] [--dry-run]\n"
           "  fold_wide_devices.py tuning   <design>_tuning.sp --groups "
-          "structure_groups.json [--pdk sky130A] [--apply]\n",
+          "<design_dir> [--pdk sky130A] [--apply]\n",
           file=sys.stderr)
     return 2
 
