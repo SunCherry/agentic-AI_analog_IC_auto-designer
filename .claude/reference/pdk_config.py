@@ -129,6 +129,19 @@ class PDKConfig:
     def label_glayer(self):
         return self._layers.get('label_glayer')
 
+    # -- process rules that are not per-glayer -----------------------------
+    @property
+    def latchup_max_tap_distance(self):
+        """Furthest a diffusion may sit from a well/substrate tap, in um.
+
+        sky130's LU.2/LU.3 ("N-diff distance to P-tap must be < 15.0um" and
+        its p-diff/n-tap twin). glayout's `get_grule()` only carries per-glayer
+        widths and spacings, so this rule has nowhere else to live; it is a
+        process fact, so it lives here rather than at the one call site that
+        needs it. None means this PDK has not had the rule confirmed, and a
+        consumer must skip the check rather than invent a number."""
+        return self._d.get('rules', {}).get('latchup_max_tap_distance_um')
+
     @property
     def via_links(self):
         """{(layer, datatype): (lower_metal, upper_metal)}.
@@ -141,6 +154,37 @@ class PDKConfig:
             lay, dt = key.split('/')
             out[(int(lay), int(dt))] = tuple(pair)
         return out
+
+    # -- top thick-metal stack (spiral inductors) ---------------------------
+    @property
+    def inductor(self):
+        """The `inductor` block: coil/underpass/via layers, DRC minimums and
+        the physical constants a spiral generator needs, or None.
+
+        This has to live here rather than come from glayout's `get_grule()`.
+        sky130_mapped's glayer table shifts every metal name down one -- its
+        "met5" resolves to GDS 71/20, the real met4 -- and never defines
+        72/20 at all, so asking glayout for met5's rules silently returns
+        met4's 0.3/0.4um against real minimums of 1.6/1.6um.
+        """
+        return self._d.get('inductor')
+
+    def require_inductor(self, what='this operation'):
+        """Return the inductor stack, or refuse if this PDK has none.
+
+        A PDK entry may be complete for sizing and still have no confirmed
+        thick-metal stack; geometry work must stop rather than borrow another
+        process's layer numbers.
+        """
+        ind = self.inductor
+        if not ind or not ind.get('_verified'):
+            raise PDKConfigError(
+                f"{what} needs a top thick-metal stack, but PDK "
+                f"'{self.name}' defines no verified 'inductor' block in "
+                f"{OPTIONS_PATH}. Add one (coil/underpass/via layers, "
+                f"rules_um, physical) from the process's layer map and DRC "
+                f"deck, set \"_verified\": true, and re-run.")
+        return ind
 
     def require_layers(self, what='this operation'):
         """Raise unless the active PDK has usable layer numbers.
@@ -232,5 +276,14 @@ if __name__ == '__main__':
     print(f"via links      : {p.via_links}")
     print(f"annotation     : {p.annotation_layer}   "
           f"res marker dt: {p.resistor_marker_datatype}")
+    ind = p.inductor
+    if ind:
+        print(f"inductor stack : coil={tuple(ind['coil_layer'])} "
+              f"underpass={tuple(ind['underpass_layer'])} "
+              f"via={tuple(ind['via_layer'])}  "
+              f"w/s>={ind['rules_um']['coil_min_width']}/"
+              f"{ind['rules_um']['coil_min_space']}um")
+    else:
+        print("inductor stack : (none defined for this PDK)")
     for t in ('magicrc', 'ngspice_lib', 'netgen_setup', 'klayout_lyp'):
         print(f"  {t:<13}: {p.tool(t)}")

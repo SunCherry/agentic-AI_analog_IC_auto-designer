@@ -49,6 +49,70 @@
         "label_glayer": "met5_label"
       },
 
+      "rules": {
+        "_comment": "Process rules that are not per-glayer widths/spacings, so glayout's get_grule() does not carry them. Read through pdk_config, never hardcoded at a call site.",
+        "latchup_max_tap_distance_um": 15.0
+      },
+
+      "inductor": {
+        "_comment": [
+          "Top thick-metal stack for spiral inductors. This cannot come from glayout:",
+          "sky130_mapped shifts every glayer name down one (glayout 'met5' resolves to",
+          "GDS 71/20, the real met4) and never defines 72/20 at all, so its get_grule()",
+          "would hand back met4's 0.3/0.4um rules for a layer whose real minimums are",
+          "1.6/1.6um. Every number below is read off libs.tech/magic/sky130A.tech.",
+          "Note also that 'coil' sits ABOVE routing_layers -- the router never uses it,",
+          "so an inductor here cannot collide with routed nets."
+        ],
+        "_verified": true,
+
+        "coil_layer": [72, 20],
+        "coil_pin_layer": [72, 16],
+        "coil_label_layer": [72, 5],
+        "underpass_layer": [71, 20],
+        "via_layer": [71, 44],
+
+        "grid_nm": 5,
+
+        "rules_um": {
+          "_comment": "met5.1/met5.2/met5.4, met4.1/met4.2/met4.5b, via4.1/via4.2, met5.3, met4.3.",
+          "coil_min_width": 1.6,
+          "coil_min_space": 1.6,
+          "coil_min_area": 4.0,
+          "coil_allows_45deg": true,
+          "underpass_min_width": 0.3,
+          "underpass_min_space": 0.3,
+          "underpass_wide_metal_width": 3.005,
+          "underpass_wide_metal_space": 0.4,
+          "via_size": 0.8,
+          "via_space": 0.8,
+          "via_enclosure_coil": 0.31,
+          "via_enclosure_underpass": 0.19
+        },
+
+        "physical": {
+          "_comment": "Sheet resistances are magic's 'resist' entries in milliohm/square; via_res is the per-cut 'contact via4' value in milliohm. Cap terms are magic's defaultareacap/defaultperimeter for metal5 to substrate.",
+          "coil_sheet_res_mohm_sq": 29.0,
+          "underpass_sheet_res_mohm_sq": 47.0,
+          "via_res_mohm": 380.0,
+          "coil_thickness_um": 1.26,
+          "coil_height_um": 5.3711,
+          "coil_areacap_aF_um2": 6.32,
+          "coil_fringecap_aF_um": 38.85
+        },
+
+        "models": {
+          "_comment": "The PDK's three fixed inductor macro-models. They ship as SPICE only -- there is no .mag, no .lef, and no ind_* cell in libs.ref/sky130_fd_pr/gds/sky130_fd_pr.gds; sky130A.tech lists sky130_fd_pr__ind_* under 'not extracted, represented only by script-generated subcells' and that script was never released. Ports are (a b ct sub); l_total_nH is the a-to-b series value (two halves, no K statement).",
+          "include_dir": "libs.ref/sky130_fd_pr/spice",
+          "cells": {
+            "sky130_fd_pr__ind_03_90":  {"l_total_nH": 1.521, "r_series_ohm": 2.038},
+            "sky130_fd_pr__ind_05_125": {"l_total_nH": 5.790, "r_series_ohm": 3.529},
+            "sky130_fd_pr__ind_05_220": {"l_total_nH": 9.920, "r_series_ohm": 4.118}
+          }
+        }
+      },
+
+
       "tools": {
         "magicrc": "$PDK_ROOT/sky130A/libs.tech/magic/sky130A.magicrc",
         "ngspice_lib": "$PDK_ROOT/sky130A/libs.tech/ngspice/sky130.lib.spice",
@@ -88,6 +152,15 @@
         "annotation_layer": [236, 0],
         "label_glayer": null
       },
+
+      "rules": {
+        "_comment": "UNVERIFIED -- gf180 latch-up limit not confirmed against the PDK. null means the tap-distance check does not run on this process.",
+        "latchup_max_tap_distance_um": null
+      },
+
+      "inductor": null,
+      "_inductor_comment": "No thick-metal stack confirmed for gf180 yet. null means the inductor generator refuses to run on this process rather than inventing layer numbers.",
+
 
       "tools": {
         "magicrc": "$PDK_ROOT/gf180mcuD/libs.tech/magic/gf180mcuD.magicrc",

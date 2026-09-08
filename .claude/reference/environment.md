@@ -93,6 +93,40 @@ glayer mapped to a GDS layer/datatype that sky130A.tech doesn't recognize;
 Magic correctly drops it, and it appears identically across every glayout
 GDS in this repo. Do not treat it as a DRC issue.
 
+### The empty-cell false pass — THREE ways to get a clean `0` from nothing
+
+Magic will happily create an **empty cell** and then check it, reporting
+`DRC_TOTAL: 0` / `FLAT_DRC_TOTAL: 0`. That zero is indistinguishable from a
+genuinely clean layout, so every one of these reads as success. All three were
+hit by different agents on a single design (`test_miller_ota`):
+
+1. **Filename ≠ top cell name.** `gds read routed.gds` then `load
+   test_miller_ota_fixed` creates an EMPTY cell of that name. Renaming a `.gds`
+   file does **not** rename the cell inside it. Always load the cell by its real
+   name (here `routed`, whatever the file is called), and pass it explicitly to
+   any `--top` argument.
+2. **A rejected `flatten` flag.** `flatten -dobox {<coords>} routed_flat` is
+   rejected by Magic (`Bad flatten option ...; must start with -no or -do`), and
+   Magic then leaves an empty `routed_flat` behind that flat-DRCs to 0. Use
+   `flatten -dobox -nolabels <dest>`.
+3. **Missing `drc on` / `drc catchup`** before `drc check` — the case documented
+   at the top of this section.
+
+**The guard, and it is cheap: never trust a `0` you did not bound-check.**
+Print the cell's bbox and confirm it is non-empty and equal to the source:
+
+```tcl
+load <TOPCELL>
+box values ; puts "SRC_BBOX: [box values]"
+# ... after flatten ...
+load <destcell>
+puts "FLAT_BBOX: [box values]"     ;# must equal SRC_BBOX
+```
+
+A `0` with a zero-area or mismatched bbox is a false pass, not a clean layout.
+The same rule applies to extraction: confirm devices were actually extracted
+before believing any PEX number.
+
 ## Magic Extraction + netgen LVS (layout-fixer)
 
 ```tcl
