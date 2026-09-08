@@ -91,6 +91,7 @@ glayout primitive covers them, same as ever -- see `build_leftover()`).
 """
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -547,6 +548,8 @@ def current_mirror_ports(comp, dev_by_name, ref_name, *leg_names):
     return pts
 
 
+
+
 def diff_pair_ports(comp, dev_by_name, a_name, b_name):
     """cells/blocks/diff_pair.py is a relabeled copy of glayout's own diff_pair.py
     (same internal routing, no `_add_edge_breakout()` fix) -- so unlike
@@ -592,6 +595,41 @@ def diff_pair_ports(comp, dev_by_name, a_name, b_name):
     add(b.get("drain"), "drain_b", "drain_routeTR_BL_con_S")
     # The shared source (tail) -- see cells/blocks/diff_pair.py's VTAIL_bo_S block.
     add(a.get("source"), "source_tail", "VTAIL_bo_S")
+    # The tap ring ties this pair's WELL to its bulk rail. diff_pair.py has
+    # always exposed the ring as `tap_*` ports (its `add_ports(...,
+    # prefix="tap_")` line), but this function used to stop at the tail, so
+    # those ports never reached the manifest -- the router saw no VDD/VSS
+    # terminal on the macro at all, left the ring unconnected, and Magic
+    # extracted XM2/XM3's bulk onto an internal node, failing netgen pin
+    # matching with an extra net. current_mirror_ports() has always published
+    # its ring exactly this way; the asymmetry between the two WAS the bug,
+    # and it is invisible in DRC because the ring is locally metal-connected,
+    # so `nwell.4` is satisfied while the well is still floating.
+    #
+    # Deliberately the ring and not `tie_*`: the bulk rail is what the ring
+    # is tied to by construction. Every ring port is one piece of metal, so
+    # they take a SINGLE `tap_ring` tag -- tagging them separately makes the
+    # router treat each as its own terminal and wire the ring to itself (the
+    # same failure mode `add()` documents above for the gate c-routes).
+    ring = near_edge_ports(comp, r"^tap_[NSEW]_top_met_[NSEW]$")
+    if ring and a.get("bulk"):
+        # Every ring port is published; choosing between them is the
+        # ROUTER's job, not this function's.
+        #
+        # This used to pre-filter them by distance from the macro's other
+        # published PORT coordinates (`RING_PORT_MIN_CLEARANCE_UM`), which
+        # was the wrong test twice over. A port coordinate is not the
+        # conductor: a macro's gate escape runs along the edge BETWEEN its
+        # ports, so a candidate metres from every port can still sit on it.
+        # And the thing that crosses foreign metal is the router's
+        # CORRIDOR, whose geometry and layers are unknown here. Measured
+        # consequence of pre-filtering: 9 ring candidates were cut to 3
+        # before the router's own geometry test ran, and all 3 survivors
+        # turned out to conflict -- a clean option may have been discarded
+        # sight unseen. route_nets.py's macro_net_metal()/
+        # landing_conflicts() now tests real drawn metal, attributed to
+        # nets through the PDK's own via layers, so it needs the full set.
+        pts.setdefault(a["bulk"], []).extend(tag_pin(ring, "tap_ring"))
     return pts
 
 
@@ -624,7 +662,96 @@ _LVS_NF_RE = re.compile(r"\bnf\s*=\s*([0-9.eE+-]+)")
 _LVS_M_RE = re.compile(r"\bm\s*=\s*([0-9.eE+-]+)")
 
 
-def write_lvs_compare_netlist(source_path: Path, out_path: Path) -> Path:
+# --- dummy-device bookkeeping for lvs_compare.sp -----------------------------
+_DUM_DEV_RE = re.compile(
+    r"^\s*(X\S+)\s+(.*?)\s+(\S*fet\S*)\s+(.*)$", re.I)
+_DUM_PARAM_RE = re.compile(r"\b([lw])\s*=\s*([0-9.eE+-]+)")
+
+
+def _parse_glayout_subckts(text):
+    """`{name: [body lines]}` from a glayout `Netlist.generate_netlist()` dump."""
+    blocks, cur, name = {}, None, None
+    for line in text.splitlines():
+        s = line.strip()
+        m = re.match(r"^\.subckt\s+(\S+)", s, re.I)
+        if m:
+            name, cur = m.group(1), []
+            continue
+        if re.match(r"^\.ends\b", s, re.I):
+            if name is not None:
+                blocks[name] = cur
+            name, cur = None, None
+            continue
+        if cur is not None:
+            cur.append(s)
+    return blocks
+
+
+def collect_dummy_devices(comp):
+    """Every tie-off DUMMY FET `comp`'s own glayout netlist declares, as
+    `[(model, l, w), ...]`, with subckt instantiation multiplicity resolved.
+
+    Read from the Component's netlist rather than re-derived from cell
+    parameters: `cells/primitives/fet.py`'s `__gen_fet_netlist()` already
+    emits one explicit `XDUMMY` per side per multiplier, and a composite
+    cell instantiates that subckt once per PLACED copy (a
+    `common_centroid_ab_ba()` diff pair instantiates its half FOUR times).
+    Re-deriving either count here would duplicate cell-internal knowledge
+    that the netlist already carries exactly.
+
+    These devices are real silicon -- glayout draws them for edge-effect
+    matching, which is the whole point of a common-centroid input pair --
+    so they are declared to LVS rather than suppressed with `--no-dummy`.
+    """
+    nl = (comp.info or {}).get("netlist") if comp is not None else None
+    if nl is None:
+        return []
+    try:
+        text = nl.generate_netlist()
+    except Exception:
+        return []
+    blocks = _parse_glayout_subckts(text)
+    if not blocks:
+        return []
+
+    def scan(body):
+        dums, kids = [], []
+        for s in body:
+            if not s or s.startswith("*"):
+                continue
+            tokens = s.split()
+            child = next((t for t in tokens[1:] if t in blocks), None)
+            if child is not None:
+                kids.append(child)
+                continue
+            m = _DUM_DEV_RE.match(s)
+            if m and m.group(1).upper().startswith("XDUMMY"):
+                params = dict(_DUM_PARAM_RE.findall(m.group(4)))
+                dums.append((m.group(3), float(params.get("l", 0) or 0),
+                             float(params.get("w", 0) or 0)))
+        return dums, kids
+
+    parsed = {n: scan(b) for n, b in blocks.items()}
+    referenced = {k for _d, kids in parsed.values() for k in kids}
+    tops = [n for n in blocks if n not in referenced] or list(blocks)
+
+    out = []
+
+    def walk(name, depth=0):
+        if depth > 12:
+            return
+        dums, kids = parsed[name]
+        out.extend(dums)
+        for k in kids:
+            walk(k, depth + 1)
+
+    for t in tops:
+        walk(t)
+    return out
+
+
+def write_lvs_compare_netlist(source_path: Path, out_path: Path,
+                              dummies=None, bulk_rail_by_kind=None) -> Path:
     """Write a comparison copy of `source_path` with each MOS device's `w`
     folded to its TOTAL width (`w * m`) and `nf`/`m` normalized to 1.
 
@@ -653,7 +780,25 @@ def write_lvs_compare_netlist(source_path: Path, out_path: Path) -> Path:
     `sky130A_setup.tcl`: that file is PDK-owned and shared by every design
     on this machine, while this is a derived, inspectable artifact and the
     golden netlist stays frozen (see ../../../CLAUDE.md's "never edit the
-    target .sp" rule -- this writes a COPY, next to `flattened.sp`)."""
+    target .sp" rule -- this writes a COPY, next to `flattened.sp`).
+
+    `dummies` -- `[(model, l, w), ...]` from `collect_dummy_devices()`, the
+    tie-off FETs glayout draws inside every generated cell. They are REAL
+    devices in silicon and Magic extracts them, so a comparison netlist
+    without them can never match: measured on this design, netgen reported
+    `Number of devices: 16 vs 13` with three unmatched instances, one per
+    composed macro. They are kept (not suppressed with `--no-dummy`)
+    because their edge-effect matching is the reason a common-centroid
+    input pair is drawn at all, so instead they are DECLARED here.
+
+    Each dummy has gate, drain and source tied to one node and its bulk on
+    the well tap, so post-layout every dummy of one flavor lands on that
+    flavor's bulk RAIL with all four terminals common. netgen's
+    `parallel {w add}` then merges them into a single device per flavor.
+    One device per (flavor, `l`) at the SUMMED width is emitted here rather
+    than one per finger, so netgen's identical merge on this side converges
+    to the same instance count -- and `l` is carried per group rather than
+    guessed for a cross-`l` merge."""
     out = []
     for line in source_path.read_text().splitlines():
         stripped = line.strip()
@@ -671,6 +816,37 @@ def write_lvs_compare_netlist(source_path: Path, out_path: Path) -> Path:
                 line = _LVS_NF_RE.sub("nf=1", line)
                 line = _LVS_M_RE.sub("m=1", line)
         out.append(line)
+    if dummies:
+        by_group = {}
+        for model, l, w in dummies:
+            key = (model, round(float(l), 6))
+            by_group[key] = by_group.get(key, 0.0) + float(w)
+        rails = bulk_rail_by_kind or {}
+        extra, idx = [], 0
+        for (model, l), w in sorted(by_group.items()):
+            kind = "pfet" if "pfet" in model.lower() else "nfet"
+            rail = rails.get(kind)
+            if not rail:
+                # No rail for this flavor means no device in the netlist uses
+                # it -- emitting a dummy on a guessed net would invent
+                # connectivity, so say so and skip rather than fabricate one.
+                print(f"  WARNING: {len(dummies)} generated dummy device(s) of kind "
+                      f"{kind} have no bulk rail in the netlist -- not declared in "
+                      f"lvs_compare.sp; LVS will report them as extra instances.")
+                continue
+            idx += 1
+            # All four terminals on the bulk rail: the cell ties G/S/D
+            # together and the tap ring puts that node on the rail.
+            extra.append(f"XDUMMY{idx} {rail} {rail} {rail} {rail} {model} "
+                         f"l={l:g} w={w:g} nf=1 m=1")
+        if extra:
+            hdr = ["*", "* Tie-off DUMMY devices glayout draws inside the generated cells.",
+                   "* Real silicon (edge-effect matching), extracted by Magic, so they are",
+                   "* declared here -- see write_lvs_compare_netlist(). NOT in the golden",
+                   "* netlist, which stays frozen.", "*"]
+            ends_at = next((i for i in range(len(out) - 1, -1, -1)
+                            if out[i].strip().lower().startswith(".ends")), len(out))
+            out[ends_at:ends_at] = hdr + extra
     out_path.write_text("\n".join(out) + "\n")
     return out_path
 
@@ -770,9 +946,12 @@ def build_fet(dev, with_dummy=True):
     # actually uses.
     per_finger_w = dev["w"] / nf
     if dev["kind"] == "nfet":
-        return nmos(PDK, width=per_finger_w, length=dev["l"], fingers=nf,
-                    multipliers=mult, with_tie=True, with_dummy=with_dummy,
-                    with_substrate_tap=True, with_dnwell=False)
+        return _tap_reachable(
+            dev, lambda dummy: nmos(
+                PDK, width=per_finger_w, length=dev["l"], fingers=nf,
+                multipliers=mult, with_tie=True, with_dummy=dummy,
+                with_substrate_tap=True, with_dnwell=False),
+            with_dummy)
     if dev["kind"] == "pfet":
         # `with_substrate_tap=True` is kept for PFET even though
         # `../../../../cells/primitives/fet.py`'s pmos() now defaults it off.
@@ -787,10 +966,77 @@ def build_fet(dev, with_dummy=True):
         # left at pmos()'s own (now False) default -- only the ring is
         # forced back. pmos() breaks its terminals out to whichever ring
         # ends up outermost, so the near-edge ports survive this.
-        return pmos(PDK, width=per_finger_w, length=dev["l"], fingers=nf,
-                    multipliers=mult, with_tie=True,
-                    with_substrate_tap=True, dnwell=False)
+        return _tap_reachable(
+            dev, lambda dummy: pmos(
+                PDK, width=per_finger_w, length=dev["l"], fingers=nf,
+                multipliers=mult, with_tie=True, with_dummy=dummy,
+                with_substrate_tap=True, dnwell=False),
+            # pmos() defaults dummies off; keep that unless a caller forced
+            # them on, and let the check below have the same lever either way.
+            False)
     return None
+
+
+def _tap_reachable(dev, build, with_dummy):
+    """Build the device, and if its own taps cannot reach its middle, build it
+    again without the tie-off dummies.
+
+    Multipliers stack side by side in **x** (`cells/primitives/fet.py`'s
+    multiplier array), and the only taps a standalone fet has are its
+    peripheral rings -- so the furthest any diffusion sits from a tap is about
+    half the array's x extent. Past the PDK's latch-up limit that is a real,
+    unavoidable DRC violation: no placement helps, because the tap would have
+    to sit INSIDE the device's own boundary.
+
+    The dummies are what tips it over, and by a lot. Measured on a real
+    `l=0.15 w=43.12 nf=1 m=8` nfet (sky130A), with Magic DRC on the standalone
+    cell each time:
+
+        m=8, dummies on   45.79 um wide   16x LU.2
+        m=8, dummies off  17.94 um wide    0
+        m=4, dummies on   24.82 um wide    0
+
+    Two and a half times the width, entirely from tie-off dummies flanking
+    every one of the eight columns. Dropping them on a device this size is the
+    cheap fix and it is complete -- no splitting of `m`, no change to `w`, `l`
+    or `nf`, and `lvs_compare.sp` follows automatically because
+    `collect_dummy_devices()` reads the dummies back out of the built
+    Component's own netlist rather than re-deriving them.
+
+    Dummies are kept everywhere they fit. They are there for edge-effect
+    matching, and a device small enough to keep them keeps them.
+
+    The limit is a process fact, read from `pdk_options.json`'s `rules` block.
+    A PDK that has not had it confirmed reports None, and then this check does
+    not run at all rather than inventing a number.
+    """
+    comp = build(with_dummy)
+    limit = PDK_CFG.latchup_max_tap_distance
+    if comp is None or limit is None:
+        return comp
+    span = float(evaluate_bbox(comp)[0])        # x -- the stacking axis
+    if span <= 2.0 * limit:
+        return comp
+    if with_dummy:
+        retry = build(False)
+        if retry is not None:
+            new_span = float(evaluate_bbox(retry)[0])
+            print(f"  {dev.get('name', dev.get('kind', '?'))}: x extent "
+                  f"{span:.2f}um exceeds 2x the latch-up tap limit "
+                  f"({2.0 * limit:.1f}um) -- rebuilt without tie-off dummies, "
+                  f"now {new_span:.2f}um")
+            if new_span <= 2.0 * limit:
+                return retry
+            comp, span = retry, new_span
+    # Still too wide: say so plainly. Splitting `m` into separately-tied
+    # sub-devices is the remaining fix and is not implemented here; a silent
+    # pass would hand layout-fixer a violation no lever of its own reaches.
+    print(f"  WARNING {dev.get('name', dev.get('kind', '?'))}: x extent "
+          f"{span:.2f}um still exceeds 2x the latch-up tap limit "
+          f"({2.0 * limit:.1f}um) even without dummies. Expect intrinsic "
+          f"latch-up (LU.2/LU.3) violations this device's own rings cannot "
+          f"satisfy -- it needs `m` split into separately-tied sub-devices.")
+    return comp
 
 
 RESISTOR_CONTACT_TAB = 0.4  # um of poly at each end reserved for the
@@ -1135,15 +1381,25 @@ def gen_diff_pair(finding, dev_by_name, with_dummy=True):
     # total that `nf` splits (see build_fet()), so divide by this device's own
     # `nf`. Each half then draws width * fingers * 2 = (w/nf) * (nf*m) = w*m,
     # the netlist's total width for one device of the pair.
-    a_per_finger_w = a["w"] / max(1, int(round(a["nf"] or 1.0)))
     a_total_w = a["w"] * max(1.0, a["m"] or 1.0)
+    # Derive the per-finger extent from the total width and the fingers this
+    # call will actually draw, rather than from `w / nf`. The two agree
+    # exactly whenever `nf * m` is even (w*m / (nf*m) == w/nf), which is the
+    # only case the old form was ever exercised on. They diverge for ODD
+    # `nf * m`, where `fingers = want_nf // 2` floors to 1 while `w / nf`
+    # still assumes `nf` fingers: an unshaped `nf=1 m=1` pair then drew
+    # 2 * 1 * w = 2w, exactly twice the netlist's width, on BOTH halves --
+    # a guaranteed LVS width mismatch. Dividing the total by the fingers
+    # drawn keeps the drawn width equal to the netlist's in every case.
+    a_per_finger_w = a_total_w / (2 * fingers)
     if want_nf % 2:
-        # Odd nf cannot split evenly across the two halves. Say so rather
-        # than silently rounding the device's width.
+        # Odd `nf * m` still cannot split evenly across the two halves, so
+        # the FINGER COUNT is rounded (1 becomes 2 halves of 1). The width
+        # no longer is -- say which is which.
         print(f"  warning: {a_name}/{b_name} nf={want_nf} is odd; common-centroid needs an "
-              f"even split, drawing {2 * fingers} fingers per device "
-              f"({2 * fingers * a_per_finger_w:.3f}um vs the netlist's "
-              f"{a_total_w:.3f}um)")
+              f"even split, so drawing {2 * fingers} fingers per device at "
+              f"{a_per_finger_w:.3f}um each = {2 * fingers * a_per_finger_w:.3f}um, "
+              f"the netlist's {a_total_w:.3f}um (finger count rounded, width preserved)")
     # cells/blocks/diff_pair.py's own diff_pair() -- same param names as glayout's
     # composite (`dummy`, not `with_dummy`), so no signature remapping
     # needed here beyond the import swap.
@@ -1226,9 +1482,10 @@ def generate(netlist_path: Path, out_dir: Path, with_dummy=True, per_device=Fals
             top_pins = m.group(2).split()
             break
 
-    lvs_path = write_lvs_compare_netlist(source_netlist_path, out_dir / "lvs_compare.sp")
-    print(f"  wrote {lvs_path} (w folded to w*m -- compare LVS against THIS, "
-          f"see write_lvs_compare_netlist())")
+    # `lvs_compare.sp` is written AFTER the macros are built, not here: it
+    # now has to declare the tie-off dummy devices each generated cell draws
+    # (see collect_dummy_devices()), and those are only known once every
+    # Component exists.
 
     dev_by_name = build_device_table(source_netlist_path)
 
@@ -1358,8 +1615,10 @@ def generate(netlist_path: Path, out_dir: Path, with_dummy=True, per_device=Fals
 
     manifest_macros = []
     md_lines = ["# primitives manifest", ""]
+    generated_dummies = []
     for m in macros:
         comp = m.pop("component")
+        generated_dummies.extend(collect_dummy_devices(comp))
         # Provenance, only when this run actually read a decomposed netlist:
         # which top-level `.subckt` instance this macro came from. Macro
         # NAMES stay device-derived (`current_mirror_XMN4_XMN3`) in both
@@ -1472,13 +1731,47 @@ def generate(netlist_path: Path, out_dir: Path, with_dummy=True, per_device=Fals
         )
 
     device_index = {
-        name: {"drain": d["drain"], "gate": d["gate"], "source": d["source"], "kind": d["kind"]}
+        name: {"drain": d["drain"], "gate": d["gate"], "source": d["source"],
+               # `bulk` is carried so a macro whose well tie is its ONLY
+               # connection to a supply rail is still seen to touch that rail.
+               # Every standalone fet here happens to have `source` on its
+               # bulk rail, which hid this: a differential pair does not (its
+               # sources are the tail), so with drain/gate/source alone VDD
+               # never mapped to the pair at all, its nwell ring went
+               # unrouted, and Magic extracted XM2/XM3's bulk onto a floating
+               # internal node -- an extra net and an unmatched dummy in LVS.
+               # `../../layout-extractor/script/physical_map_from_placement.py`
+               # already reads a `bulk` key (its PIN_KEYS), and
+               # `anneal_placement.py` iterates drain/gate/source only, so
+               # this is additive for both.
+               "bulk": d.get("bulk"), "kind": d["kind"]}
         for name, d in dev_by_name.items()
     }
     for m in manifest_macros:
         for dname in m["devices"]:
             if dname in device_index:
                 device_index[dname]["macro"] = m["name"]
+
+    # Now that every Component exists, the tie-off dummies are known, so the
+    # LVS comparison netlist can declare them. Bulk rail per flavor comes
+    # from the netlist's own devices (a MOS's 4th node), never a guess.
+    bulk_rail_by_kind = {}
+    for _n, _d in dev_by_name.items():
+        if _d.get("kind") in ("nfet", "pfet") and _d.get("bulk"):
+            bulk_rail_by_kind.setdefault(_d["kind"], _d["bulk"])
+    lvs_path = write_lvs_compare_netlist(
+        source_netlist_path, out_dir / "lvs_compare.sp",
+        dummies=generated_dummies, bulk_rail_by_kind=bulk_rail_by_kind)
+    if generated_dummies:
+        _by = {}
+        for _model, _l, _w in generated_dummies:
+            _by[("pfet" if "pfet" in _model.lower() else "nfet", _l)] = \
+                _by.get(("pfet" if "pfet" in _model.lower() else "nfet", _l), 0.0) + _w
+        print(f"  declared {len(generated_dummies)} generated dummy device(s) in "
+              f"lvs_compare.sp as {len(_by)} merged instance(s): "
+              + ", ".join(f"{k[0]} l={k[1]:g} w={v:g}" for k, v in sorted(_by.items())))
+    print(f"  wrote {lvs_path} (w folded to w*m, dummies declared -- compare LVS "
+          f"against THIS, see write_lvs_compare_netlist())")
 
     spacing_um, spacing_layer = min_metal_spacing_um(PDK)
     manifest = {

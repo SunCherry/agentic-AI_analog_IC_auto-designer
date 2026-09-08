@@ -7,16 +7,30 @@ description: >-
   `user_inputs/` (verbatim backup), `netlist/`, `testbench/`, `spec/`,
   re-pointing every include the move broke (PDK `.lib` left alone). Optionally
   collects a reference layout's three tiers into `layout/` and reports
-  shortfalls. Does NOT validate, simulate, size or check -- collects, files.
+  shortfalls. Ends by interviewing for the run constraints every downstream
+  skill needs -- sizing iterations, layout fix rounds, placer anneal, canvas
+  aspect ratio -- into `design_constraints.json` at the design folder's root.
+  Does NOT validate, simulate, size or check -- collects, files.
 ---
 
 # Design Sheets Intake
 
-Two jobs, in order: **interview** the user until every mandatory input is a real
-path, then **build the folder** -- `<design_dir>/{user_inputs,netlist,testbench,
+Three jobs, in order: **interview** the user until every mandatory input is a
+real path; **build the folder** -- `<design_dir>/{user_inputs,netlist,testbench,
 spec}` plus `layout/` (if a layout exists, with `submodules/`+`primitives/`) --
-and file them into it. Validation, ERC, simulation and sizing belong to whatever
-runs next. **Nothing is guessed.**
+and file them into it; then **settle the run constraints** the rest of the
+pipeline would otherwise each stop to ask for, into `design_constraints.json`
+(Step 7). Validation, ERC, simulation and sizing belong to whatever runs next.
+**Nothing is guessed.**
+
+This skill is the **only** place those constraints are collected. Downstream
+skills and agents read them back through
+`python .claude/reference/design_constraints.py <design_dir> --key <key>`, and
+what happens to an unanswered one differs by key: `schematic_sizing_iterations`
+has no default, so `schematic-sizing` stops and asks; every other key falls back
+to a documented default. That matters most for `layout-agent` and
+`layout-fixer`, which have no `AskUserQuestion` grant at all -- they cannot ask,
+so this step is the user's only chance to move them off their defaults.
 
 **Paths & names.** Shell commands run from the project root. `<design_dir>` =
 `<design_root>/<project_name>/`; `<design_root>` is decided at Step 0 -- **you
@@ -237,7 +251,73 @@ don't file/count it. Back up to `user_inputs/layout/`; if declined, say so.
 top-level GDS after "yes" is the one stop-and-ask case. Report, not a gate --
 LVS is `design-sheets-checker` Step 7b. File what exists; a partial set is `[x]`.
 
-## Step 7 — hand off
+## Step 7 — settle the run constraints (`design_constraints.json`)
+
+The last interview, and the one nothing downstream can do for itself: the
+budgets the pipeline's loops run on, and the shape the floorplan has to fit.
+Ask them **here, once**, after the files are filed, and write them to
+**`<design_dir>/design_constraints.json`** -- the design folder's root, beside
+`netlist/` and `spec/`.
+
+**One `AskUserQuestion` per key, in this order**, each offering the recommended
+value first plus a "let me type my own" path. Say what each value buys and what
+it costs, and take the user's answer even when you'd have picked another:
+
+| Key | Question | Offer | Who reads it |
+|---|---|---|---|
+| `schematic_sizing_iterations` | how many ngspice tuning iterations one `schematic-sizing` run may spend | **15** (typical convergence), 8 (a quick look), 30 (a hard spec) | `schematic-sizing`, "Loop budget" -- **no default exists**; unanswered, it stops there |
+| `layout_fix_iterations` | how many fix-and-recheck cycles `layout-fixer` may spend **per gate** (DRC and LVS each get this budget) | **5** | `layout-fixer`, `MAX_SUBRETRY` |
+| `placer_anneal_iters` | the placer's simulated-annealing iteration ceiling | **20000** | `placer` Step 3 `--iters`, passed by `layout-agent` |
+| `max_canvas_aspect` | how elongated the layout's bounding box may get -- its long side against its short side | **16:9** (the default if they have no view), 4:3 (squarer), 1:1 (square), or a ratio of their own | `placer` Step 3 `--max-aspect`, as a penalty in the anneal cost |
+
+The three budgets are ceilings, not quotas -- each loop stops early when it
+converges. Two things to say while asking, because they change the answer: a
+budget is spent per *run* and `schematic-agent` may reasonably ask for a second
+sizing run later; and `placer_anneal_iters` is an upper bound, not a runtime --
+the anneal stops itself at plateau, and the old default of 20 produced
+placements that failed overlap outright.
+
+**On `max_canvas_aspect`**, which is a shape and not a budget, so it is asked
+differently:
+
+- Write it **long side first** (`16:9`, `4:3`, or a plain `1.78`) -- it is
+  orientation-free, an upper bound on *elongation*, so `16:9` constrains a tall
+  canvas exactly as it does a wide one, and `9:16` is rejected as the same
+  shape written backwards.
+- It is an **upper bound, not a target**: a placement squarer than the limit is
+  never penalized.
+- It is a **soft penalty in the annealer, not a gate** -- the placer reports
+  PASS/OVER and the layout still routes. Say that, so a user who needs a hard
+  floorplan box knows this is a pull, not a promise.
+- **No answer is fine** -- leave the key out and every consumer falls back to
+  16:9. Ask once; don't press someone who has no view on floorplan shape.
+
+**Never hand-write the JSON** -- write it through the accessor, so the schema,
+the key names and the validation stay in one place:
+
+```
+python .claude/reference/design_constraints.py <design_dir> --write \
+    --project-name <project_name> \
+    --set schematic_sizing_iterations=<n> \
+    --set layout_fix_iterations=<n> \
+    --set placer_anneal_iters=<n> \
+    --set max_canvas_aspect=<W:H>
+```
+
+It prints every key with its resolved value and whether that came from the file
+or a default; **paste that back** as the receipt. `--write` merges, so a later
+amendment names only the key that changed. A key whose question the user
+declined is simply left out -- the three with defaults (5, 20000, 16:9) fall
+back cleanly, and `schematic_sizing_iterations` reports `unresolved`, which is
+exactly the signal `schematic-sizing` needs in order to ask again rather than
+invent one.
+
+**A new constraint is a new row in `CONSTRAINT_KEYS`** in
+`.claude/reference/design_constraints.py` (with its kind, default and
+consumer), then a row in the table above -- never a stray key written into the
+JSON.
+
+## Step 8 — hand off
 
 Print the final tracker with every row settled (no `[ ]`/`[~]`), then the
 hand-off block -- downstream works from **these** paths, not what was typed:
@@ -251,6 +331,7 @@ INPUTS SET UP -- test_miller
   testbench     : .../testbench/two_stage_rz_pre.spice  MODIFIED -- .include -> ../netlist/
   target spec   : .../spec/target_spec.json  (Gain/UGBW/PM/Power)
   closure       : 1 of 1 file, 0 unresolved, verified  |  backup: user_inputs/ (3 files)
+  constraints   : .../design_constraints.json  sizing 15 | layout fix 5 | placer 20000 | canvas <=16:9
 ```
 
 **`MODIFIED` lines are the most important and easiest to drop** -- name every
@@ -261,4 +342,6 @@ file edited and what each line became (`unmodified` if nothing changed). The
 
 Validate (no ERC/rescale/port-audit beyond 2b); simulate or judge viability;
 author/correct a testbench or spec (a missing one stops, not a prompt to invent);
-read the circuit; size; DRC/LVS a GDS; check the toolchain launches.
+read the circuit; size; DRC/LVS a GDS; check the toolchain launches. Step 7
+*records* the constraints; it never spends a budget, never places anything, and
+never judges whether a number is enough for a circuit it has not read.

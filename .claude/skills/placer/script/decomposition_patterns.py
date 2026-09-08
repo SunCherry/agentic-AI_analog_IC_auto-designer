@@ -120,7 +120,7 @@ def _device_refs(entry) -> list:
     out = []
     for d in entry.get("devices") or []:
         if isinstance(d, dict):
-            ref = d.get("ref") or d.get("name")
+            ref = d.get("ref") or d.get("name") or d.get("device")
             if ref:
                 out.append((str(ref), str(d.get("role") or "")))
         else:
@@ -165,7 +165,13 @@ def load(yaml_path: Path, dev_by_name: dict):
     findings = []
     claimed = set()
     for entry in patterns:
-        pattern = str(entry.get("pattern") or "").strip()
+        # The authoring agent writes the pattern name under `id:`; earlier
+        # readers looked only at `pattern:`, so a whole file authored the
+        # `id:` way dropped EVERY pattern here on a silent `continue`
+        # (`tie_groups` really does use `pattern:`, which is the confusing
+        # tell). Accept either -- losing the design's matching to a key
+        # name is silent data loss.
+        pattern = str(entry.get("pattern") or entry.get("id") or "").strip()
         refs = _device_refs(entry)
         if not pattern or not refs:
             continue
@@ -227,7 +233,7 @@ def load(yaml_path: Path, dev_by_name: dict):
     # is a gap worth reporting.
     authored = []
     for u in data.get("unmatched_devices") or []:
-        authored.append(str(u.get("ref") or u.get("name")) if isinstance(u, dict) else str(u))
+        authored.append(str(u.get("ref") or u.get("name") or u.get("device")) if isinstance(u, dict) else str(u))
     silent = [n for n in dev_by_name if n not in claimed and n not in authored]
     if silent:
         warnings.append(

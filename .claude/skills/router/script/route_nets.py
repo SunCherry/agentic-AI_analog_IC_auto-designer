@@ -211,7 +211,13 @@ def build_nets(manifest, placement, include_supply=False):
         macro = dev.get("macro")
         if macro is None or macro not in placed:
             continue
-        for pin in ("drain", "gate", "source"):
+        # `bulk` included: a macro whose only terminal on a supply rail is
+        # its tap ring (a PMOS differential pair -- its sources are the
+        # tail, not VDD) is otherwise never mapped onto that rail at all,
+        # so the ring goes unrouted and the well floats. Every STANDALONE
+        # fet happens to carry its bulk rail on `source` too, which is why
+        # this went unnoticed until a diff pair needed it.
+        for pin in ("drain", "gate", "source", "bulk"):
             net = dev.get(pin)
             if not net:
                 continue
@@ -224,7 +230,19 @@ def build_nets(manifest, placement, include_supply=False):
     return net_macros, net_kinds
 
 
-def local_to_world(lx, ly, cx, cy, rotated):
+def _rot_quarters(p):
+    """A placement entry's rotation as a 0..3 quarter-turn count.
+
+    `rotation_deg` is authoritative; the legacy `rotated` bool could only
+    ever express 0 or 90 and must never be used to orient geometry once
+    `rotation_deg` exists -- it cannot tell 0 from 180.
+    """
+    if p.get("rotation_deg") is not None:
+        return (int(p["rotation_deg"]) // 90) % 4
+    return 1 if p.get("rotated") else 0
+
+
+def local_to_world(lx, ly, cx, cy, rotated, mirrored=False):
     """Same transform render_gds() applies to each macro's own GDS -- move
     the macro's BBOX CENTRE to (cx,cy), then rotate about that same point --
     reused here bit-for-bit so a real port's world coordinate lands exactly
@@ -244,10 +262,18 @@ def local_to_world(lx, ly, cx, cy, rotated):
     this session's own development (not assumed) -- CCW-90 about (cx,cy):
     (x,y) -> (cx - (y-cy), cy + (x-cx))."""
     wx, wy = lx + cx, ly + cy
-    if not rotated:
-        return wx, wy
-    dx, dy = wx - cx, wy - cy
-    return cx - dy, cy + dx
+    dxr, dyr = wx - cx, wy - cy
+    for _ in range(int(rotated or 0) % 4):
+        dxr, dyr = -dyr, dxr                  # one CCW quarter turn
+    wx, wy = cx + dxr, cy + dyr
+    if mirrored:
+        # Reflection about the VERTICAL world line x=cx, applied AFTER the
+        # rotation -- bit-for-bit the same order as the placer's
+        # local_to_world() and render_placement.py. Reflecting first would
+        # make it a horizontal mirror on any rotated macro
+        # (mirror_x . rot90 == rot90 . mirror_y).
+        wx = 2.0 * cx - wx
+    return wx, wy
 
 
 def world_port_map(manifest, placement):
@@ -274,10 +300,11 @@ def world_port_map(manifest, placement):
         if not ports:
             continue
         cx, cy = p["x"] + p["w"] / 2, p["y"] + p["h"] / 2
-        rotated = bool(p.get("rotated"))
+        rotated = _rot_quarters(p)
+        mirrored = bool(p.get("mirrored"))
         for net, pts in ports.items():
             for pt in pts:
-                wx, wy = local_to_world(pt["x"], pt["y"], cx, cy, rotated)
+                wx, wy = local_to_world(pt["x"], pt["y"], cx, cy, rotated, mirrored)
                 result.setdefault(net, {}).setdefault(name, []).append(
                     (wx, wy, pt["layer"], pt.get("width"), pt.get("pin")))
     return result
@@ -763,17 +790,24 @@ def macro_polygons_world(gds_path, p):
     by_layer, (gx0, gy0, gx1, gy1) = macro_layer_geometry(gds_path)
     gcx, gcy = (gx0 + gx1) / 2, (gy0 + gy1) / 2
     cx, cy = p["x"] + p["w"] / 2, p["y"] + p["h"] / 2
-    rotated = bool(p.get("rotated"))
+    rotated = _rot_quarters(p)
+    mirrored = bool(p.get("mirrored"))
     out = {}
     for key, (polys, area) in by_layer.items():
         moved = []
         for pts in polys:
             lx = pts[:, 0] - gcx
             ly = pts[:, 1] - gcy
-            if rotated:
-                wx, wy = cx - ly, cy + lx
-            else:
-                wx, wy = cx + lx, cy + ly
+            # Reflect about the macro's vertical centre line BEFORE rotating,
+            # matching local_to_world(). An obstacle map that skips the
+            # mirror describes metal the macro does not have and misses the
+            # metal it does -- the router would route straight through it.
+            rx, ry = lx, ly
+            for _ in range(rotated):
+                rx, ry = -ry, rx              # one CCW quarter turn
+            wx, wy = cx + rx, cy + ry
+            if mirrored:
+                wx = 2.0 * cx - wx
             moved.append(np.column_stack((wx, wy)))
         out[key] = (moved, area)
     return out
@@ -934,6 +968,208 @@ def rasterize_polygons(polygons, grid, li):
     pts = [(grid["x0"] + ix * pitch, grid["y0"] + iy * pitch) for ix, iy in idx]
     flags = gdstk.inside(pts, polygons)
     return {(ix, iy, li) for (ix, iy), f in zip(idx, flags) if f}
+
+
+def macro_net_metal(gds_path, p, ports_by_net, pdk, glayers, wire_widths, m_keep):
+    """This macro's OWN drawn metal, per glayer, split into connected
+    components and attributed to the net that owns each one.
+
+    Why this exists. `build_layer_obstacles()` records a busy layer as
+    `full` -- the whole padded box, with no per-polygon geometry kept --
+    so a corridor carved into that macro (`corridor_to_edge()`, needed
+    because an interior port is unreachable otherwise) punches through
+    metal the router has no representation of. Measured on
+    designs/three_stage_ota: VDD's corridor to a PMOS differential pair's
+    tap ring -- the pair's ONLY terminal on that rail -- ran across the
+    pair's internal gate-escape metal, and Magic extracted VDD merged with
+    Vin. Top-level ports fell from 7 to 5 and netgen failed pin matching.
+    No DRC error, because DRC has no concept of nets.
+
+    Components come from a boolean union: touching polygons ARE one
+    conductor, which is exactly the equivalence Magic's extractor will
+    compute. Each is attributed by which published port coordinates fall
+    inside it, matched on that port's OWN glayer -- a tap ring's ports sit
+    on met1, below the routing stack, while the gate escape is on met3, so
+    attributing across layers would cross-contaminate the two.
+
+    A component containing no port is UNATTRIBUTED and treated as foreign,
+    not as free space: unnamed metal inside a macro is device or internal
+    routing geometry, and the fact that nothing was published on it is
+    precisely why the router must not assume it may be crossed.
+
+    Returns `{glayer: (components, clearance)}` where each component is
+    `(owning_nets, dilated_polygon)`, already grown by the same clearance
+    `build_layer_obstacles()` uses so a centreline test is equivalent to a
+    real edge-to-edge spacing test."""
+    geom = macro_polygons_world(gds_path, p)
+    out = {}
+    for glayer in glayers:
+        polys, _area = geom.get(tuple(pdk.get_glayer(glayer)), ([], 0.0))
+        if not polys:
+            continue
+        merged = gdstk.boolean([gdstk.Polygon(pts) for pts in polys], [], "or",
+                               precision=1e-4)
+        if not merged:
+            continue
+        pts, owner = [], []
+        for net, plist in ports_by_net.items():
+            for cand in plist:
+                if len(cand) > 2 and cand[2] != glayer:
+                    continue
+                pts.append((cand[0], cand[1]))
+                owner.append(net)
+        clearance = (max(m_keep, pdk.get_grule(glayer)["min_separation"])
+                     + wire_widths.get(glayer, 0.0) / 2)
+        comps = []
+        for comp in merged:
+            nets = set()
+            if pts:
+                for i, f in enumerate(gdstk.inside(pts, [comp])):
+                    if f:
+                        nets.add(owner[i])
+            grown = gdstk.offset([comp], clearance, join="bevel", use_union=True,
+                                 precision=1e-4) if clearance > 0 else [comp]
+            comps.append([nets, grown, comp])
+        out[glayer] = (comps, clearance)
+
+    # Propagate ownership VERTICALLY, through REAL VIAS.
+    #
+    # Per-layer attribution alone is wrong for the case that matters: a
+    # macro publishes one port per terminal on one layer, but the conductor
+    # behind it runs down a via stack to the device. Measured on
+    # designs/three_stage_ota's differential pair, `Vin`'s port sits on met3
+    # while the metal VDD's landing actually touches is that same
+    # conductor's met2 piece -- unowned under per-layer attribution, so the
+    # filter reported zero conflicts while extraction merged VDD into Vin
+    # and top-level ports fell from 7 to 5.
+    #
+    # Connectivity is a VIA test, not an overlap test. Overlap was tried
+    # first and is decisively wrong: two nets crossing on adjacent layers
+    # overlap without being connected, and propagating through that
+    # collapsed all 5 nets of this macro into one equivalence class on
+    # every layer -- every component owning every net, which is as useless
+    # as owning none. The via layers come from pdk_options.json's own
+    # `via_links`, so this stays process-independent.
+    links = {}
+    for (vl, vdt), (lo_gds, hi_gds) in PDK_CFG.via_links.items():
+        links[(vl, vdt)] = (lo_gds, hi_gds)
+    gds_of = {}
+    for g in out:
+        gds_of.setdefault(pdk.get_glayer(g)[0], g)
+
+    parent = {}
+
+    def find(k):
+        parent.setdefault(k, k)
+        while parent[k] != k:
+            parent[k] = parent[parent[k]]
+            k = parent[k]
+        return k
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    for (vl, vdt), (lo_gds, hi_gds) in links.items():
+        lo_g, hi_g = gds_of.get(lo_gds), gds_of.get(hi_gds)
+        if lo_g is None or hi_g is None:
+            continue
+        vpolys, _va = geom.get((vl, vdt), ([], 0.0))
+        if not vpolys:
+            continue
+        lo_comps, hi_comps = out[lo_g][0], out[hi_g][0]
+        for vpts in vpolys:
+            v = gdstk.Polygon(vpts)
+            lo_hit = [i for i, c in enumerate(lo_comps)
+                      if gdstk.boolean([v], [c[2]], "and", precision=1e-4)]
+            if not lo_hit:
+                continue
+            hi_hit = [i for i, c in enumerate(hi_comps)
+                      if gdstk.boolean([v], [c[2]], "and", precision=1e-4)]
+            for i in lo_hit:
+                for j in hi_hit:
+                    union((lo_g, i), (hi_g, j))
+
+    groups = {}
+    for g, (comps, _clear) in out.items():
+        for i, c in enumerate(comps):
+            groups.setdefault(find((g, i)), set()).update(c[0])
+    for g, (comps, _clear) in out.items():
+        for i, c in enumerate(comps):
+            c[0] = set(groups.get(find((g, i)), c[0]))
+
+    return {g: ([(c[0], c[1]) for c in comps], clear)
+            for g, (comps, clear) in out.items()}
+
+
+def conflicting_layers(net, cell, grid, net_metal, glayers):
+    """Which of `glayers` this single grid cell sits on foreign metal for.
+
+    The per-cell, per-layer form of landing_conflicts(). A corridor is
+    carved on EVERY routing layer at its (x, y) so the net can leave its
+    port, but there is no reason to open a layer where that cell lands on
+    another net's conductor -- withholding just those (cell, layer) pairs
+    keeps the corridor usable while removing the crossing."""
+    out = set()
+    if not net_metal:
+        return out
+    pt = [(grid["x0"] + cell[0] * grid["pitch"], grid["y0"] + cell[1] * grid["pitch"])]
+    for glayer in glayers:
+        entry = net_metal.get(glayer)
+        if not entry:
+            continue
+        for nets, grown in entry[0]:
+            if not nets or net in nets:
+                continue
+            if any(gdstk.inside(pt, grown)):
+                out.add(glayer)
+                break
+    return out
+
+
+def landing_conflicts(net, cells, grid, net_metal, check_glayers):
+    """True if any of `cells` (grid (ix, iy) the corridor + landing will
+    open) sits on this macro's metal belonging to a DIFFERENT net.
+
+    Every cell is tested on every layer the carve actually opens, not just
+    the landing layer. That is the half the port-coordinate filter in
+    `generate_primitives.py` got wrong: it measured clearance to published
+    port COORDINATES, but a macro's gate escape runs along the edge
+    BETWEEN its ports, so a landing point metres from any port can still
+    sit on it -- and the corridor, not the landing cell, is what crosses
+    the metal."""
+    if not net_metal or not cells:
+        return False
+    pts = [(grid["x0"] + ix * grid["pitch"], grid["y0"] + iy * grid["pitch"])
+           for ix, iy in cells]
+    for glayer in check_glayers:
+        entry = net_metal.get(glayer)
+        if not entry:
+            continue
+        comps, _clear = entry
+        for nets, grown in comps:
+            if not nets:
+                # UNATTRIBUTED metal. Treated as neutral, not foreign, and
+                # that is a measured decision rather than a convenience: on
+                # this PDK a macro publishes ports on met1/met3 only, so
+                # every met2 component comes out unattributed. Counting
+                # those as foreign marked 16 of 16 landings dirty --
+                # including the current-mirror source ports and standalone
+                # fet bulks that demonstrably extract correctly today --
+                # which is not a filter, just the old behaviour plus noise.
+                # Conflicts are therefore scoped to metal positively known
+                # to belong to ANOTHER net, which is exactly the VDD/Vin
+                # case this exists to catch. Crossings of unattributed
+                # metal are counted and reported instead of being silently
+                # accepted.
+                continue
+            if net in nets:
+                continue          # this net's own metal -- landing on it is the point
+            for i, f in enumerate(gdstk.inside(pts, grown)):
+                if f:
+                    return True
+    return False
 
 
 # `build_obstacles()` (whole-box, all-layers) lived here and is now
@@ -1216,15 +1452,27 @@ def unblock_pins(blocked, nets_grid, n_layers, extra_corridors=()):
     like pin_point()'s cells always are. These get unblocked too so the
     router can actually reach that port from open space. Real, honestly-
     documented approximation, same category as this function's own
-    boundary-carve-out above: the unblocked strip is shared grid state, so
-    in principle some OTHER net's search could route through it too, not
-    just the net that owns that port -- bounded in practice because
-    corridors are short (<= PORT_EDGE_MARGIN_UM) and only ever carved
-    through a macro's own guard-ring/tap-ring/already-routed-stub
-    territory (see generate_primitives.py's near_edge_ports() docstring
-    for why only those port families clear the margin), not through
-    active device area -- verify with the DRC step below, don't just
-    assume it's fine."""
+    boundary-carve-out above: a corridor cuts through its macro's own
+    guard-ring/tap-ring/already-routed-stub territory (see
+    generate_primitives.py's near_edge_ports() docstring for why only
+    those port families clear the margin), not through active device area.
+
+    RETURNS a per-net carve map rather than mutating `blocked`, and that
+    is load-bearing rather than cosmetic. This function used to
+    `discard()` each doorway from the single shared `blocked` set, so
+    every net's A* could route through every other net's doorway -- the
+    hazard the previous version of this docstring recorded as theoretical
+    ("in principle some OTHER net's search could route through it too").
+    It is not theoretical. Measured on designs/three_stage_ota: the only
+    rail terminal on a PMOS differential pair is its tap ring, so VDD's
+    corridor into that macro ran straight through the pair's gate-escape
+    metal and Magic extracted VDD merged with Vin -- top-level ports fell
+    from 7 to 5 and netgen failed pin matching. DRC never sees it: DRC has
+    no concept of nets.
+
+    A doorway belongs to exactly one net, so scoping the exception to that
+    net is both the correct semantics and the fix. `blocked` stays intact
+    for everyone else; see astar()'s passable()."""
     # `blocked` holds (ix, iy, layer) since build_layer_obstacles(). A pin
     # cell is carved out on EVERY routing layer at that (x, y), not just
     # the pin's own: the net has to be able to leave the pin, and with
@@ -1232,13 +1480,24 @@ def unblock_pins(blocked, nets_grid, n_layers, extra_corridors=()):
     # not a foregone conclusion. Carving one layer only would leave a pin
     # reachable exclusively along its own layer -- the pre-per-layer
     # behaviour, minus the guarantee that that layer is open.
-    for cells in nets_grid.values():
+    carved = {}
+    for net, cells in nets_grid.items():
+        own = carved.setdefault(net, set())
         for c in cells:
             for l in range(n_layers):
-                blocked.discard((c[0], c[1], l))
-    for c in extra_corridors:
+                own.add((c[0], c[1], l))
+    for entry in extra_corridors:
+        net, c = entry[0], entry[1]
+        # Layers this corridor cell must NOT open: it sits on another net's
+        # conductor there. Carving them anyway is what let VDD's corridor
+        # cross a differential pair's gate escape (see macro_net_metal()).
+        skip = entry[2] if len(entry) > 2 else ()
+        own = carved.setdefault(net, set())
         for l in range(n_layers):
-            blocked.discard((c[0], c[1], l))
+            if l in skip:
+                continue
+            own.add((c[0], c[1], l))
+    return carved
 
 
 def corridor_to_edge(ix, iy, macro_name, placement, grid, margin=0.0):
@@ -1268,7 +1527,7 @@ def corridor_to_edge(ix, iy, macro_name, placement, grid, margin=0.0):
 # ---------------------------------------------------------------------------
 
 def astar(start, goals, blocked, grid, layer_dirs, history, proximity, current_net, weights,
-          state=None):
+          state=None, carved=()):
     n_cols, n_rows, n_layers = grid["n_cols"], grid["n_rows"], len(layer_dirs)
     pitch = grid["pitch"]
     state = state if state is not None else GridState()
@@ -1288,7 +1547,16 @@ def astar(start, goals, blocked, grid, layer_dirs, history, proximity, current_n
         # `blocked` holds (ix, iy, layer) triples since
         # build_layer_obstacles() -- a macro no longer blocks every layer at
         # its (x, y), only the layers it actually occupies.
-        return in_bounds(nc) and nc not in blocked
+        #
+        # `carved` is THIS net's own doorways (unblock_pins()), and only
+        # this net's: the exception is applied here, per search, instead of
+        # being discarded from the shared `blocked` set up front, so one
+        # net's doorway is not an opening every other net can route
+        # through. See unblock_pins() for the extraction-level short that
+        # the shared version caused.
+        if not in_bounds(nc):
+            return False
+        return nc not in blocked or nc in carved
 
     def extra_cost(cell):
         c = weights["history_weight"] * history.get(cell, 0.0)
@@ -1425,7 +1693,7 @@ def path_footprint(path, grid, weights):
 
 
 def route_net(net, pin_cells, blocked, grid, layer_dirs, history, proximity, weights,
-              state=None):
+              state=None, carved=()):
     """Route one net and COMMIT it to `state` as it goes.
 
     Multi-pin nets are a chain of A* searches, and each leg is committed
@@ -1439,7 +1707,7 @@ def route_net(net, pin_cells, blocked, grid, layer_dirs, history, proximity, wei
     metal, halo = set(), set()
     for target in pin_cells[1:]:
         path, _ = astar(target, tree, blocked, grid, layer_dirs, history, proximity, net,
-                        weights, state=state)
+                        weights, state=state, carved=carved)
         if path is None:
             return None
         all_paths.append(path)
@@ -1460,7 +1728,7 @@ def route_net(net, pin_cells, blocked, grid, layer_dirs, history, proximity, wei
 # Negotiated congestion outer loop
 # ---------------------------------------------------------------------------
 
-def route_design(nets_grid, blocked, grid, layer_dirs, weights, ripup_iters):
+def route_design(nets_grid, blocked, grid, layer_dirs, weights, ripup_iters, carved=None):
     order = sorted(nets_grid, key=lambda n: (len(nets_grid[n]), n))
     history = {}
     pin_cells = {c for cells in nets_grid.values() for c in cells}
@@ -1494,7 +1762,8 @@ def route_design(nets_grid, blocked, grid, layer_dirs, weights, ripup_iters):
         state.freeze_seed()
         for net in order:
             result = route_net(net, nets_grid[net], blocked, grid, layer_dirs, history,
-                               proximity, weights, state=state)
+                               proximity, weights, state=state,
+                               carved=(carved or {}).get(net, frozenset()))
             if result is None:
                 failed.append(net)
                 continue
@@ -1755,8 +2024,14 @@ def render_gds(manifest, placement, routes, grid, routing_layers, wire_widths, o
         ref.move(origin=((float(rbx0) + float(rbx1)) / 2,
                          (float(rby0) + float(rby1)) / 2),
                  destination=(cx, cy))
-        if p.get("rotated"):
-            ref.rotate(90, center=(cx, cy))
+        # Mirror before rotate -- same order as local_to_world() and the
+        # placer's renderer, so the drawn macro matches the coordinates the
+        # ports were computed at.
+        _rd = _rot_quarters(p) * 90
+        if _rd:
+            ref.rotate(_rd, center=(cx, cy))
+        if p.get("mirrored"):
+            ref.mirror(p1=(cx, cy - 1.0), p2=(cx, cy + 1.0))
         top.add_label(name, position=(cx, cy), layer=INSTANCE_LABEL_LAYER,
                        magnification=INSTANCE_LABEL_MAGNIFICATION)
     for net, segments in routes.items():
@@ -1976,6 +2251,13 @@ def write_routing_summary(path, design, design_dir, routes, placement, grid, rou
     A(f"  box-edge fallback  : {landing_stats['box_edge_fallback']}"
       f"   (macro had no near-edge port for that net -- see")
     A("                       generate_primitives.py's near_edge_ports())")
+    A(f"  corridor-clean     : moved {landing_stats['rerouted_landing']} landing(s) off "
+      f"another net's metal; {landing_stats['dirty_landing']} had NO clean option; "
+      f"{landing_stats['corridor_layers_withheld']} corridor cell-layer(s) sit on "
+      f"another net's conductor (reported, not withheld -- see route_nets.py)")
+    for _n, _m, _pin in landing_stats.get("dirty_list", ()):
+        A(f"      DIRTY: {_n} on {_m} ({_pin}) -- every candidate's corridor crosses "
+          f"another net's metal; expect an extraction-level short on this net")
     A("")
     A("-- routing grid ----------------------------------------------------")
     A(f"  {grid['n_cols']} x {grid['n_rows']} cells x {len(routing_layers)} layers"
@@ -2107,6 +2389,35 @@ def main():
     keepout_margin = min_metal_spacing * KEEPOUT_MARGIN_MULT
     macro_keepouts = {m['name']: m.get('keepout_um') for m in manifest['macros']}
 
+    # VIA-PAD PROTRUSION ALLOWANCE. A declared `keepout_um` (a MiM cap's 1.2um
+    # `capm.2b` spacing) is measured from the macro's BOUNDING BOX, but the via
+    # pad that lands on that macro's own port is centred at the port and sticks
+    # out PAST the box -- so satisfying the keepout against the box still leaves
+    # less than the rule against the real copper.
+    #
+    # Measured, not hypothetical (`test_miller_ota`): the router kept `vout`'s
+    # met3 run 1.39um from XC0's box and Magic still reported `capm.2b`, because
+    # the landing pad protruded 0.258um below the box and the controlling pair
+    # was pad-to-run at 1.128um against the 1.2um rule -- a 0.070um miss. The
+    # rule is `mim_bottom` to `mim_bottom` where `mim_bottom` is
+    # `bloat-all *mimcap *metal3`, so a route touching `bottom_met` BECOMES the
+    # bottom plate and is measured against itself.
+    #
+    # A via centred on a port at the box edge protrudes at most half its pad, so
+    # half the largest via footprint is the bound. Applied ONLY to macros that
+    # declared a keepout (i.e. caps), so nothing else pays area for it, and
+    # applied HERE -- to the shared dict both consumers read -- so
+    # build_layer_obstacles() and macro_margin() cannot disagree. See
+    # macro_margin()'s docstring for why disagreement is worse than either value.
+    _via_fp = via_footprints(PDK, routing_layers)
+    _pad_allow = max((e["overall"] for e in _via_fp.values()), default=0.0) / 2.0
+    if _pad_allow:
+        for _name, _k in list(macro_keepouts.items()):
+            if _k:
+                macro_keepouts[_name] = float(_k) + _pad_allow
+        print(f"  keepout: +{_pad_allow:.3f}um via-pad protrusion allowance on "
+              f"{sum(1 for v in macro_keepouts.values() if v)} macro(s) declaring one")
+
     def macro_margin(name):
         """The keepout actually applied to ONE macro -- the global margin,
         or that macro's own larger `keepout_um` if it declared one. Every
@@ -2234,7 +2545,40 @@ def main():
             wx, wy, _layer_name, _width, _pin = candidates[0]
             used_edge_offsets.setdefault(m, []).append((wx, wy))
 
-    landing_stats = {"real_port": 0, "box_edge_fallback": 0}
+    landing_stats = {"real_port": 0, "box_edge_fallback": 0,
+                     "dirty_landing": 0, "rerouted_landing": 0,
+                     "corridor_layers_withheld": 0,
+                     "dirty_list": []}
+    _net_metal_cache = {}
+    _gds_by_name = {mm["name"]: mm.get("gds") for mm in manifest["macros"]}
+
+    def net_metal_for(macro_name):
+        """This macro's per-layer, net-attributed metal (cached)."""
+        if macro_name in _net_metal_cache:
+            return _net_metal_cache[macro_name]
+        gp = _gds_by_name.get(macro_name)
+        pl = placement["positions"].get(macro_name)
+        res = {}
+        if gp and pl and Path(gp).exists():
+            ports_by_net = {}
+            for n2, bym in world_ports.items():
+                lst = bym.get(macro_name)
+                if lst:
+                    ports_by_net[n2] = lst
+            glayers = list(routing_layers)
+            for lst in ports_by_net.values():
+                for c in lst:
+                    if len(c) > 2 and c[2] and c[2] not in glayers:
+                        glayers.append(c[2])
+            try:
+                res = macro_net_metal(gp, pl, ports_by_net, PDK, glayers,
+                                      wire_widths, macro_margin(macro_name))
+            except Exception as exc:
+                print(f"  warning: net-attributed metal unavailable for {macro_name} "
+                      f"({exc}) -- landing filter inactive for it")
+                res = {}
+        _net_metal_cache[macro_name] = res
+        return res
     for net, macros in net_macros.items():
         cells = []
         for m in macros:
@@ -2260,11 +2604,56 @@ def main():
                 # two pieces of metal) and left both current mirrors' source
                 # stubs floating -- 4 of the 7 nets LVS could not match.
                 for _pin, group in group_by_pin(candidates).items():
-                    wx, wy, layer_name, _width, _p = min(
-                        group, key=lambda c: (c[0] - ocx) ** 2 + (c[1] - ocy) ** 2)
+                    # Prefer a landing whose CORRIDOR, not just its landing
+                    # cell, stays off this macro's other nets' metal. See
+                    # macro_net_metal()/landing_conflicts(): a `full`-blocked
+                    # layer keeps no polygons, so without this the corridor
+                    # crosses metal the obstacle map cannot represent and the
+                    # short only ever surfaces at extraction.
+                    ranked = sorted(group, key=lambda c: (c[0] - ocx) ** 2 + (c[1] - ocy) ** 2)
+                    nm = net_metal_for(m)
+                    check_glayers = list(routing_layers)
+                    chosen, clean = None, False
+                    for cand in ranked:
+                        cix, ciy = to_grid(cand[0], cand[1], grid)
+                        cand_glayers = check_glayers + (
+                            [cand[2]] if cand[2] not in check_glayers else [])
+                        corridor = corridor_to_edge(cix, ciy, m, placement, grid,
+                                                    margin=macro_margin(m))
+                        probe_cells = [(cix, ciy)] + [(c[0], c[1]) for c in corridor]
+                        if not landing_conflicts(net, probe_cells, grid, nm, cand_glayers):
+                            chosen, clean = cand, True
+                            break
+                    if chosen is None:
+                        # Never filter to zero -- a macro with no clean
+                        # landing still needs its terminal connected, and a
+                        # silent fallback to the old behaviour is exactly
+                        # the failure this filter exists to surface.
+                        chosen = ranked[0]
+                        landing_stats["dirty_landing"] += 1
+                        landing_stats["dirty_list"].append((net, m, _pin))
+                    elif chosen is not ranked[0]:
+                        landing_stats["rerouted_landing"] += 1
+                    wx, wy, layer_name, _width, _p = chosen
                     pin_layer = routing_layers.index(layer_name) if layer_name in routing_layers else 0
                     ix, iy = to_grid(wx, wy, grid)
-                    extra_corridors.extend(corridor_to_edge(ix, iy, m, placement, grid, margin=macro_margin(m)))
+                    for c in corridor_to_edge(ix, iy, m, placement, grid,
+                                              margin=macro_margin(m)):
+                        bad = conflicting_layers(net, c, grid, nm, routing_layers)
+                        # Reported, NOT withheld. Withholding just these
+                        # (cell, layer) pairs was tried and breaks
+                        # routability: 7/9 nets and congestion FAIL, the
+                        # same outcome as forbidding the corridor's occupied
+                        # layers outright. An interior port genuinely needs
+                        # its corridor on every layer; the crossing this
+                        # exposes has to be fixed in the CELL (give the tap
+                        # ring a breakout to the macro edge, as
+                        # cells/primitives/fet.py's _stretch_terminals_to_edge()
+                        # already does for a standalone fet's `bulk_bo_*`),
+                        # not by starving the router.
+                        extra_corridors.append((net, c, ()))
+                        if bad:
+                            landing_stats["corridor_layers_withheld"] += len(bad)
                     # `via_um`: the footprint of the via that will be drawn
                     # AT this landing point, so the stub can be made wide
                     # enough to cover it (see the stub-emission loop for the
@@ -2297,7 +2686,8 @@ def main():
                 landing_stats["box_edge_fallback"] += 1
                 cells.append((ix, iy, pin_layer))
         nets_grid[net] = cells
-    unblock_pins(blocked, nets_grid, len(routing_layers), extra_corridors=extra_corridors)
+    carved = unblock_pins(blocked, nets_grid, len(routing_layers),
+                          extra_corridors=extra_corridors)
 
     # Each net's own landing stubs, claimed before routing -- see
     # landing_stub_cells() for the real cross-net short this prevents.
@@ -2335,7 +2725,8 @@ def main():
         "wire_widths": wire_widths, "routing_layers": routing_layers, "pdk": PDK,
         "via_pads": via_costs_um,
     }
-    net_paths, status = route_design(nets_grid, blocked, grid, layer_dirs, weights, args.ripup_iters)
+    net_paths, status = route_design(nets_grid, blocked, grid, layer_dirs, weights,
+                                     args.ripup_iters, carved=carved)
 
     # wire_widths (moved earlier, see above) already has WIRE_WIDTH_MARGIN
     # applied -- real DRC testing on this router's own output found width

@@ -127,6 +127,18 @@ CLEAN_PORT_RE = re.compile(r"^(?P<prefix>.*?)(?P<terminal>drain|gate|source|well
 SIDE_ORDER = ["E", "N", "W", "S"]
 
 
+def _rot_deg(p):
+    """Authoritative rotation for a placement entry, in degrees CCW.
+
+    `rotation_deg` when present; otherwise the legacy `rotated` bool, which
+    could only ever express 0 or 90. Never orient geometry from `rotated`
+    alone once `rotation_deg` exists -- it cannot tell 0 from 180.
+    """
+    if p.get("rotation_deg") is not None:
+        return int(p["rotation_deg"]) % 360
+    return 90 if p.get("rotated") else 0
+
+
 def rebuild_macros(manifest, with_dummy=True):
     """Reproduces `generate_primitives.py`'s own `generate()` macro-building
     loop (same functions, same order) to recover each macro's LIVE Component
@@ -255,8 +267,15 @@ def main():
         ref = labels_top << comp
         cx, cy = p["x"] + p["w"] / 2, p["y"] + p["h"] / 2
         ref.move(destination=(cx, cy))
-        if p.get("rotated"):
-            ref.rotate(90, center=(cx, cy))
+        # Same order as the placer's local_to_world() and render_placement.py:
+        # rotate by the real angle, THEN reflect about the vertical line
+        # x=cx. Labels that do not follow the geometry land on the wrong
+        # terminal, which is worse than no labels at all.
+        _rd = _rot_deg(p)
+        if _rd:
+            ref.rotate(_rd, center=(cx, cy))
+        if p.get("mirrored"):
+            ref.mirror(p1=(cx, cy - 1.0), p2=(cx, cy + 1.0))
         for text, pname in pairs:
             pt = ref.ports[pname]
             labels_top.add_label(text, position=pt.center, layer=PDK.get_glayer(INSTANCE_LABEL_LAYER),

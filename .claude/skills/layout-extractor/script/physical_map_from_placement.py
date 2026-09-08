@@ -54,6 +54,31 @@ TERMINAL_INDEX = {"drain": 0, "gate": 1, "source": 2, "bulk": 3,
 PIN_KEYS = ("drain", "gate", "source", "bulk", "plus", "minus")
 
 
+def _gds_orientation(pos):
+    """{"rotation_deg", "mirror"} in the GDS convention, from a placement entry.
+
+    The placer records `rotation_deg` (0/90/180/270 CCW) plus `mirrored`, a
+    reflection about the macro's own VERTICAL centre line applied AFTER the
+    rotation. GDS SREF instead applies `x_reflection` (about the X axis)
+    BEFORE the rotation. Since
+        mirror_x . rot(t) == rot(180 - t) . mirror_y
+    a mirrored macro converts to x_reflection=True with angle (180 - t).
+    An unmirrored one passes through unchanged.
+
+    `rotated` is honoured only as a fallback for a `placement_pos.json`
+    written before `rotation_deg` existed; it cannot express 180 or 270.
+    """
+    if not pos:
+        return {"rotation_deg": None, "mirror": False}
+    if pos.get("rotation_deg") is not None:
+        t = int(pos["rotation_deg"]) % 360
+    else:
+        t = 90 if pos.get("rotated") else 0
+    if pos.get("mirrored"):
+        return {"rotation_deg": (180 - t) % 360, "mirror": True}
+    return {"rotation_deg": t, "mirror": False}
+
+
 def load_pdk():
     """The active process's glayout PDK, for glayer -> (layer, datatype)."""
     from pdk_config import pdk as pdk_option
@@ -120,11 +145,15 @@ def build(design_dir, netlist_name=None, layout_name=None):
             "width_um": pos.get("w") if pos else mac.get("w"),
             "height_um": pos.get("h") if pos else mac.get("h"),
             "is_dummy": False,
-            # The placer tracks rotation as a bool (90 deg swaps w/h; 180/270
-            # give the same box) -- see anneal_placement.py. Report what was
-            # actually recorded, not a precise angle it never chose.
-            "rotation_deg": (90 if pos.get("rotated") else 0) if pos else None,
-            "mirror": False,
+            # CONVENTION CONVERSION, not a copy. The placer applies
+            # rotate-then-reflect-about-the-vertical-line-x=cx; GDS (and
+            # `redraw_from_map.py`, which reads this file) applies
+            # reflect-about-the-X-axis-then-rotate. The two are related by
+            #     mirror_x . rot(t)  ==  rot(180 - t) . mirror_y
+            # so a mirrored macro is emitted as x_reflection with its angle
+            # negated about 180. Copying the placer's angle through unchanged
+            # would redraw every mirrored macro at the wrong orientation.
+            **_gds_orientation(pos),
             "geometry_source": "placement_pos.json",
         }
         if pos:

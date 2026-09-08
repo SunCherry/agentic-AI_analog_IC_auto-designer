@@ -35,6 +35,18 @@ import json
 import os
 from pathlib import Path
 
+def _rot_deg(p):
+    """Authoritative rotation for a placement entry, in degrees CCW.
+
+    `rotation_deg` when present; otherwise the legacy `rotated` bool, which
+    could only ever express 0 or 90. Never orient geometry from `rotated`
+    alone once `rotation_deg` exists -- it cannot tell 0 from 180.
+    """
+    if p.get("rotation_deg") is not None:
+        return int(p["rotation_deg"]) % 360
+    return 90 if p.get("rotated") else 0
+
+
 def _guideline_pdk(default="sky130A", allowed=None):
     """Active PDK name from `.claude/reference/pdk_options.json`.
 
@@ -146,8 +158,17 @@ def render(manifest, placement, out_path: Path):
         ref.move(origin=((float(rbx0) + float(rbx1)) / 2,
                          (float(rby0) + float(rby1)) / 2),
                  destination=(cx, cy))
-        if pos.get("rotated"):
-            ref.rotate(90, center=(cx, cy))
+        # Rotate FIRST, then reflect about the vertical world line x=cx --
+        # the same order anneal_placement.py's local_to_world() and the
+        # router's copy use. The two do not commute (mirror_x . rot90 ==
+        # rot90 . mirror_y), so reversing them here would draw the macro
+        # somewhere the annealer's port coordinates do not describe and
+        # every wire into it would land on empty space.
+        _rd = _rot_deg(pos)
+        if _rd:
+            ref.rotate(_rd, center=(cx, cy))
+        if pos.get("mirrored"):
+            ref.mirror(p1=(cx, cy - 1.0), p2=(cx, cy + 1.0))
         top.add_label(name, position=(cx, cy), layer=sky130.get_glayer(LABEL_LAYER),
                        magnification=LABEL_MAGNIFICATION)
         placed.append(name)
